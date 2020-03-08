@@ -1,9 +1,9 @@
-#Project - Bot 2048
-##Description
+# Project - Bot 2048
+## Description
 Plays and beats the game 2048 by combining tiles that are multiples of 2
-##Dependencies
+## Dependencies
 This program uses pyautogui
-##Author
+## Author
 Lucas Goddin
-##Status
+## Status
 Under Development
