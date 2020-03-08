@@ -13,103 +13,6 @@ WemptySpace = 5
 WlargestTileOutOfCorner = -512
 
 
-def largeCornerCheck(board):
-    start = 0
-    startX = 0
-    startY = 0
-    for i in range(4):
-        for j in range(4):
-            if board[i][j] > start:
-                start = board[i][j]
-                startX = j
-                startY = i
-    inCorner = True
-    if startX != 0 and startX != 4:
-        inCorner = False
-    if startY != 0 and startY != 4:
-        inCorner = False
-    return inCorner
-
-
-def compressBoard(board, direction):
-    xDirec = 0
-    yDirec = 0
-
-    if direction == 'l':
-        xDirec = -1
-    elif direction == 'r':
-        xDirec = 1
-    elif direction == 'u':
-        yDirec = -1
-    else:
-        yDirec = 1
-
-    for cycles in range(4):
-        for i in range(4):
-            for j in range(4):
-                if -1 < i + yDirec < 4 and -1 < j + xDirec < 4:
-                    if board[i][j] != 0 and board[i + yDirec][j + xDirec] == 0:
-                        board[i + yDirec][j + xDirec] = board[i][j]
-                        board[i][j] = 0
-
-
-def simMove(board, direction):
-    xDirec = 0
-    yDirec = 0
-
-    if direction == 'l':
-        xDirec = -1
-    elif direction == 'r':
-        xDirec = 1
-    elif direction == 'u':
-        yDirec = -1
-    else:
-        yDirec = 1
-
-    for cycles in range(4):
-        for i in range(4):
-            for j in range(4):
-                if -1 < i + yDirec < 4 and -1 < j + xDirec < 4:
-                    if board[i][j] == board[i + yDirec][j + xDirec]:
-                        board[i][j] *= 2
-                        board[i + yDirec][j + xDirec] = 0
-                        i += yDirec
-                        j += xDirec
-
-        compressBoard(board, direction)
-
-
-def fitEval(boardCurrent, direction):
-    xDirec = 0
-    yDirec = 0
-
-    if direction == 'l':
-        xDirec = -1
-    elif direction == 'r':
-        xDirec = 1
-    elif direction == 'u':
-        yDirec = -1
-    else:
-        yDirec = 1
-
-    score = 0
-    board = deepcopy(boardCurrent)
-    simMove(board, direction)
-    for i in range(4):
-        for j in range(4):
-            if -1 < i + yDirec < 4 and -1 < j + xDirec < 4:
-                if board[i][j] == board[i + yDirec][j + xDirec]:
-                    score += board[i][j]
-
-            if board[i][j] == 0:
-                score += WemptySpace
-
-    if not largeCornerCheck(board):
-        score += WlargestTileOutOfCorner
-
-    return score
-
-
 def decodeGreyValues(GreyValues):
     output = [[0 for i in range(4)] for j in range(4)]
     for i in range(4):
@@ -139,6 +42,34 @@ def decodeGreyValues(GreyValues):
             if GreyValues[i][j] == 58:
                 output[i][j] = 4096
     return output
+
+
+def simMove(board, direction):
+    xDirec = 0
+    yDirec = 0
+
+    if direction == 'l':
+        xDirec = -1
+    elif direction == 'r':
+        xDirec = 1
+    elif direction == 'u':
+        yDirec = -1
+    else:
+        yDirec = 1
+
+    for i in range(4):
+        for j in range(4):
+            targetTile = board[i + yDirec][j + xDirec]
+            seekDistance = 1
+            while targetTile == 0 and -1 < (i + yDirec * seekDistance) < 4 and -1 < (j + xDirec * seekDistance) < 4:
+                targetTile = board[i + (yDirec * seekDistance)][j + (xDirec * seekDistance)]
+                seekDistance += 1
+            # print('Target Tile: ' + str(targetTile))
+            if targetTile == board[i][j]:
+                print('Combining ' + str(targetTile) + "'s")
+                board[i][j] = 0
+                board[i + (yDirec * seekDistance)][j + (xDirec * seekDistance)] = targetTile * 2
+                j += 1
 
 
 screen = pyautogui.screenshot()
@@ -173,9 +104,11 @@ for i in range(4):
             x = 515 + xOffset
 
         tileCoordinates[i][j] = (x, y)
-        print(tileCoordinates[i][j], end=', ')
-    print('\n')
-print('\n' * 3)
+
+        # Uncomment below to print tile coordinates
+        # print(tileCoordinates[i][j], end=', ')
+    # print('\n')
+# print('\n' * 3)
 
 tileGreyValue = [[0 for i in range(4)] for j in range(4)]
 
@@ -185,8 +118,9 @@ for i in range(4):
         gX, gY = tileCoordinates[i][j]
         tileGreyValue[i][j] = greyScreen.getpixel((gX + (j * distance), gY + (i * distance)))
         greyScreen.putpixel((gX + (j * distance), gY + (i * distance)), 0)
-        print(tileGreyValue[i][j], end=', ')
-    print('\n')
+        # Uncomment below to print grey scale values
+        # print(tileGreyValue[i][j], end=', ')
+    # print('\n')
 
 # save screenshot for debugging
 greyScreen = greyScreen.save('screen.png')
@@ -199,13 +133,8 @@ for i in range(4):
         print(boardValues[i][j], end=', ')
     print('\n', end='')
 
-leftScore = fitEval(boardValues, 'l')
-rightScore = fitEval(boardValues, 'r')
-print('Left Score: ' + str(leftScore))
-print('Right Score: ' + str(rightScore))
 simMove(boardValues, 'l')
 
-print('\n' * 3)
 for i in range(4):
     for j in range(4):
         print(boardValues[i][j], end=', ')
