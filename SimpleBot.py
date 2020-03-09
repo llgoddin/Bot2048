@@ -48,28 +48,38 @@ def simMove(board, direction):
     xDirec = 0
     yDirec = 0
 
+    start = 0
+    end = 0
+    iterator = 0
+
     if direction == 'l':
         xDirec = -1
+        iterator = -1
     elif direction == 'r':
         xDirec = 1
+        iterator = 1
     elif direction == 'u':
         yDirec = -1
+        iterator = -1
     else:
         yDirec = 1
+        iterator = 1
 
-    for i in range(4):
-        for j in range(4):
-            targetTile = board[i + yDirec][j + xDirec]
-            seekDistance = 1
-            while targetTile == 0 and -1 < (i + yDirec * seekDistance) < 4 and -1 < (j + xDirec * seekDistance) < 4:
-                targetTile = board[i + (yDirec * seekDistance)][j + (xDirec * seekDistance)]
-                seekDistance += 1
-            # print('Target Tile: ' + str(targetTile))
-            if targetTile == board[i][j]:
-                print('Combining ' + str(targetTile) + "'s")
+    if iterator > 0:
+        start = 0
+        end = 3
+    else:
+        start = 3
+        end = 0
+
+    for i in range(start, end + xDirec, iterator):
+        for j in range(start, end + yDirec, iterator):
+            if board[i + yDirec][j + xDirec] == 0:
+                board[i + yDirec][j + xDirec] = board[i][j]
                 board[i][j] = 0
-                board[i + (yDirec * seekDistance)][j + (xDirec * seekDistance)] = targetTile * 2
-                j += 1
+            elif board[i + yDirec][j + xDirec] == board[i][j]:
+                board[i + yDirec][j + xDirec] *= 2
+                board[i][j] = 0
 
 
 screen = pyautogui.screenshot()
@@ -133,6 +143,7 @@ for i in range(4):
         print(boardValues[i][j], end=', ')
     print('\n', end='')
 
+print('\n')
 simMove(boardValues, 'l')
 
 for i in range(4):
