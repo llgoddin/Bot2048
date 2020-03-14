@@ -44,11 +44,108 @@ def decodeGreyValues(GreyValues):
     return output
 
 
+def getBoardValues():
+    screen = pyautogui.screenshot()
+    greyScreen = screen.convert('L')
+    gsWidth, gsHeight = greyScreen.size
+
+    tileCoordinates = [[(0, 0) for i in range(4)] for j in range(4)]
+
+    # Coordinate Info
+    yOffset = 340
+    xOffset = 100
+    distance = 123
+
+    for i in range(4):
+        for j in range(4):
+            if i == 0:
+                y = 518 + yOffset
+            elif i == 1:
+                y = 638 + yOffset
+            elif i == 2:
+                y = 759 + yOffset
+            else:
+                y = 870 + yOffset
+
+            if j == 0:
+                x = 153 + xOffset
+            elif j == 1:
+                x = 273 + xOffset
+            elif j == 2:
+                x = 397 + xOffset
+            else:
+                x = 515 + xOffset
+
+            tileCoordinates[i][j] = (x, y)
+
+            # Uncomment below to print tile coordinates
+            # print(tileCoordinates[i][j], end=', ')
+        # print('\n')
+    # print('\n' * 3)
+
+    tileGreyValue = [[0 for i in range(4)] for j in range(4)]
+
+    # Get tiles grey values
+    for i in range(4):
+        for j in range(4):
+            gX, gY = tileCoordinates[i][j]
+            tileGreyValue[i][j] = greyScreen.getpixel((gX + (j * distance), gY + (i * distance)))
+            greyScreen.putpixel((gX + (j * distance), gY + (i * distance)), 0)
+            # Uncomment below to print grey scale values
+            # print(tileGreyValue[i][j], end=', ')
+        # print('\n')
+
+    # save screenshot for debugging
+    greyScreen = greyScreen.save('screen.png')
+
+    return decodeGreyValues(tileGreyValue)
+
+
 def printBoard(board):
+    print('-' * 11)
     for i in range(len(board)):
         for j in range(len(board[i])):
             print(board[i][j], end=', ')
         print()
+
+
+def combineTiles(board, xDirec, yDirec):
+    iterator = 0
+    start = 0
+    end = 0
+    vert = True
+
+    if not xDirec == 0:
+        vert = False
+
+    if xDirec < 0 or yDirec < 0:
+        start = 0
+        end = 4
+        iterator = 1
+    else:
+        start = 3
+        end = -1
+        iterator = -1
+
+    for i in range(start, end, iterator):
+        for j in range(start, end, iterator):
+            for distance in range(1, 4):
+                if vert:
+                    if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
+                        break
+                    elif board[i + (iterator * distance)][j] == board[i][j]:
+                        board[i][j] *= 2
+                        board[i + (iterator * distance)][j] = 0
+                    elif board[i + (iterator * distance)][j] != 0:
+                        break
+                else:
+                    if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
+                        break
+                    elif board[i][j + (iterator * distance)] == board[i][j]:
+                        board[i][j] *= 2
+                        board[i][j + (iterator * distance)] = 0
+                    elif board[i][j + (iterator * distance)] != 0:
+                        break
 
 
 def simMove(board, direction):
@@ -80,38 +177,9 @@ def simMove(board, direction):
         end = 0
 
     # combine tiles
-    yDirec *= -1
-    xDirec *= -1
-    iterator *= -1
-    for i in range(end, start, iterator):
-        for j in range(end, start, iterator):
-            if not board[i][j] == 0:
-                for distanceMultiplier in range(1, 4):
-                    if (i + (yDirec * distanceMultiplier)) < -1 or (i + (yDirec * distanceMultiplier)) > 3:
-                        print('break')
-                        break
-                    if (j + (xDirec * distanceMultiplier)) < -1 or (j + (xDirec * distanceMultiplier)) > 3:
-                        print('break')
-                        break
-                    print('Target: (' + str(j + (xDirec * distanceMultiplier)) + ', ' + str(i + (yDirec * distanceMultiplier)) + ')')
-                    if not board[i + (yDirec * distanceMultiplier)][j + (xDirec * distanceMultiplier)] == 0:
-                        if board[i + (yDirec * distanceMultiplier)][j + (xDirec * distanceMultiplier)] == board[i][j]:
-                            board[i][j] *= 2
-                            board[i + (yDirec * distanceMultiplier)][j + (xDirec * distanceMultiplier)] = 0
-                        else:
-                            break
-
-    print('\nCombined Values:')
-    for i in range(4):
-        for j in range(4):
-            print(board[i][j], end=', ')
-        print('\n', end='')
-    print('\n')
+    combineTiles(board, xDirec, yDirec)
 
     # compress tiles
-    yDirec *= -1
-    xDirec *= -1
-    iterator *= -1
     for cycles in range(2):
         for i in range(start, end + xDirec, iterator):
             for j in range(start, end + yDirec, iterator):
@@ -120,65 +188,13 @@ def simMove(board, direction):
                     board[i][j] = 0
 
 
-screen = pyautogui.screenshot()
-greyScreen = screen.convert('L')
-gsWidth, gsHeight = greyScreen.size
+# retrieves and translates grey values into actual values
+boardValues = getBoardValues()
 
-tileCoordinates = [[(0, 0) for i in range(4)] for j in range(4)]
-
-# Coordinate Info
-yOffset = 340
-xOffset = 100
-distance = 123
-
-for i in range(4):
-    for j in range(4):
-        if i == 0:
-            y = 518 + yOffset
-        elif i == 1:
-            y = 638 + yOffset
-        elif i == 2:
-            y = 759 + yOffset
-        else:
-            y = 870 + yOffset
-
-        if j == 0:
-            x = 153 + xOffset
-        elif j == 1:
-            x = 273 + xOffset
-        elif j == 2:
-            x = 397 + xOffset
-        else:
-            x = 515 + xOffset
-
-        tileCoordinates[i][j] = (x, y)
-
-        # Uncomment below to print tile coordinates
-        # print(tileCoordinates[i][j], end=', ')
-    # print('\n')
-# print('\n' * 3)
-
-tileGreyValue = [[0 for i in range(4)] for j in range(4)]
-
-# Get tiles grey values
-for i in range(4):
-    for j in range(4):
-        gX, gY = tileCoordinates[i][j]
-        tileGreyValue[i][j] = greyScreen.getpixel((gX + (j * distance), gY + (i * distance)))
-        greyScreen.putpixel((gX + (j * distance), gY + (i * distance)), 0)
-        # Uncomment below to print grey scale values
-        # print(tileGreyValue[i][j], end=', ')
-    # print('\n')
-
-# save screenshot for debugging
-greyScreen = greyScreen.save('screen.png')
-
-# translates grey values into actual values
-boardValues = decodeGreyValues(tileGreyValue)
-
+print('Original Board: ')
 printBoard(boardValues)
 
-print('\n')
-simMove(boardValues, 'l')
+print('\nCombined Values After Right Move: ')
+simMove(boardValues, 'r')
 
 printBoard(boardValues)
