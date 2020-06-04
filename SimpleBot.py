@@ -10,9 +10,6 @@
 from copy import deepcopy
 import time
 import pygame
-import pyautogui
-from PIL import Image
-import PIL
 import sys
 
 # Fitness Weights
