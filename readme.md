@@ -1,10 +1,10 @@
 # Project - 2048
-## Description
+##Description
 The objective of the game is to create the 2048 tile by combining tiles with the same number.
 The tiles are multiples of 2, every turn a new tile is generated (STILL IN DEV).
-## Status
+##Status
 Under Development
-## Dependencies
+##Dependencies
 *NOTE: Pygame can be extremely finicky, I have gotten Pygame to work on Python v3.7.7 on MacOS*  
   
 This program uses Pygame, follow the instructions below to set up venv:
@@ -19,6 +19,6 @@ This program uses Pygame, follow the instructions below to set up venv:
 4. Install dependencies using the included requirements file
     >$pip install -r requirements.txt
                                                            
-## Author
+##Author
 Lucas Goddin
 
