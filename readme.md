@@ -14,7 +14,7 @@ This program uses Pygame, follow the instructions below to set up venv:
     - Make sure to include /venv at the end in order to package the environment in a single directory
 2. Navigate to the directory containing /venv
     >$cd /example/path/destination
-3. Activate the virtual envornment by calling the 'activate' script
+3. Activate the virtual environment by calling the 'activate' script
     >$source venv/bin/activate
 4. Install dependencies using the included requirements file
     >$pip install -r requirements.txt
