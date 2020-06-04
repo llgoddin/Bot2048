@@ -6,15 +6,16 @@
 # Finish Game Loop
 # Work on Setting up the game independently
 
+# BUGGED TEST CASE
+# the bug seems happen during tile compression see line 122
+# 0,2,0,0
+# 0,2,0,0
+# 0,4,0,0
+# 16,16,16,8
 
-from copy import deepcopy
-import time
-import pygame
+
 import sys
-
-# Fitness Weights
-WemptySpace = 5
-WlargestTileOutOfCorner = -512
+import pygame
 
 colorDict = {
     2: (240, 220, 200),
@@ -36,143 +37,86 @@ colorDict = {
 pygame.init()
 pygame.display.set_caption('2048')
 screen = pygame.display.set_mode((600, 800))
-screen.fill((255, 0, 0))
+screen.fill((40, 40, 40))
 pygame.display.flip()
 
 
-def gameLoop(b):
-
+def gameLoop(board):
     # used to control the main game loop
     userPlaying = True
-    keyRelease = True
 
+    printBoard(board)
     while userPlaying:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 userPlaying = False
-            if keyRelease:
-                if event.type == pygame.KEYDOWN:
-                    keyRelease = False
-                    if event.key == pygame.K_UP:
-                        simMove(b, 'u')
-                    if event.key == pygame.K_DOWN:
-                        simMove(b, 'd')
-                    if event.key == pygame.K_LEFT:
-                        simMove(b, 'l')
-                    if event.key == pygame.K_RIGHT:
-                        simMove(b, 'r')
-                if event.type == pygame.KEYUP:
-                    keyRelease = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    simMove(board, 'u')
+                if event.key == pygame.K_DOWN:
+                    simMove(board, 'd')
+                if event.key == pygame.K_LEFT:
+                    simMove(board, 'l')
+                if event.key == pygame.K_RIGHT:
+                    simMove(board, 'r')
+                printBoard(board)
 
-        printBoard(b)
+        writeBoard(board)
+
+        board = readBoard()
 
     sys.exit()
 
 
-def decodeGreyValues(GreyValues):
-    output = [[0 for i in range(4)] for j in range(4)]
-    for i in range(4):
-        for j in range(4):
-            if GreyValues[i][j] == 229:
-                output[i][j] = 2
-            if GreyValues[i][j] == 225:
-                output[i][j] = 4
-            if GreyValues[i][j] == 189:
-                output[i][j] = 8
-            if GreyValues[i][j] == 171:
-                output[i][j] = 16
-            if GreyValues[i][j] == 157:
-                output[i][j] = 32
-            if GreyValues[i][j] == 138:
-                output[i][j] = 64
-            if GreyValues[i][j] == 206:
-                output[i][j] = 128
-            if GreyValues[i][j] == 202:
-                output[i][j] = 256
-            if GreyValues[i][j] == 198:
-                output[i][j] = 512
-            if GreyValues[i][j] == 195:
-                output[i][j] = 0
-            if GreyValues[i][j] == 192:
-                output[i][j] = 2048
-            if GreyValues[i][j] == 58:
-                output[i][j] = 4096
-    return output
+def readBoard():
+    boardFile = open('Board.txt', 'r')
+    board = boardFile.read()
+
+    # splits rows by \n and elements in rows by ,
+    boardLines = board.split('\n')
+    boardArray = []
+    for line in boardLines:
+        boardArray.append(line.split(','))
+
+    # changes boardArray values from char to int
+    for i in range(0, 4):
+        for j in range(0, 4):
+            boardArray[i][j] = int(boardArray[i][j])
+
+    boardFile.close()
+
+    return boardArray
 
 
-def getBoardValues():
-    screen = pyautogui.screenshot()
-    greyScreen = screen.convert('L')
-    gsWidth, gsHeight = greyScreen.size
+def writeBoard(board):
+    boardFile = open('Board.txt', 'w')
 
-    tileCoordinates = [[(0, 0) for i in range(4)] for j in range(4)]
-
-    # Coordinate Info
-    yOffset = 320
-    xOffset = 100
-    distance = 123
-
-    for i in range(4):
-        for j in range(4):
-            if i == 0:
-                y = 518 + yOffset
-            elif i == 1:
-                y = 638 + yOffset
-            elif i == 2:
-                y = 759 + yOffset
+    # Writes the board with correct formatting to Board.txt
+    for i in range(0, 4):
+        for j in range(0, 4):
+            if j < 3:
+                boardFile.write(str(board[i][j]) + ',')
             else:
-                y = 870 + yOffset
-
-            if j == 0:
-                x = 153 + xOffset
-            elif j == 1:
-                x = 273 + xOffset
-            elif j == 2:
-                x = 397 + xOffset
-            else:
-                x = 515 + xOffset
-
-            tileCoordinates[i][j] = (x, y)
-
-            # Uncomment below to print tile coordinates
-            # print(tileCoordinates[i][j], end=', ')
-        # print('\n')
-    # print('\n' * 3)
-
-    tileGreyValue = [[0 for i in range(4)] for j in range(4)]
-
-    # Get tiles grey values
-    for i in range(4):
-        for j in range(4):
-            gX, gY = tileCoordinates[i][j]
-            tileGreyValue[i][j] = greyScreen.getpixel((gX + (j * distance), gY + (i * distance)))
-            greyScreen.putpixel((gX + (j * distance), gY + (i * distance)), 0)
-            # Uncomment below to print grey scale values
-            # print(tileGreyValue[i][j], end=', ')
-        # print('\n')
-
-    # save screenshot for debugging
-    greyScreen = greyScreen.save('screen.png')
-
-    return decodeGreyValues(tileGreyValue)
+                boardFile.write(str(board[i][j]))
+        if i < 3:
+            boardFile.write('\n')
 
 
 def printBoard(board):
+    # prints board values to console
     print('-' * 11)
     for i in range(len(board)):
         for j in range(len(board[i])):
             print(board[i][j], end=', ')
         print()
 
-    gridXOffset = 50
-    gridYOffset = 200
+    # drawing the board to screen
+    for i in range(0, 4):
+        for j in range(0, 4):
+            pygame.draw.rect(screen, colorDict[board[i][j]], (50 + (j * 133), 50 + (i * 133), 100, 100), 0)
 
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            pygame.draw.rect(screen, colorDict[board[i][j]],
-                             (gridXOffset + (100 * j), gridYOffset + (100 * i), 100, 100), 0)
-            pygame.display.flip()
-            print("SCREEN UPDATE")
+    pygame.display.flip()
+    print('SCREEN UPDATE')
 
 
 def combineTiles(board, xDirec, yDirec):
@@ -256,18 +200,6 @@ def simMove(board, direction):
                     board[i][j] = 0
 
 
-# retrieves and translates grey values into actual values
-boardValues = getBoardValues()
+b = readBoard()
 
-# main game loop
-gameLoop(boardValues)
-
-print('Original Board: ')
-printBoard(boardValues)
-
-print('\nCombined Values After Right Move: ')
-simMove(boardValues, 'u')
-
-printBoard(boardValues)
-
-gameLoop(boardValues)
+gameLoop(b)
