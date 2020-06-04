@@ -1,6 +1,4 @@
 /venv/*
-/screen.png
-/Point.txt
 /testing.py
 /.DS_Store
 /.idea/*
