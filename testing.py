@@ -2,45 +2,33 @@
 # testing
 # Feb 24, 2020
 
+import pygame
 import time
-import pyautogui
+import sys
 
-Screen_Width, Screen_Height = pyautogui.size()
-print(str(Screen_Width) + ", " + str(Screen_Height))
+print("PYTHON VER: " + sys.version)
+print("PYGAME VER: " + pygame.ver)
 
-erase = False
+pygame.init()
+screen = pygame.display.set_mode((600, 800))
+screen.fill((255, 0, 0))
+pygame.display.flip()
 
-# dataFile = open("Point.txt", "r+")
+gameRunning = True
+screen.fill((255, 0, 0))
 
-# time.sleep(5)
-if not erase:
-    pyautogui.moveTo(25, 307, duration=0.25)
-else:
-    pyautogui.moveTo(25, 200)
-pyautogui.click()
-pyautogui.click()
-pyautogui.moveTo(130, 150, duration=0.25)
-pyautogui.click()
+while gameRunning:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            gameRunning = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                print('UP')
+                pygame.draw.rect(screen, (0, 0, 255), pygame.Rect(100, 100, 100, 100))
+                pygame.display.flip()
 
-distance = 100
-pause = .025
-while distance > 0:
-    pyautogui.dragRel(distance, 0, duration=pause, button='left')
-    distance -= 5
-    pyautogui.dragRel(0, distance, duration=pause, button='left')
-    pyautogui.dragRel(-distance, 0, duration=pause, button='left')
-    distance -= 5
-    pyautogui.dragRel(0, -distance, duration=pause, button='left')
 
-try:
-    time.sleep(5)
-    print("Go!")
-    while True:
-        posOutput = pyautogui.position()
-        print(str(posOutput), end='')
-        out = str(posOutput)
-        # dataFile.write(out + '\n')
-        time.sleep(.02)
-        print('\b' * len(out), end='', flush=True)
-except KeyboardInterrupt:
-    print('\nDone')
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()

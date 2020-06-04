@@ -2,15 +2,74 @@
 # 2048 Bot - 0.1
 # Feb 25, 2020
 
+# TODO LIST
+# Finish Game Loop
+# Work on Setting up the game independently
+
+
 from copy import deepcopy
 import time
+import pygame
 import pyautogui
 from PIL import Image
 import PIL
+import sys
 
 # Fitness Weights
 WemptySpace = 5
 WlargestTileOutOfCorner = -512
+
+colorDict = {
+    2: (240, 220, 200),
+    4: (255, 234, 199),
+    8: (252, 186, 100),
+    16: (245, 149, 99),
+    32: (246, 124, 95),
+    64: (246, 94, 59),
+    128: (237, 207, 114),
+    256: (237, 204, 97),
+    512: (237, 200, 80),
+    1024: (237, 197, 63),
+    2048: (237, 194, 46),
+    0: (255, 0, 0)
+    # 0: (238, 228, 218)
+}
+
+# creates a window and sets size and title
+pygame.init()
+pygame.display.set_caption('2048')
+screen = pygame.display.set_mode((600, 800))
+screen.fill((255, 0, 0))
+pygame.display.flip()
+
+
+def gameLoop(b):
+
+    # used to control the main game loop
+    userPlaying = True
+    keyRelease = True
+
+    while userPlaying:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                userPlaying = False
+            if keyRelease:
+                if event.type == pygame.KEYDOWN:
+                    keyRelease = False
+                    if event.key == pygame.K_UP:
+                        simMove(b, 'u')
+                    if event.key == pygame.K_DOWN:
+                        simMove(b, 'd')
+                    if event.key == pygame.K_LEFT:
+                        simMove(b, 'l')
+                    if event.key == pygame.K_RIGHT:
+                        simMove(b, 'r')
+                if event.type == pygame.KEYUP:
+                    keyRelease = True
+
+        printBoard(b)
+
+    sys.exit()
 
 
 def decodeGreyValues(GreyValues):
@@ -52,7 +111,7 @@ def getBoardValues():
     tileCoordinates = [[(0, 0) for i in range(4)] for j in range(4)]
 
     # Coordinate Info
-    yOffset = 340
+    yOffset = 320
     xOffset = 100
     distance = 123
 
@@ -108,6 +167,16 @@ def printBoard(board):
             print(board[i][j], end=', ')
         print()
 
+    gridXOffset = 50
+    gridYOffset = 200
+
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            pygame.draw.rect(screen, colorDict[board[i][j]],
+                             (gridXOffset + (100 * j), gridYOffset + (100 * i), 100, 100), 0)
+            pygame.display.flip()
+            print("SCREEN UPDATE")
+
 
 def combineTiles(board, xDirec, yDirec):
     iterator = 0
@@ -129,7 +198,8 @@ def combineTiles(board, xDirec, yDirec):
 
     for i in range(start, end, iterator):
         for j in range(start, end, iterator):
-            for distance in range(1, 4):
+            # distance searches for values on the board horizontally or vertically from the targeted square
+            for distance in range(1, 3):
                 if vert:
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
@@ -156,6 +226,7 @@ def simMove(board, direction):
     end = 0
     iterator = 0
 
+    # determines which direction tiles should be moving and direction the loop should iterate
     if direction == 'l':
         xDirec = -1
         iterator = -1
@@ -191,10 +262,15 @@ def simMove(board, direction):
 # retrieves and translates grey values into actual values
 boardValues = getBoardValues()
 
+# main game loop
+gameLoop(boardValues)
+
 print('Original Board: ')
 printBoard(boardValues)
 
 print('\nCombined Values After Right Move: ')
-simMove(boardValues, 'r')
+simMove(boardValues, 'u')
 
 printBoard(boardValues)
+
+gameLoop(boardValues)
