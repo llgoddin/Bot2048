@@ -3,11 +3,11 @@
 # Feb 25, 2020
 
 # TODO LIST
-# Finish Game Loop
-# Work on Setting up the game independently
+# fix max range combination bug
+# add game initializer and restart
+# add tile animation
 
-# BUGGED TEST CASE
-# the bug seems happen during tile compression see line 122
+# GOOD TEST CASE (used to cause bugs)
 # 0,2,0,0
 # 0,2,0,0
 # 0,4,0,0
@@ -15,8 +15,9 @@
 
 
 import sys
+import random
+import copy
 import pygame
-
 
 LIGHT_GREY = (200, 200, 200)
 GREY = (120, 120, 120)
@@ -115,7 +116,7 @@ def screenUpdate(board):
     pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465), 0)
 
     # draws title font
-    titleText = textRend('2048', 120, DARK_GREY,)
+    titleText = textRend('2048', 120, DARK_GREY, )
     textRect = titleText.get_rect()
     textRect.center = (148, 77)
     screen.blit(titleText, textRect)
@@ -123,15 +124,14 @@ def screenUpdate(board):
     # draws tiles
     for i in range(0, 4):
         for j in range(0, 4):
-
             # draw the tile
             pygame.draw.rect(screen, colorDict[board[i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100), 0)
 
             # create tile text
             tileText = textRend("" if board[i][j] == 0 else str(board[i][j]), 40, BLACK)
-            tiletextRect = tileText.get_rect()
-            tiletextRect.center = (75 + (j * 115), 180 + (i * 115))
-            screen.blit(tileText, tiletextRect)
+            tileTextRect = tileText.get_rect()
+            tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
+            screen.blit(tileText, tileTextRect)
 
     # update the screen
     pygame.display.flip()
@@ -193,6 +193,8 @@ def combineTiles(board, xDirec, yDirec):
 
 
 def simMove(board, direction):
+    boardCopy = copy.deepcopy(board)
+
     xDirec = 0
     yDirec = 0
 
@@ -253,6 +255,31 @@ def simMove(board, direction):
 
     print('\nPOST COMPRESSION VV')
     printBoard(board)
+
+    if boardCopy != board:
+        genTile(board)
+
+
+def genTile(board):
+    r = random.random()
+    if r > .9:
+        success = False
+        while not success:
+            i = random.randint(0, 3)
+            j = random.randint(0, 3)
+            print('[' + str(i) + ', ' + str(j) + ']')
+            if board[i][j] == 0:
+                board[i][j] = 4
+                success = True
+    else:
+        success = False
+        while not success:
+            i = random.randint(0, 3)
+            j = random.randint(0, 3)
+            print('[' + str(i) + ', ' + str(j) + ']')
+            if board[i][j] == 0:
+                board[i][j] = 2
+                success = True
 
 
 b = readBoard()
