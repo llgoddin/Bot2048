@@ -3,7 +3,7 @@
 # Feb 25, 2020
 
 # TODO LIST
-# fix max range combination bug
+# fix max range combination bug (FIXED)
 # add game initializer and restart
 # add tile animation
 
@@ -19,6 +19,7 @@ import random
 import copy
 import pygame
 
+WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
 GREY = (120, 120, 120)
 DARK_GREY = (40, 40, 40)
@@ -51,9 +52,11 @@ pygame.display.flip()
 def gameLoop(board):
     # used to control the main game loop
     userPlaying = True
+    mouseDown = False
 
     screenUpdate(board)
     while userPlaying:
+        # handle keyboard events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 userPlaying = False
@@ -66,14 +69,26 @@ def gameLoop(board):
                     simMove(board, 'l')
                 if event.key == pygame.K_RIGHT:
                     simMove(board, 'r')
-                screenUpdate(board)
             elif event.type == pygame.KEYUP:
                 print('KEY RELEASE')
 
+        # handle mouse events
+        click = pygame.mouse.get_pressed()
+        if click == (0, 0, 0):
+            mouseDown = False
+        elif click == (1, 0, 0) and not mouseDown:
+            mouseDown = True
+            mouse = pygame.mouse.get_pos()
+            if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
+                board = newGame()
+
+        screenUpdate(board)
         # writeBoard(board)
 
         # board = readBoard()
 
+    writeBoard(board)
+    pygame.exit()
     sys.exit()
 
 
@@ -110,22 +125,37 @@ def writeBoard(board):
         if i < 3:
             boardFile.write('\n')
 
+    boardFile.close()
+
 
 def screenUpdate(board):
     # draws grid outline
-    pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465), 0)
+    pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
 
     # draws title font
-    titleText = textRend('2048', 120, DARK_GREY, )
+    titleText = textRend('2048', 120, DARK_GREY)
     textRect = titleText.get_rect()
     textRect.center = (148, 77)
     screen.blit(titleText, textRect)
+
+    mouse = pygame.mouse.get_pos()
+    if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
+        restartBtnColor = GREY
+    else:
+        restartBtnColor = DARK_GREY
+
+    # draw buttons
+    pygame.draw.rect(screen, restartBtnColor, (422, 55, 60, 60))
+    pygame.draw.circle(screen, WHITE, (452, 85), 18)
+    pygame.draw.circle(screen, restartBtnColor, (452, 85), 15)
+    pygame.draw.polygon(screen, restartBtnColor, [(452, 85), (422, 85), (445, 110)])
+    pygame.draw.polygon(screen, WHITE, [(430, 85), (440, 85), (435, 95)])
 
     # draws tiles
     for i in range(0, 4):
         for j in range(0, 4):
             # draw the tile
-            pygame.draw.rect(screen, colorDict[board[i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100), 0)
+            pygame.draw.rect(screen, colorDict[board[i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
 
             # create tile text
             tileText = textRend("" if board[i][j] == 0 else str(board[i][j]), 40, BLACK)
@@ -173,7 +203,7 @@ def combineTiles(board, xDirec, yDirec):
     for i in range(start, end, iterator):
         for j in range(start, end, iterator):
             # distance searches for values on the board horizontally or vertically from the targeted square
-            for distance in range(1, 3):
+            for distance in range(1, 4):
                 if vert:
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
@@ -267,7 +297,7 @@ def genTile(board):
         while not success:
             i = random.randint(0, 3)
             j = random.randint(0, 3)
-            print('[' + str(i) + ', ' + str(j) + ']')
+
             if board[i][j] == 0:
                 board[i][j] = 4
                 success = True
@@ -276,12 +306,24 @@ def genTile(board):
         while not success:
             i = random.randint(0, 3)
             j = random.randint(0, 3)
-            print('[' + str(i) + ', ' + str(j) + ']')
+
             if board[i][j] == 0:
                 board[i][j] = 2
                 success = True
 
 
+def newGame():
+    board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    genTile(board)
+    genTile(board)
+
+    writeBoard(board)
+    return board
+
+
 b = readBoard()
 
 gameLoop(b)
+
+pygame.quit()
+sys.exit()
