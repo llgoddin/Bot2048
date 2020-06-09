@@ -18,6 +18,7 @@ import sys
 import random
 import copy
 import pygame
+import math
 
 WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
@@ -54,21 +55,29 @@ def gameLoop(board):
     userPlaying = True
     mouseDown = False
 
-    screenUpdate(board)
+    FPS = 30
+    animTimer = 0
+    fpsClock = pygame.time.Clock()
+
+    newTilePos = (4, 4)
+
+    screenUpdate(board, newTilePos, animTimer)
     while userPlaying:
         # handle keyboard events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 userPlaying = False
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and newTilePos == (4, 4):
                 if event.key == pygame.K_UP:
-                    simMove(board, 'u')
+                    newTilePos = simMove(board, 'u')
                 if event.key == pygame.K_DOWN:
-                    simMove(board, 'd')
+                    newTilePos = simMove(board, 'd')
                 if event.key == pygame.K_LEFT:
-                    simMove(board, 'l')
+                    newTilePos = simMove(board, 'l')
                 if event.key == pygame.K_RIGHT:
-                    simMove(board, 'r')
+                    newTilePos = simMove(board, 'r')
+                if newTilePos != (4, 4):
+                    animTimer = 1
             elif event.type == pygame.KEYUP:
                 print('KEY RELEASE')
 
@@ -82,10 +91,18 @@ def gameLoop(board):
             if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
                 board = newGame()
 
-        screenUpdate(board)
+        screenUpdate(board, newTilePos, animTimer)
+
+        if 0 < animTimer < 10:
+            animTimer += math.floor((11 - animTimer) / 2)
+        elif animTimer >= 10:
+            animTimer = 0
+            newTilePos = (4, 4)
+
         # writeBoard(board)
 
         # board = readBoard()
+        fpsClock.tick(FPS)
 
     writeBoard(board)
     pygame.exit()
@@ -128,7 +145,7 @@ def writeBoard(board):
     boardFile.close()
 
 
-def screenUpdate(board):
+def screenUpdate(board, pos, timer):
     # draws grid outline
     pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
 
@@ -154,14 +171,27 @@ def screenUpdate(board):
     # draws tiles
     for i in range(0, 4):
         for j in range(0, 4):
-            # draw the tile
-            pygame.draw.rect(screen, colorDict[board[i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
+            if pos == (i, j):
+                # animate new tiles
+                tileCord = (27 + (j * 115), 130 + (i * 115))
+                scale = timer * .1
 
-            # create tile text
-            tileText = textRend("" if board[i][j] == 0 else str(board[i][j]), 40, BLACK)
-            tileTextRect = tileText.get_rect()
-            tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
-            screen.blit(tileText, tileTextRect)
+                sideLen = int(100 * scale)
+
+                x = tileCord[0] + (100 - sideLen) / 2
+                y = tileCord[1] + (100 - sideLen) / 2
+
+                pygame.draw.rect(screen, colorDict[0], [tileCord[0], tileCord[1], 100, 100])
+                pygame.draw.rect(screen, colorDict[board[i][j]], [x, y, sideLen, sideLen])
+            else:
+                # draw old tiles
+                pygame.draw.rect(screen, colorDict[board[i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
+
+                # create tile text
+                tileText = textRend("" if board[i][j] == 0 else str(board[i][j]), 40, BLACK)
+                tileTextRect = tileText.get_rect()
+                tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
+                screen.blit(tileText, tileTextRect)
 
     # update the screen
     pygame.display.flip()
@@ -210,6 +240,7 @@ def combineTiles(board, xDirec, yDirec):
                     elif board[i + (iterator * distance)][j] == board[i][j]:
                         board[i][j] *= 2
                         board[i + (iterator * distance)][j] = 0
+                        break
                     elif board[i + (iterator * distance)][j] != 0:
                         break
                 else:
@@ -218,6 +249,7 @@ def combineTiles(board, xDirec, yDirec):
                     elif board[i][j + (iterator * distance)] == board[i][j]:
                         board[i][j] *= 2
                         board[i][j + (iterator * distance)] = 0
+                        break
                     elif board[i][j + (iterator * distance)] != 0:
                         break
 
@@ -286,11 +318,14 @@ def simMove(board, direction):
     print('\nPOST COMPRESSION VV')
     printBoard(board)
 
+    newPos = (4, 4)
     if boardCopy != board:
-        genTile(board)
+        newPos = genTile(board)
+    return newPos
 
 
 def genTile(board):
+    newPos = (4, 4)
     r = random.random()
     if r > .9:
         success = False
@@ -301,6 +336,7 @@ def genTile(board):
             if board[i][j] == 0:
                 board[i][j] = 4
                 success = True
+                newPos = (i, j)
     else:
         success = False
         while not success:
@@ -310,6 +346,8 @@ def genTile(board):
             if board[i][j] == 0:
                 board[i][j] = 2
                 success = True
+                newPos = (i, j)
+    return newPos
 
 
 def newGame():
