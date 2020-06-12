@@ -19,6 +19,8 @@ import random
 import copy
 import pygame
 import math
+from multiprocessing import Pipe, Process
+from Agent import start
 
 WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
@@ -61,28 +63,40 @@ def gameLoop(board):
 
     newTilePos = (4, 4)
 
+    agent = None
+    AgentActive = False
+    pipe = None
+
     screenUpdate(board, newTilePos, animTimer)
     while userPlaying:
         # handle keyboard events
-        for event in pygame.event.get():
+        for event in pygame.event.get() and not AgentActive:
             if event.type == pygame.QUIT:
                 userPlaying = False
             if event.type == pygame.KEYDOWN and newTilePos == (4, 4):
                 if event.key == pygame.K_UP:
-                    newTilePos = simMove(board, 'u')
+                    newTilePos = move(board, 'u')
                 if event.key == pygame.K_DOWN:
-                    newTilePos = simMove(board, 'd')
+                    newTilePos = move(board, 'd')
                 if event.key == pygame.K_LEFT:
-                    newTilePos = simMove(board, 'l')
+                    newTilePos = move(board, 'l')
                 if event.key == pygame.K_RIGHT:
-                    newTilePos = simMove(board, 'r')
+                    newTilePos = move(board, 'r')
                 if newTilePos != (4, 4):
                     animTimer = 1
             elif event.type == pygame.KEYUP:
                 print('KEY RELEASE')
 
+        if AgentActive:
+            newTilePos = move(board, pipe.recv())
+            pipe.send(board)
+        else:
+            pipe.close()
+            agent.close()
+
         # handle mouse events
         click = pygame.mouse.get_pressed()
+        #testing click for 0 makes user let go in between resets
         if click == (0, 0, 0):
             mouseDown = False
         elif click == (1, 0, 0) and not mouseDown:
@@ -90,6 +104,12 @@ def gameLoop(board):
             mouse = pygame.mouse.get_pos()
             if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
                 board = newGame()
+            elif 0 < mouse[0] < 5 and 0 < mouse[1] < 5 and not AgentActive:
+                agent, pipe = startAgent()
+                AgentActive = True
+            elif 0 < mouse[0] < 5 and 0 < 5 and AgentActive:
+                AgentActive = False
+
 
         screenUpdate(board, newTilePos, animTimer)
 
@@ -254,7 +274,7 @@ def combineTiles(board, xDirec, yDirec):
                         break
 
 
-def simMove(board, direction):
+def move(board, direction):
     boardCopy = copy.deepcopy(board)
 
     xDirec = 0
@@ -357,6 +377,15 @@ def newGame():
 
     writeBoard(board)
     return board
+
+
+def startAgent():
+    if __name__ == '__main__':
+        parentPipe, childPipe = Pipe()
+        bot1 = Process(target=start(), args=(board, childPipe))
+        bot1.start()
+        print(parentPipe.recv())
+    return parentPipe, bot1
 
 
 b = readBoard()
