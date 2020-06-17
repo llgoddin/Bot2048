@@ -15,12 +15,11 @@
 
 
 import sys
-import random
-import copy
 import pygame
 import math
-from multiprocessing import Pipe, Process
-from Agent import start
+import time
+from Operations import *
+from Agent import myAlgorthim
 
 WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
@@ -51,10 +50,14 @@ screen = pygame.display.set_mode((500, 600))
 screen.fill(LIGHT_GREY)
 pygame.display.flip()
 
+board = readBoard()
 
-def gameLoop(board):
+
+def gameLoop():
     # used to control the main game loop
+    running = True
     userPlaying = True
+    AgentActive = False
     mouseDown = False
 
     FPS = 30
@@ -63,55 +66,51 @@ def gameLoop(board):
 
     newTilePos = (4, 4)
 
-    agent = None
-    AgentActive = False
-    pipe = None
-
-    screenUpdate(board, newTilePos, animTimer)
-    while userPlaying:
+    screenUpdate(newTilePos, animTimer)
+    while running:
         # handle keyboard events
-        for event in pygame.event.get() and not AgentActive:
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 userPlaying = False
             if event.type == pygame.KEYDOWN and newTilePos == (4, 4):
                 if event.key == pygame.K_UP:
-                    newTilePos = move(board, 'u')
+                    if userPlaying:
+                        newTilePos = move(board, 'u')
                 if event.key == pygame.K_DOWN:
-                    newTilePos = move(board, 'd')
+                    if userPlaying:
+                        newTilePos = move(board, 'd')
                 if event.key == pygame.K_LEFT:
-                    newTilePos = move(board, 'l')
+                    if userPlaying:
+                        newTilePos = move(board, 'l')
                 if event.key == pygame.K_RIGHT:
-                    newTilePos = move(board, 'r')
-                if newTilePos != (4, 4):
-                    animTimer = 1
-            elif event.type == pygame.KEYUP:
-                print('KEY RELEASE')
+                    if userPlaying:
+                        newTilePos = move(board, 'r')
 
-        if AgentActive:
-            newTilePos = move(board, pipe.recv())
-            pipe.send(board)
-        else:
-            pipe.close()
-            agent.close()
+        if AgentActive and animTimer == 0:
+            newTilePos = move(board, myAlgorthim(board))
+
+        if newTilePos != (4, 4) and animTimer == 0:
+            print('Animation Started')
+            animTimer = 1
 
         # handle mouse events
         click = pygame.mouse.get_pressed()
-        #testing click for 0 makes user let go in between resets
+
+        # testing click for 0's makes user let go in between button clicks
         if click == (0, 0, 0):
             mouseDown = False
         elif click == (1, 0, 0) and not mouseDown:
             mouseDown = True
             mouse = pygame.mouse.get_pos()
+
+            # test click to see if it hit any buttons
             if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
-                board = newGame()
-            elif 0 < mouse[0] < 5 and 0 < mouse[1] < 5 and not AgentActive:
-                agent, pipe = startAgent()
-                AgentActive = True
-            elif 0 < mouse[0] < 5 and 0 < 5 and AgentActive:
-                AgentActive = False
+                newGame()
+            elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
+                userPlaying = AgentActive
+                AgentActive = not AgentActive
 
-
-        screenUpdate(board, newTilePos, animTimer)
+        screenUpdate(newTilePos, animTimer)
 
         if 0 < animTimer < 10:
             animTimer += math.floor((11 - animTimer) / 2)
@@ -122,50 +121,13 @@ def gameLoop(board):
         # writeBoard(board)
 
         # board = readBoard()
+        # if userPlaying:
         fpsClock.tick(FPS)
 
     writeBoard(board)
-    pygame.exit()
-    sys.exit()
 
 
-def readBoard():
-    boardFile = open('Board.txt', 'r')
-    board = boardFile.read()
-
-    # splits rows by \n and elements in rows by ,
-    boardLines = board.split('\n')
-    boardArray = []
-    for line in boardLines:
-        boardArray.append(line.split(','))
-
-    # changes boardArray values from char to int
-    for i in range(0, 4):
-        for j in range(0, 4):
-            boardArray[i][j] = int(boardArray[i][j])
-
-    boardFile.close()
-
-    return boardArray
-
-
-def writeBoard(board):
-    boardFile = open('Board.txt', 'w')
-
-    # Writes the board with correct formatting to Board.txt
-    for i in range(0, 4):
-        for j in range(0, 4):
-            if j < 3:
-                boardFile.write(str(board[i][j]) + ',')
-            else:
-                boardFile.write(str(board[i][j]))
-        if i < 3:
-            boardFile.write('\n')
-
-    boardFile.close()
-
-
-def screenUpdate(board, pos, timer):
+def screenUpdate(pos, timer):
     # draws grid outline
     pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
 
@@ -178,20 +140,30 @@ def screenUpdate(board, pos, timer):
     mouse = pygame.mouse.get_pos()
     if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
         restartBtnColor = GREY
+        agentBtnColor = DARK_GREY
+    elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
+        agentBtnColor = GREY
+        restartBtnColor = DARK_GREY
     else:
         restartBtnColor = DARK_GREY
+        agentBtnColor = DARK_GREY
 
-    # draw buttons
+    # draw restart button
     pygame.draw.rect(screen, restartBtnColor, (422, 55, 60, 60))
     pygame.draw.circle(screen, WHITE, (452, 85), 18)
     pygame.draw.circle(screen, restartBtnColor, (452, 85), 15)
     pygame.draw.polygon(screen, restartBtnColor, [(452, 85), (422, 85), (445, 110)])
     pygame.draw.polygon(screen, WHITE, [(430, 85), (440, 85), (435, 95)])
 
+    # draw agent button
+    pygame.draw.rect(screen, agentBtnColor, (352, 55, 60, 60))
+    pygame.draw.polygon(screen, WHITE, [(362, 65), (402, 85), (362, 105)])
+
     # draws tiles
     for i in range(0, 4):
         for j in range(0, 4):
             if pos == (i, j):
+                print('Animation ' + str(timer) + '/10')
                 # animate new tiles
                 tileCord = (27 + (j * 115), 130 + (i * 115))
                 scale = timer * .1
@@ -213,17 +185,7 @@ def screenUpdate(board, pos, timer):
                 tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
                 screen.blit(tileText, tileTextRect)
 
-    # update the screen
     pygame.display.flip()
-
-
-def printBoard(board):
-    # prints board values to console
-    print('-' * 11)
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            print(board[i][j], end=', ')
-        print()
 
 
 def textRend(message, size, color):
@@ -232,145 +194,8 @@ def textRend(message, size, color):
     return textObj
 
 
-def combineTiles(board, xDirec, yDirec):
-    iterator = 0
-    start = 0
-    end = 0
-    vert = True
-
-    if not xDirec == 0:
-        vert = False
-
-    if xDirec > 0 or yDirec > 0:
-        start = 0
-        end = 4
-        iterator = 1
-    else:
-        start = 3
-        end = -1
-        iterator = -1
-
-    for i in range(start, end, iterator):
-        for j in range(start, end, iterator):
-            # distance searches for values on the board horizontally or vertically from the targeted square
-            for distance in range(1, 4):
-                if vert:
-                    if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
-                        break
-                    elif board[i + (iterator * distance)][j] == board[i][j]:
-                        board[i][j] *= 2
-                        board[i + (iterator * distance)][j] = 0
-                        break
-                    elif board[i + (iterator * distance)][j] != 0:
-                        break
-                else:
-                    if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
-                        break
-                    elif board[i][j + (iterator * distance)] == board[i][j]:
-                        board[i][j] *= 2
-                        board[i][j + (iterator * distance)] = 0
-                        break
-                    elif board[i][j + (iterator * distance)] != 0:
-                        break
-
-
-def move(board, direction):
-    boardCopy = copy.deepcopy(board)
-
-    xDirec = 0
-    yDirec = 0
-
-    start = 0
-    end = 0
-    iterator = 0
-
-    # determines which direction tiles should be moving and direction the loop should iterate
-    if direction == 'l':
-        xDirec = 1
-        iterator = 1
-    elif direction == 'r':
-        xDirec = -1
-        iterator = -1
-    elif direction == 'u':
-        yDirec = 1
-        iterator = 1
-    else:
-        yDirec = -1
-        iterator = -1
-
-    if iterator < 0:
-        start = 3
-        end = 0
-    else:
-        start = 0
-        end = 3
-
-    # combine tiles
-    combineTiles(board, xDirec, yDirec)
-    print('\nPRE COMPRESSION VV')
-    printBoard(board)
-
-    # compress tiles
-
-    # The problem with this compression code is simple, its ugly. time to try again
-    # The addition of cycles works but is extremely sloppy, im going to try to clean it up after debugging carefully
-    # I originally thought combination and compression would have to scan the array in opposite directions
-    # The commented code below works for opposite directions but the new code will work for the same direction (FIXED)
-
-    for cycles in range(3):
-        for i in range(start, end + xDirec, iterator):
-            for j in range(start, end + yDirec, iterator):
-                if board[i][j] == 0:
-                    board[i][j] = board[i + yDirec][j + xDirec]
-                    board[i + yDirec][j + xDirec] = 0
-
-    # this was a much harder fix than i anticipated, ill try again later
-
-    # for i in range(start, end + xDirec, iterator):
-    #     for j in range(start, end + yDirec, iterator):
-    #         if board[i][j] == 0:
-    #             for searchDist in range(start, end - (j - xDirec)):
-    #                 if board[i + (yDirec * searchDist)][j + (xDirec * searchDist)] != 0:
-    #                     board[i][j] = board[i + (yDirec * searchDist)][j + (xDirec * searchDist)]
-    #                     board[i + (yDirec * searchDist)][j + (xDirec * searchDist)] = 0
-    #                     break
-
-    print('\nPOST COMPRESSION VV')
-    printBoard(board)
-
-    newPos = (4, 4)
-    if boardCopy != board:
-        newPos = genTile(board)
-    return newPos
-
-
-def genTile(board):
-    newPos = (4, 4)
-    r = random.random()
-    if r > .9:
-        success = False
-        while not success:
-            i = random.randint(0, 3)
-            j = random.randint(0, 3)
-
-            if board[i][j] == 0:
-                board[i][j] = 4
-                success = True
-                newPos = (i, j)
-    else:
-        success = False
-        while not success:
-            i = random.randint(0, 3)
-            j = random.randint(0, 3)
-
-            if board[i][j] == 0:
-                board[i][j] = 2
-                success = True
-                newPos = (i, j)
-    return newPos
-
-
 def newGame():
+    global board
     board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     genTile(board)
     genTile(board)
@@ -379,18 +204,17 @@ def newGame():
     return board
 
 
-def startAgent():
-    if __name__ == '__main__':
-        parentPipe, childPipe = Pipe()
-        bot1 = Process(target=start(), args=(board, childPipe))
-        bot1.start()
-        print(parentPipe.recv())
-    return parentPipe, bot1
+# def startAgent():
+#     if __name__ == '__main__':
+#         parentPipe, childPipe = Pipe()
+#         bot1 = Process(target=start(), args=(board, childPipe))
+#         bot1.start()
+#         print(parentPipe.recv())
+#     return parentPipe, bot1
 
 
-b = readBoard()
+gameLoop()
 
-gameLoop(b)
-
+print('Closing Program...')
 pygame.quit()
 sys.exit()

@@ -1,26 +1,12 @@
-from multiprocessing import Pipe
-from Game2048 import move, printBoard, readBoard
+from Operations import *
 import copy
-
-# weights
-CORNER_BONUS = 100
-
-
-def start(board, pipe):
-    pipe.send('Starting Bot')
-    running = True
-
-    while running:
-        chosenMove = myAlgorthim(board)
-        pipe.send(chosenMove)
-        board = pipe.recv()
-    pipe.close()
 
 
 def myAlgorthim(board):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
 
+    print('Running Algorithm')
     moves = ['l', 'r', 'u', 'd']
     moveScoresDict = {}
 
@@ -28,18 +14,18 @@ def myAlgorthim(board):
 
     for m in moves:
         score = 0
-        move(tempBoard, direction=m)
+
+        score += comboCheck(tempBoard, m)
+
+        move(tempBoard, direction=m, newTile=False)
 
         # calculate score
         score += cornerCheck(tempBoard)
-        score += comboCheck(tempBoard)
-        move(board, direction=m)
-        score += comboCheck(tempBoard)
 
         moveScoresDict[m] = score
-        tempBoard = board
-        print('tempBoard reset Values VVV\n' + '-' * 10)
-        printBoard(tempBoard)
+        tempBoard = copy.deepcopy(board)
+        # print('Temp Board Values for move ' + str(m) + ':')
+        # printBoard(tempBoard)
 
     bestMove = 'l'
     for m in moves:
@@ -62,15 +48,63 @@ def cornerCheck(board):
 
     for corner in cornerCoord:
         if board[corner[0]][corner[1]] == largestTile:
-            return CORNER_BONUS
+            return largestTile
 
     return 0
 
 
-def comboCheck(board):
-    return 0
+def comboCheck(board, possibleMove):
 
+    score = 0
+    xDirec = 0
+    yDirec = 0
+    iterator = 0
+    start = 0
+    end = 0
+    vert = True
 
-def sendMove(m):
-    print('Best Move is: ' + m)
+    if possibleMove == 'l':
+        xDirec = -1
+        vert = False
+    elif possibleMove == 'r':
+        xDirec = 1
+        vert = False
+    elif possibleMove == 'u':
+        yDirec = -1
+    else:
+        yDirec = 1
 
+    if not xDirec == 0:
+        vert = False
+
+    if xDirec > 0 or yDirec > 0:
+        start = 0
+        end = 4
+        iterator = 1
+    else:
+        start = 3
+        end = -1
+        iterator = -1
+
+    for i in range(start, end, iterator):
+        for j in range(start, end, iterator):
+            # distance searches for values on the board horizontally or vertically from the targeted square
+            for distance in range(1, 4):
+                if vert:
+                    if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
+                        break
+                    elif board[i + (iterator * distance)][j] == board[i][j]:
+                        score += board[i][j]
+                        break
+                    elif board[i + (iterator * distance)][j] != 0:
+                        break
+                else:
+                    if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
+                        break
+                    elif board[i][j + (iterator * distance)] == board[i][j]:
+                        score += board[i][j]
+                        break
+                    elif board[i][j + (iterator * distance)] != 0:
+                        break
+
+    return score
