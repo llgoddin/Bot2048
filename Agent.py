@@ -2,7 +2,7 @@ from Operations import *
 import copy
 
 
-def myAlgorthim(board):
+def myAlgorithm(board):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
 

@@ -19,7 +19,7 @@ import pygame
 import math
 import time
 from Operations import *
-from Agent import myAlgorthim
+from Agent import myAlgorithm
 
 WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
@@ -87,7 +87,7 @@ def gameLoop():
                         newTilePos = move(board, 'r')
 
         if AgentActive and animTimer == 0:
-            newTilePos = move(board, myAlgorthim(board))
+            newTilePos = move(board, myAlgorithm(board))
 
         if newTilePos != (4, 4) and animTimer == 0:
             print('Animation Started')
