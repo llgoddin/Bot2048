@@ -53,10 +53,12 @@ pygame.display.flip()
 board = readBoard()
 AgentActive = False
 mouseDown = False
+recordingGame = True
+recordingPath = None
 
 
 def gameLoop():
-    global AgentActive
+    global AgentActive, recordingGame
 
     # used to control the main game loop
     running = True
@@ -66,10 +68,13 @@ def gameLoop():
     animTimer = 0
     fpsClock = pygame.time.Clock()
 
+    score = 0
+    totalMoves = 0
     newTilePos = (4, 4)
 
     screenUpdate(newTilePos, animTimer)
     while running:
+        moveTaken = None
 
         # handle keyboard events while no agent is active
         for event in pygame.event.get():
@@ -91,7 +96,8 @@ def gameLoop():
 
         # agent move
         if AgentActive and animTimer == 0:
-            newTilePos = move(board, myAlgorithm(board))
+            moveTaken = myAlgorithm(board)
+            newTilePos = move(board, moveTaken)
 
         # track and update animation
         if newTilePos != (4, 4) and animTimer == 0:
@@ -104,6 +110,12 @@ def gameLoop():
             animTimer = 0
             newTilePos = (4, 4)
 
+        score = calculateScore()
+
+        if recordingGame and moveTaken is not None:
+            recordMove(board, moveTaken, recordingPath)
+            totalMoves += 1
+
         checkClick()
 
         screenUpdate(newTilePos, animTimer)
@@ -112,6 +124,8 @@ def gameLoop():
 
         fpsClock.tick(FPS)
 
+    recordGameSummary(board, totalMoves, score, recordingPath)
+
     while waitingToReset:
 
         for event in pygame.event.get():
@@ -119,7 +133,14 @@ def gameLoop():
 
         screenUpdate((4, 4), 0)
 
-    writeBoard(board)
+
+def calculateScore():
+    s = 0
+    for i in range(4):
+        for j in range(4):
+            s += board[i][j]
+
+    return s
 
 
 def screenUpdate(pos, timer):
@@ -235,6 +256,9 @@ def gameNotEnded():
 
     return movesLeft > 0
 
+
+if recordingGame:
+    recordingPath = createSession()
 
 gameLoop()
 

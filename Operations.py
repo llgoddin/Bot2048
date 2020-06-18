@@ -4,6 +4,7 @@
 
 import copy
 import random
+import os
 
 
 def readBoard():
@@ -40,6 +41,88 @@ def writeBoard(board):
             boardFile.write('\n')
 
     boardFile.close()
+
+
+def findSessionNum():
+    # figure out number of sessions that have already been recorded
+    for (root, dirs, files) in os.walk('/Users/lucasgoddin/Documents/PycharmProjects/GameRecording', topdown=True):
+        nextSession = 0
+
+        for d in dirs:
+            try:
+                if int(d[-1]) > nextSession:
+                    nextSession = int(d[-1]) + 1
+
+            except ValueError as verr:
+                print('Directory ' + str(d) + ' does not end in a number!')
+
+        return nextSession
+
+
+def createSession():
+    sessionNum = findSessionNum()
+
+    path = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum)
+    os.mkdir(path)
+
+    moveLog = open(path + '/moveLog.txt', 'w+')
+    moveLog.write('START MOVE LOG\n')
+    moveLog.write('-' * 10)
+
+    stats = open(path + '/stats.txt', 'w+')
+    stats.write('STATS LOG\n')
+    stats.write('-' * 10)
+
+    gameSummaries = open(path + '/gameSummaries.txt', 'w+')
+    gameSummaries.write('STATS LOG\n')
+    gameSummaries.write('-' * 10)
+
+    return path
+
+
+def recordMove(board, m, path):
+    moveLog = open((str(path) + '/moveLog.txt'), 'a+')
+
+    moveLog.write('\n')
+    for i in range(4):
+        for j in range(4):
+            if j < 3:
+                moveLog.write(str(board[i][j]) + ', ')
+            else:
+                moveLog.write(str(board[i][j]))
+
+        moveLog.write('\n')
+
+    moveLog.write('TAKING MOVE: ' + str(m))
+    moveLog.write('-' * 10 + '\n')
+
+
+def recordGameSummary(endingBoard, moveNum, score, path):
+    gameSumFile = open((str(path) + '/gameSummaries.txt'), 'r')
+
+    lines = gameSumFile.readlines()
+
+    nextGameNum = 0
+    for l in lines:
+        try:
+            if int(l[5]) > nextGameNum:
+                nextGameNum = int(l[5]) + 1
+        except ValueError as verr:
+            print('Error Parsing Game Summary File')
+
+    gameSumFile.close()
+
+    maxTile = 0
+    for i in range(4):
+        for j in range(4):
+            if endingBoard[i][j] > maxTile:
+                maxTile = endingBoard[i][j]
+
+    gameSumFile = open((str(path) + '/gameSummaries.txt'), 'a+')
+
+    gameSumFile.write('Game ' + str(nextGameNum) + '- ' + str(maxTile) + ', ' + str(score) + ', ' + str(moveNum))
+
+    gameSumFile.close()
 
 
 def printBoard(board):

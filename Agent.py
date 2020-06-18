@@ -13,14 +13,22 @@ def myAlgorithm(board):
     tempBoard = copy.deepcopy(board)
 
     for m in moves:
+        # Used to help weight the ability to get the largest corner back into the corner
+        largestInCorner = False
         score = 0
 
         score += comboCheck(tempBoard, m)
 
+        if cornerCheck(board) > 0:
+            largestInCorner = True
+
         move(tempBoard, direction=m, newTile=False)
 
         # calculate score
-        score += cornerCheck(tempBoard)
+        if largestInCorner:
+            score += cornerCheck(tempBoard)
+        else:
+            score += 2 * cornerCheck(tempBoard)
 
         if tempBoard == board:
             score = -1
