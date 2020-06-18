@@ -51,14 +51,16 @@ screen.fill(LIGHT_GREY)
 pygame.display.flip()
 
 board = readBoard()
+AgentActive = False
+mouseDown = False
 
 
 def gameLoop():
+    global AgentActive
+
     # used to control the main game loop
     running = True
-    userPlaying = True
-    AgentActive = False
-    mouseDown = False
+    waitingToReset = True
 
     FPS = 30
     animTimer = 0
@@ -68,49 +70,33 @@ def gameLoop():
 
     screenUpdate(newTilePos, animTimer)
     while running:
-        # handle keyboard events
+
+        # handle keyboard events while no agent is active
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                userPlaying = False
+                running = False
             if event.type == pygame.KEYDOWN and newTilePos == (4, 4):
                 if event.key == pygame.K_UP:
-                    if userPlaying:
+                    if not AgentActive:
                         newTilePos = move(board, 'u')
                 if event.key == pygame.K_DOWN:
-                    if userPlaying:
+                    if not AgentActive:
                         newTilePos = move(board, 'd')
                 if event.key == pygame.K_LEFT:
-                    if userPlaying:
+                    if not AgentActive:
                         newTilePos = move(board, 'l')
                 if event.key == pygame.K_RIGHT:
-                    if userPlaying:
+                    if not AgentActive:
                         newTilePos = move(board, 'r')
 
+        # agent move
         if AgentActive and animTimer == 0:
             newTilePos = move(board, myAlgorithm(board))
 
+        # track and update animation
         if newTilePos != (4, 4) and animTimer == 0:
             print('Animation Started')
             animTimer = 1
-
-        # handle mouse events
-        click = pygame.mouse.get_pressed()
-
-        # testing click for 0's makes user let go in between button clicks
-        if click == (0, 0, 0):
-            mouseDown = False
-        elif click == (1, 0, 0) and not mouseDown:
-            mouseDown = True
-            mouse = pygame.mouse.get_pos()
-
-            # test click to see if it hit any buttons
-            if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
-                newGame()
-            elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
-                userPlaying = AgentActive
-                AgentActive = not AgentActive
-
-        screenUpdate(newTilePos, animTimer)
 
         if 0 < animTimer < 10:
             animTimer += math.floor((11 - animTimer) / 2)
@@ -118,11 +104,20 @@ def gameLoop():
             animTimer = 0
             newTilePos = (4, 4)
 
-        # writeBoard(board)
+        checkClick()
 
-        # board = readBoard()
-        # if userPlaying:
+        screenUpdate(newTilePos, animTimer)
+
+        running = gameNotEnded()
+
         fpsClock.tick(FPS)
+
+    while waitingToReset:
+
+        for event in pygame.event.get():
+            checkClick()
+
+        screenUpdate((4, 4), 0)
 
     writeBoard(board)
 
@@ -194,6 +189,28 @@ def textRend(message, size, color):
     return textObj
 
 
+def checkClick():
+    global AgentActive, mouseDown
+
+    # handle mouse events
+    click = pygame.mouse.get_pressed()
+
+    # testing click for 0's makes user let go in between button clicks
+    if click == (0, 0, 0):
+        mouseDown = False
+    elif click == (1, 0, 0) and not mouseDown:
+        mouseDown = True
+        mouse = pygame.mouse.get_pos()
+
+        # test click to see if it hit any buttons
+        if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
+            newGame()
+            AgentActive = False
+            gameLoop()
+        elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
+            AgentActive = not AgentActive
+
+
 def newGame():
     global board
     board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -204,17 +221,22 @@ def newGame():
     return board
 
 
-# def startAgent():
-#     if __name__ == '__main__':
-#         parentPipe, childPipe = Pipe()
-#         bot1 = Process(target=start(), args=(board, childPipe))
-#         bot1.start()
-#         print(parentPipe.recv())
-#     return parentPipe, bot1
+def gameNotEnded():
+    moves = ['l', 'r', 'u', 'd']
+    movesLeft = 4
+
+    for m in moves:
+        tempBoard = copy.deepcopy(board)
+
+        move(tempBoard, m, False)
+
+        if tempBoard == board:
+            movesLeft -= 1
+
+    return movesLeft > 0
 
 
 gameLoop()
 
-print('Closing Program...')
 pygame.quit()
 sys.exit()

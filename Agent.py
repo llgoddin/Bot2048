@@ -23,7 +23,7 @@ def myAlgorithm(board):
         score += cornerCheck(tempBoard)
 
         if tempBoard == board:
-            score = 0
+            score = -1
 
         moveScoresDict[m] = score
         tempBoard = copy.deepcopy(board)
