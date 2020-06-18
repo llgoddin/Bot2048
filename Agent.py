@@ -22,10 +22,11 @@ def myAlgorithm(board):
         # calculate score
         score += cornerCheck(tempBoard)
 
+        if tempBoard == board:
+            score = 0
+
         moveScoresDict[m] = score
         tempBoard = copy.deepcopy(board)
-        # print('Temp Board Values for move ' + str(m) + ':')
-        # printBoard(tempBoard)
 
     bestMove = 'l'
     for m in moves:
