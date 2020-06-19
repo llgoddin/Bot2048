@@ -100,26 +100,26 @@ def gameLoop():
         if AgentActive and animTimer == 0:
             moveTaken = myAlgorithm(board)
             newTilePos = move(board, moveTaken)
+            if recordingGame:
+                recordMove(board, moveTaken, gamesCompleted, recordingPath)
+                totalMoves += 1
 
-        # track and update animation
-        if newTilePos != (4, 4) and animTimer == 0:
-            animTimer = 1
+        if not recordingGame:
+            # track and update animation
+            if newTilePos != (4, 4) and animTimer == 0:
+                animTimer = 1
 
-        if 0 < animTimer < 10:
-            animTimer += math.floor((11 - animTimer) / 2)
-        elif animTimer >= 10:
-            animTimer = 0
-            newTilePos = (4, 4)
+            if 0 < animTimer < 10:
+                animTimer += math.floor((11 - animTimer) / 2)
+            elif animTimer >= 10:
+                animTimer = 0
+                newTilePos = (4, 4)
+
+            screenUpdate(newTilePos, animTimer)
 
         score = calculateScore()
 
-        if recordingGame and moveTaken is not None:
-            recordMove(board, moveTaken, gamesCompleted, recordingPath)
-            totalMoves += 1
-
         checkClick()
-
-        screenUpdate(newTilePos, animTimer)
 
         running = gameNotEnded()
 
@@ -128,6 +128,8 @@ def gameLoop():
     if recordingGame:
         recordGameSummary(board, totalMoves, score, recordingPath)
         gamesCompleted += 1
+
+        pygame.display.set_caption(str(gamesCompleted) + ' / ' + str(gamesInSession))
 
         if gamesCompleted < gamesInSession:
             createMoveLog(gamesCompleted, recordingPath)
@@ -139,6 +141,7 @@ def gameLoop():
             AgentActive = False
             gamesCompleted = 0
             compileStats(recordingPath)
+            pygame.display.set_caption('2048')
 
     while waitingToReset:
 
