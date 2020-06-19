@@ -217,7 +217,6 @@ def compileStats(path):
     statFile.write('\n128 Or Higher:            ' + str(percent128) + '\n')
 
 
-
 def printBoard(board):
     # prints board values to console
     print('-' * 11)

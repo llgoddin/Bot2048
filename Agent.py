@@ -18,16 +18,16 @@ def myAlgorithm(board):
 
         score += comboCheck(tempBoard, m)
 
-        if cornerCheck(board) > 0:
-            largestInCorner = True
-
         move(tempBoard, direction=m, newTile=False)
 
         # calculate score
-        if largestInCorner:
-            score += cornerCheck(tempBoard)
-        else:
-            score += 2 * cornerCheck(tempBoard)
+        tempScore = 0
+        for nextM in moves:
+            moveScore = comboCheck(tempBoard, nextM)
+            if moveScore > tempScore:
+                tempScore = comboCheck(tempBoard, nextM)
+
+        score += cornerCheck(tempBoard)
 
         if tempBoard == board:
             score = -1
@@ -102,7 +102,7 @@ def comboCheck(board, possibleMove):
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
                     elif board[i + (iterator * distance)][j] == board[i][j]:
-                        score += board[i][j]
+                        score += 4 * board[i][j]
                         break
                     elif board[i + (iterator * distance)][j] != 0:
                         break
@@ -110,7 +110,7 @@ def comboCheck(board, possibleMove):
                     if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
                         break
                     elif board[i][j + (iterator * distance)] == board[i][j]:
-                        score += board[i][j]
+                        score += 4 * board[i][j]
                         break
                     elif board[i][j + (iterator * distance)] != 0:
                         break

@@ -274,6 +274,11 @@ def gameNotEnded():
     return movesLeft > 0
 
 
+# tempBoard = board.copy()
+# print('Move Chosen: ' + myAlgorithm(tempBoard))
+# move(board, myAlgorithm(tempBoard), False)
+# print('Next Move = ' + myAlgorithm(tempBoard))
+
 if recordingGame:
     recordingPath = createSession()
 
