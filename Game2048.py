@@ -54,13 +54,15 @@ board = readBoard()
 AgentActive = False
 mouseDown = False
 recordingGame = True
-gamesInSession = 100
+gamesInSession = 2
 gamesCompleted = 0
 recordingPath = None
+startTime = 0
+endTime = 0
 
 
 def gameLoop():
-    global AgentActive, recordingGame, gamesInSession, gamesCompleted
+    global AgentActive, recordingGame, gamesInSession, gamesCompleted, endTime, startTime
 
     # used to control the main game loop
     running = True
@@ -101,6 +103,7 @@ def gameLoop():
             moveTaken = myAlgorithm(board)
             newTilePos = move(board, moveTaken)
             if recordingGame:
+                pygame.display.set_caption(str(gamesCompleted) + ' / ' + str(gamesInSession))
                 recordMove(board, moveTaken, gamesCompleted, recordingPath)
                 totalMoves += 1
 
@@ -115,6 +118,7 @@ def gameLoop():
                 animTimer = 0
                 newTilePos = (4, 4)
 
+        if not recordingGame or not AgentActive:
             screenUpdate(newTilePos, animTimer)
 
         score = calculateScore()
@@ -129,24 +133,31 @@ def gameLoop():
         recordGameSummary(board, totalMoves, score, recordingPath)
         gamesCompleted += 1
 
-        pygame.display.set_caption(str(gamesCompleted) + ' / ' + str(gamesInSession))
-
         if gamesCompleted < gamesInSession:
             createMoveLog(gamesCompleted, recordingPath)
             newGame()
             gameLoop()
 
         if gamesCompleted == gamesInSession:
+            # reset agent and game recording info
             recordingGame = False
             AgentActive = False
             gamesCompleted = 0
-            compileStats(recordingPath)
+
+            # gather time information and compile stats
+            endTime = time.time()
+            t = computeTotalTime(startTime, endTime)
+            compileStats(t, recordingPath)
+
+            # reset the display caption
             pygame.display.set_caption('2048')
 
     while waitingToReset:
 
         for event in pygame.event.get():
             checkClick()
+            if event.type == pygame.QUIT:
+                waitingToReset = False
 
         screenUpdate((4, 4), 0)
 
@@ -281,6 +292,7 @@ def gameNotEnded():
 
 if recordingGame:
     recordingPath = createSession()
+    startTime = time.time()
 
 gameLoop()
 

@@ -135,7 +135,7 @@ def recordGameSummary(endingBoard, moveNum, score, path):
     gameSumFile.close()
 
 
-def compileStats(path):
+def compileStats(timer, path):
     sessionNum = findSessionNum() - 1
     gameSummaries = open((path + '/gameSummaries.txt'), 'r')
 
@@ -169,11 +169,6 @@ def compileStats(path):
         for s in stats:
             s = s.strip()
 
-        print(statString[0])
-        print('Max Tile: ' + stats[0])
-        print('Score: ' + stats[1])
-        print('Moves: ' + stats[2])
-
         totalMaxTile += int(stats[0])
         totalScore += int(stats[1])
         totalMoveNumber += int(stats[2])
@@ -204,7 +199,9 @@ def compileStats(path):
     averageScore = totalScore/numOfGames
     averageMaxTile = totalMaxTile/numOfGames
     averageMoves = totalMoveNumber/numOfGames
+    avgTime = computeAverageTime(numOfGames, timer)
 
+    statFile.write('\nGames in Session:         ' + str(numOfGames) + '\n')
     statFile.write('\nMax Tile:                 ' + str(maxTile))
     statFile.write('\nAverage Score:            ' + str(averageScore))
     statFile.write('\nAverage Max Tile:         ' + str(averageMaxTile))
@@ -215,6 +212,30 @@ def compileStats(path):
     statFile.write('\n512 Or Higher:            ' + str(percent512))
     statFile.write('\n256 Or Higher:            ' + str(percent256))
     statFile.write('\n128 Or Higher:            ' + str(percent128) + '\n')
+    statFile.write('\nAverage Game Time:        ' + str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's')
+    statFile.write('\nTotal Session Time:       ' + str(timer[0]) + 'h ' + str(timer[1]) + 'm ' + str(timer[2]) + 's' + '\n')
+
+    print('Session Complete!')
+    print('Find stats in dir ' + str(path))
+
+
+def computeTotalTime(start, end):
+    sec = round(end - start)
+    (mins, sec) = divmod(sec, 60)
+    (hour, mins) = divmod(mins, 60)
+    return hour, mins, sec
+
+
+def computeAverageTime(games, totalTime):
+    hoursInSeconds = totalTime[0] * 60 * 60
+    minsInSeconds = totalTime[1] * 60
+
+    seconds = totalTime[2] + hoursInSeconds + minsInSeconds
+    seconds = seconds / games
+
+    t = computeTotalTime(0, seconds)
+
+    return t
 
 
 def printBoard(board):
