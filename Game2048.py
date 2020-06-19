@@ -54,17 +54,19 @@ board = readBoard()
 AgentActive = False
 mouseDown = False
 recordingGame = True
+gamesInSession = 100
+gamesCompleted = 0
 recordingPath = None
 
 
 def gameLoop():
-    global AgentActive, recordingGame
+    global AgentActive, recordingGame, gamesInSession, gamesCompleted
 
     # used to control the main game loop
     running = True
     waitingToReset = True
 
-    FPS = 30
+    FPS = 60
     animTimer = 0
     fpsClock = pygame.time.Clock()
 
@@ -101,7 +103,6 @@ def gameLoop():
 
         # track and update animation
         if newTilePos != (4, 4) and animTimer == 0:
-            print('Animation Started')
             animTimer = 1
 
         if 0 < animTimer < 10:
@@ -113,7 +114,7 @@ def gameLoop():
         score = calculateScore()
 
         if recordingGame and moveTaken is not None:
-            recordMove(board, moveTaken, recordingPath)
+            recordMove(board, moveTaken, gamesCompleted, recordingPath)
             totalMoves += 1
 
         checkClick()
@@ -124,7 +125,20 @@ def gameLoop():
 
         fpsClock.tick(FPS)
 
-    recordGameSummary(board, totalMoves, score, recordingPath)
+    if recordingGame:
+        recordGameSummary(board, totalMoves, score, recordingPath)
+        gamesCompleted += 1
+
+        if gamesCompleted < gamesInSession:
+            createMoveLog(gamesCompleted, recordingPath)
+            newGame()
+            gameLoop()
+
+        if gamesCompleted == gamesInSession:
+            recordingGame = False
+            AgentActive = False
+            gamesCompleted = 0
+            compileStats(recordingPath)
 
     while waitingToReset:
 
@@ -179,7 +193,6 @@ def screenUpdate(pos, timer):
     for i in range(0, 4):
         for j in range(0, 4):
             if pos == (i, j):
-                print('Animation ' + str(timer) + '/10')
                 # animate new tiles
                 tileCord = (27 + (j * 115), 130 + (i * 115))
                 scale = timer * .1
@@ -226,7 +239,8 @@ def checkClick():
         # test click to see if it hit any buttons
         if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
             newGame()
-            AgentActive = False
+            if not recordingGame:
+                AgentActive = False
             gameLoop()
         elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
             AgentActive = not AgentActive

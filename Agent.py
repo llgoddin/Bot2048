@@ -6,7 +6,6 @@ def myAlgorithm(board):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
 
-    print('Running Algorithm')
     moves = ['l', 'r', 'u', 'd']
     moveScoresDict = {}
 

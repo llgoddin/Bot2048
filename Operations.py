@@ -50,7 +50,7 @@ def findSessionNum():
 
         for d in dirs:
             try:
-                if int(d[-1]) > nextSession:
+                if int(d[-1]) >= nextSession:
                     nextSession = int(d[-1]) + 1
 
             except ValueError as verr:
@@ -59,29 +59,38 @@ def findSessionNum():
         return nextSession
 
 
+def createMoveLog(num, path):
+    moveLog = open(path + '/MoveLogs/moveLogGame' + str(num) + '.txt', 'w+')
+    moveLog.write('START MOVE LOG\n')
+    moveLog.write('-' * 10 + '\n')
+    moveLog.close()
+
+
 def createSession():
     sessionNum = findSessionNum()
 
     path = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum)
     os.mkdir(path)
+    os.mkdir((path + str('/MoveLogs')))
 
-    moveLog = open(path + '/moveLog.txt', 'w+')
-    moveLog.write('START MOVE LOG\n')
-    moveLog.write('-' * 10)
+    createMoveLog(0, path)
 
-    stats = open(path + '/stats.txt', 'w+')
-    stats.write('STATS LOG\n')
-    stats.write('-' * 10)
+    stats = open(path + '/sessionStats.txt', 'w+')
+    stats.write('STATS\n')
+    stats.write('-' * 10 + '\n')
+    stats.close()
 
     gameSummaries = open(path + '/gameSummaries.txt', 'w+')
-    gameSummaries.write('STATS LOG\n')
-    gameSummaries.write('-' * 10)
+    gameSummaries.write('GAME SUMMARIES\n')
+    gameSummaries.write('Game #- Max Tile, Score, Number Of Moves\n')
+    gameSummaries.write('-' * 10 + '\n')
+    gameSummaries.close()
 
     return path
 
 
-def recordMove(board, m, path):
-    moveLog = open((str(path) + '/moveLog.txt'), 'a+')
+def recordMove(board, m, gameNumber, path):
+    moveLog = open((str(path) + '/MoveLogs/moveLogGame' + str(gameNumber) + '.txt'), 'a+')
 
     moveLog.write('\n')
     for i in range(4):
@@ -93,7 +102,7 @@ def recordMove(board, m, path):
 
         moveLog.write('\n')
 
-    moveLog.write('TAKING MOVE: ' + str(m))
+    moveLog.write('LAST MOVE: ' + str(m) + '\n')
     moveLog.write('-' * 10 + '\n')
 
 
@@ -103,12 +112,13 @@ def recordGameSummary(endingBoard, moveNum, score, path):
     lines = gameSumFile.readlines()
 
     nextGameNum = 0
-    for l in lines:
+    for l in lines[3:]:
         try:
-            if int(l[5]) > nextGameNum:
+            if int(l[5]) >= nextGameNum:
                 nextGameNum = int(l[5]) + 1
         except ValueError as verr:
             print('Error Parsing Game Summary File')
+            print(verr)
 
     gameSumFile.close()
 
@@ -120,9 +130,92 @@ def recordGameSummary(endingBoard, moveNum, score, path):
 
     gameSumFile = open((str(path) + '/gameSummaries.txt'), 'a+')
 
-    gameSumFile.write('Game ' + str(nextGameNum) + '- ' + str(maxTile) + ', ' + str(score) + ', ' + str(moveNum))
+    gameSumFile.write('Game ' + str(nextGameNum) + '- ' + str(maxTile) + ', ' + str(score) + ', ' + str(moveNum) + '\n')
 
     gameSumFile.close()
+
+
+def compileStats(path):
+    sessionNum = findSessionNum() - 1
+    gameSummaries = open((path + '/gameSummaries.txt'), 'r')
+
+    lines = gameSummaries.readlines()
+
+    gameSummaries.close()
+
+    statFile = open(path + '/sessionStats.txt', 'a+')
+
+    maxTile = 0
+
+    totalMaxTile = 0
+    totalScore = 0
+    totalMoveNumber = 0
+
+    num4096 = 0
+    num2048 = 0
+    num1024 = 0
+    num512 = 0
+    num256 = 0
+    num128 = 0
+
+    numOfGames = len(lines) - 3
+
+    print('Number Of Games: ' + str(numOfGames))
+
+    for l in lines[3:]:
+        statString = (l.split('-')[1])
+        stats = statString.split(', ')
+
+        for s in stats:
+            s = s.strip()
+
+        print(statString[0])
+        print('Max Tile: ' + stats[0])
+        print('Score: ' + stats[1])
+        print('Moves: ' + stats[2])
+
+        totalMaxTile += int(stats[0])
+        totalScore += int(stats[1])
+        totalMoveNumber += int(stats[2])
+
+        if int(stats[0]) >= maxTile:
+            maxTile = int(stats[0])
+
+        if int(stats[0]) >= 128:
+            num128 += 1
+        if int(stats[0]) >= 256:
+            num256 += 1
+        if int(stats[0]) >= 512:
+            num512 += 1
+        if int(stats[0]) >= 1024:
+            num1024 += 1
+        if int(stats[0]) >= 2048:
+            num2048 += 1
+        if int(stats[0]) >= 4096:
+            num4096 += 1
+
+    percent128 = num128/numOfGames
+    percent256 = num256/numOfGames
+    percent512 = num512/numOfGames
+    percent1024 = num1024/numOfGames
+    percent2048 = num2048/numOfGames
+    percent4096 = num4096/numOfGames
+
+    averageScore = totalScore/numOfGames
+    averageMaxTile = totalMaxTile/numOfGames
+    averageMoves = totalMoveNumber/numOfGames
+
+    statFile.write('\nMax Tile:                 ' + str(maxTile))
+    statFile.write('\nAverage Score:            ' + str(averageScore))
+    statFile.write('\nAverage Max Tile:         ' + str(averageMaxTile))
+    statFile.write('\nAverage Number of Moves:  ' + str(averageMoves))
+    statFile.write('\n\n4096 Or Higher:           ' + str(percent4096))
+    statFile.write('\n2048 Or Higher:           ' + str(percent2048))
+    statFile.write('\n1024 Or Higher:           ' + str(percent1024))
+    statFile.write('\n512 Or Higher:            ' + str(percent512))
+    statFile.write('\n256 Or Higher:            ' + str(percent256))
+    statFile.write('\n128 Or Higher:            ' + str(percent128) + '\n')
+
 
 
 def printBoard(board):
