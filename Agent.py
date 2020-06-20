@@ -3,38 +3,39 @@ import copy
 from Operations import *
 
 
-def myAlgorithm(board):
+def myAlgorithm(game):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
 
     moves = ['l', 'r', 'u', 'd']
     moveScoresDict = {}
 
-    tempBoard = copy.deepcopy(board)
+    tempGame = copy.deepcopy(game)
 
     for m in moves:
         # Used to help weight the ability to get the largest corner back into the corner
         largestInCorner = False
         score = 0
+        tempGame['move'] = m
 
-        score += comboCheck(tempBoard, m)
+        score += comboCheck(tempGame)
 
-        move(tempBoard, direction=m, newTile=False)
+        move(tempGame, newTile=False)
 
         # calculate score
         tempScore = 0
         for nextM in moves:
-            moveScore = comboCheck(tempBoard, nextM)
+            moveScore = comboCheck(tempGame)
             if moveScore > tempScore:
-                tempScore = comboCheck(tempBoard, nextM)
+                tempScore = comboCheck(tempGame)
 
-        score += cornerCheck(tempBoard)
+        score += cornerCheck(tempGame['board'])
 
-        if tempBoard == board:
+        if tempGame['board'] == game['board']:
             score = -1
 
         moveScoresDict[m] = score
-        tempBoard = copy.deepcopy(board)
+        tempGame = copy.deepcopy(game)
 
     bestMove = 'l'
     for m in moves:
@@ -62,7 +63,7 @@ def cornerCheck(board):
     return 0
 
 
-def comboCheck(board, possibleMove):
+def comboCheck(game):
     score = 0
     xDirec = 0
     yDirec = 0
@@ -71,13 +72,13 @@ def comboCheck(board, possibleMove):
     end = 0
     vert = True
 
-    if possibleMove == 'l':
+    if game['move'] == 'l':
         xDirec = -1
         vert = False
-    elif possibleMove == 'r':
+    elif game['move'] == 'r':
         xDirec = 1
         vert = False
-    elif possibleMove == 'u':
+    elif game['move'] == 'u':
         yDirec = -1
     else:
         yDirec = 1
@@ -101,18 +102,18 @@ def comboCheck(board, possibleMove):
                 if vert:
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
-                    elif board[i + (iterator * distance)][j] == board[i][j]:
-                        score += 4 * board[i][j]
+                    elif game['board'][i + (iterator * distance)][j] == game['board'][i][j]:
+                        score += 4 * game['board'][i][j]
                         break
-                    elif board[i + (iterator * distance)][j] != 0:
+                    elif game['board'][i + (iterator * distance)][j] != 0:
                         break
                 else:
                     if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
                         break
-                    elif board[i][j + (iterator * distance)] == board[i][j]:
-                        score += 4 * board[i][j]
+                    elif game['board'][i][j + (iterator * distance)] == game['board'][i][j]:
+                        score += 4 * game['board'][i][j]
                         break
-                    elif board[i][j + (iterator * distance)] != 0:
+                    elif game['board'][i][j + (iterator * distance)] != 0:
                         break
 
     return score

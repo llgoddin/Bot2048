@@ -95,25 +95,25 @@ def createSession():
     return path
 
 
-def recordMove(board, m, gameNumber, path):
+def recordMove(game, session):
     # TODO
     # work on making this more intuitive and add game over line
     # add initial boar write
 
-    moveLog = open((str(path) + '/MoveLogs/moveLogGame' + str(gameNumber) + '.txt'), 'a+')
+    moveLog = open((str(session['path']) + '/MoveLogs/moveLogGame' + str(session['gamesCompleted']) + '.txt'), 'a+')
+
+    moveLog.write('MOVE: ' + str(game['move']) + '\n')
+    moveLog.write('-' * 10 + '\n')
 
     moveLog.write('\n')
     for i in range(4):
         for j in range(4):
             if j < 3:
-                moveLog.write(str(board[i][j]) + ', ')
+                moveLog.write(str(game['board'][i][j]) + ', ')
             else:
-                moveLog.write(str(board[i][j]))
+                moveLog.write(str(game['board'][i][j]))
 
         moveLog.write('\n')
-
-    moveLog.write('LAST MOVE: ' + str(m) + '\n')
-    moveLog.write('-' * 10 + '\n')
 
     moveLog.close()
 
@@ -329,7 +329,10 @@ def genTile(game):
     game['newTile'] = newPos
 
 
-def move(game, direction, newTile=True):
+def move(game, newTile=True):
+    if game['move'] is None:
+        return 0
+
     boardCopy = copy.deepcopy(game['board'])
 
     xDirec = 0
@@ -340,13 +343,13 @@ def move(game, direction, newTile=True):
     iterator = 0
 
     # determines which direction tiles should be moving and direction the loop should iterate
-    if direction == 'l':
+    if game['move'] == 'l':
         xDirec = 1
         iterator = 1
-    elif direction == 'r':
+    elif game['move'] == 'r':
         xDirec = -1
         iterator = -1
-    elif direction == 'u':
+    elif game['move'] == 'u':
         yDirec = 1
         iterator = 1
     else:
@@ -391,3 +394,4 @@ def move(game, direction, newTile=True):
     newPos = (4, 4)
     if boardCopy != game['board'] and newTile:
         genTile(game)
+        game['totalMoves'] += 1
