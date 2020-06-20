@@ -45,6 +45,26 @@ colorDict = {
     0: GREY
 }
 
+session = {
+    'recording': False,
+    'path': None,
+    'totalGames': 1,
+    'gamesCompleted': 0,
+    'currentGame': None,
+    'startTime': None,
+    'endTime': None
+}
+
+game = {
+    'board': None,
+    'newTile': (4, 4),
+    'animationTimer': 0,
+    'score': 0,
+    'totalMoves': 0,
+    'lost': False,
+
+}
+
 # creates a window and sets size and title
 pygame.init()
 pygame.display.set_caption('2048')
@@ -52,37 +72,25 @@ screen = pygame.display.set_mode((500, 600))
 screen.fill(LIGHT_GREY)
 pygame.display.flip()
 
-board = readBoard()
+game['board'] = readBoard()
 AgentActive = False
 mouseDown = False
 
 # TODO
 # create session and game data structures
 
-recordingGame = True
-gamesInSession = 100
-gamesCompleted = 0
-recordingPath = None
-startTime = 0
-endTime = 0
-
 
 def gameLoop():
-    global AgentActive, recordingGame, gamesInSession, gamesCompleted, endTime, startTime
+    global AgentActive
 
     # used to control the main game loop
     running = True
     waitingToReset = True
 
     FPS = 60
-    animTimer = 0
     fpsClock = pygame.time.Clock()
 
-    score = 0
-    totalMoves = 0
-    newTilePos = (4, 4)
-
-    screenUpdate(newTilePos, animTimer)
+    screenUpdate(game['newTile'], game['animationTimer'])
     while running:
         moveTaken = None
 
@@ -90,44 +98,44 @@ def gameLoop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN and newTilePos == (4, 4):
+            if event.type == pygame.KEYDOWN and game['newTile'] == (4, 4):
                 if event.key == pygame.K_UP:
                     if not AgentActive:
-                        newTilePos = move(board, 'u')
+                        game['newTile'] = move(game, 'u')
                 if event.key == pygame.K_DOWN:
                     if not AgentActive:
-                        newTilePos = move(board, 'd')
+                        game['newTile'] = move(game, 'd')
                 if event.key == pygame.K_LEFT:
                     if not AgentActive:
-                        newTilePos = move(board, 'l')
+                        game['newTile'] = move(game, 'l')
                 if event.key == pygame.K_RIGHT:
                     if not AgentActive:
-                        newTilePos = move(board, 'r')
+                        game['newTile'] = move(game, 'r')
 
         # agent move
-        if AgentActive and animTimer == 0:
-            moveTaken = myAlgorithm(board)
-            newTilePos = move(board, moveTaken)
-            if recordingGame:
-                pygame.display.set_caption(str(gamesCompleted) + ' / ' + str(gamesInSession))
-                recordMove(board, moveTaken, gamesCompleted, recordingPath)
-                totalMoves += 1
+        if AgentActive and game['animationTimer'] == 0:
+            moveTaken = myAlgorithm(game['board'])
+            game['newTile'] = move(game, moveTaken)
+            if session['recording']:
+                pygame.display.set_caption(str(session['gamesCompleted']) + ' / ' + str(session['totalGames']))
+                recordMove(game['board'], moveTaken, session['gamesCompleted'], session['path'])
+                game['totalMoves'] += 1
 
-        if not recordingGame:
+        if not session['recording']:
             # track and update animation
-            if newTilePos != (4, 4) and animTimer == 0:
-                animTimer = 1
+            if game['newTile'] != (4, 4) and game['animationTimer'] == 0:
+                game['animationTimer'] = 1
 
-            if 0 < animTimer < 10:
-                animTimer += math.floor((11 - animTimer) / 2)
-            elif animTimer >= 10:
-                animTimer = 0
-                newTilePos = (4, 4)
+            if 0 < game['animationTimer'] < 10:
+                game['animationTimer'] += math.floor((11 - game['animationTimer']) / 2)
+            elif game['animationTimer'] >= 10:
+                game['animationTimer'] = 0
+                game['newTile'] = (4, 4)
 
-        if not recordingGame or not AgentActive:
-            screenUpdate(newTilePos, animTimer)
+        if not session['recording'] or not AgentActive:
+            screenUpdate(game['newTile'], game['animationTimer'])
 
-        score = calculateScore()
+        game['score'] = calculateScore()
 
         checkClick()
 
@@ -135,25 +143,25 @@ def gameLoop():
 
         fpsClock.tick(FPS)
 
-    if recordingGame:
-        recordGameSummary(board, totalMoves, score, recordingPath)
-        gamesCompleted += 1
+    if session['recording']:
+        recordGameSummary(game['board'], game['totalMoves'], game['score'], session['path'])
+        session['gamesCompleted'] += 1
 
-        if gamesCompleted < gamesInSession:
-            createMoveLog(gamesCompleted, recordingPath)
+        if session['gamesCompleted'] < session['totalGames']:
+            createMoveLog(session['gamesCompleted'], session['path'])
             newGame()
             gameLoop()
 
-        if gamesCompleted == gamesInSession:
+        if session['gamesCompleted'] == session['totalGames']:
             # reset agent and game recording info
-            recordingGame = False
+            session['recording'] = False
             AgentActive = False
-            gamesCompleted = 0
+            session['gamesCompleted'] = 0
 
             # gather time information and compile stats
-            endTime = time.time()
-            t = computeTotalTime(startTime, endTime)
-            compileStats(t, recordingPath)
+            session['endTime'] = time.time()
+            t = computeTotalTime(session['startTime'], session['endTime'])
+            compileStats(t, session['path'])
 
             # reset the display caption
             pygame.display.set_caption('2048')
@@ -172,7 +180,7 @@ def calculateScore():
     s = 0
     for i in range(4):
         for j in range(4):
-            s += board[i][j]
+            s += game['board'][i][j]
 
     return s
 
@@ -223,13 +231,13 @@ def screenUpdate(pos, timer):
                 y = tileCord[1] + (100 - sideLen) / 2
 
                 pygame.draw.rect(screen, colorDict[0], [tileCord[0], tileCord[1], 100, 100])
-                pygame.draw.rect(screen, colorDict[board[i][j]], [x, y, sideLen, sideLen])
+                pygame.draw.rect(screen, colorDict[game['board'][i][j]], [x, y, sideLen, sideLen])
             else:
                 # draw old tiles
-                pygame.draw.rect(screen, colorDict[board[i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
+                pygame.draw.rect(screen, colorDict[game['board'][i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
 
                 # create tile text
-                tileText = textRend("" if board[i][j] == 0 else str(board[i][j]), 40, BLACK)
+                tileText = textRend("" if game['board'][i][j] == 0 else str(game['board'][i][j]), 40, BLACK)
                 tileTextRect = tileText.get_rect()
                 tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
                 screen.blit(tileText, tileTextRect)
@@ -258,23 +266,21 @@ def checkClick():
 
         # test click to see if it hit any buttons
         if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
-            if not recordingGame:
+            if not session['recording']:
                 AgentActive = False
                 newGame()
                 gameLoop()
         elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
-            if not recordingGame:
+            if not session['recording']:
                 AgentActive = not AgentActive
 
 
 def newGame():
-    global board
-    board = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    genTile(board)
-    genTile(board)
+    game['board'] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    genTile(game['board'])
+    genTile(game['board'])
 
-    writeBoard(board)
-    return board
+    writeBoard(game['board'])
 
 
 def gameNotEnded():
@@ -282,11 +288,11 @@ def gameNotEnded():
     movesLeft = 4
 
     for m in moves:
-        tempBoard = copy.deepcopy(board)
+        tempGame = copy.deepcopy(game)
 
-        move(tempBoard, m, False)
+        move(tempGame, m, False)
 
-        if tempBoard == board:
+        if tempGame['board'] == game['board']:
             movesLeft -= 1
 
     return movesLeft > 0
@@ -297,9 +303,9 @@ def gameNotEnded():
 # move(board, myAlgorithm(tempBoard), False)
 # print('Next Move = ' + myAlgorithm(tempBoard))
 
-if recordingGame:
-    recordingPath = createSession()
-    startTime = time.time()
+if session['recording']:
+    session['path'] = createSession()
+    session['startTime'] = time.time()
 
 gameLoop()
 

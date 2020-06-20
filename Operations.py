@@ -303,7 +303,7 @@ def combineTiles(board, xDirec, yDirec):
                         break
 
 
-def genTile(board):
+def genTile(game):
     newPos = (4, 4)
     r = random.random()
     if r > .9:
@@ -312,8 +312,8 @@ def genTile(board):
             i = random.randint(0, 3)
             j = random.randint(0, 3)
 
-            if board[i][j] == 0:
-                board[i][j] = 4
+            if game['board'][i][j] == 0:
+                game['board'][i][j] = 4
                 success = True
                 newPos = (i, j)
     else:
@@ -322,15 +322,15 @@ def genTile(board):
             i = random.randint(0, 3)
             j = random.randint(0, 3)
 
-            if board[i][j] == 0:
-                board[i][j] = 2
+            if game['board'][i][j] == 0:
+                game['board'][i][j] = 2
                 success = True
                 newPos = (i, j)
-    return newPos
+    game['newTile'] = newPos
 
 
-def move(board, direction, newTile=True):
-    boardCopy = copy.deepcopy(board)
+def move(game, direction, newTile=True):
+    boardCopy = copy.deepcopy(game['board'])
 
     xDirec = 0
     yDirec = 0
@@ -361,7 +361,7 @@ def move(board, direction, newTile=True):
         end = 3
 
     # combine tiles
-    combineTiles(board, xDirec, yDirec)
+    combineTiles(game['board'], xDirec, yDirec)
 
     # compress tiles
 
@@ -373,9 +373,9 @@ def move(board, direction, newTile=True):
     for cycles in range(3):
         for i in range(start, end + xDirec, iterator):
             for j in range(start, end + yDirec, iterator):
-                if board[i][j] == 0:
-                    board[i][j] = board[i + yDirec][j + xDirec]
-                    board[i + yDirec][j + xDirec] = 0
+                if game['board'][i][j] == 0:
+                    game['board'][i][j] = game['board'][i + yDirec][j + xDirec]
+                    game['board'][i + yDirec][j + xDirec] = 0
 
     # this was a much harder fix than i anticipated, ill try again later
 
@@ -389,6 +389,5 @@ def move(board, direction, newTile=True):
     #                     break
 
     newPos = (4, 4)
-    if boardCopy != board and newTile:
-        newPos = genTile(board)
-    return newPos
+    if boardCopy != game['board'] and newTile:
+        genTile(game)
