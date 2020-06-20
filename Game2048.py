@@ -14,12 +14,14 @@
 # 16,16,16,8
 
 
-import sys
-import pygame
 import math
+import sys
 import time
-from Operations import *
+
+import pygame
+
 from Agent import myAlgorithm
+from Operations import *
 
 WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
@@ -53,8 +55,12 @@ pygame.display.flip()
 board = readBoard()
 AgentActive = False
 mouseDown = False
+
+# TODO
+# create session and game data structures
+
 recordingGame = True
-gamesInSession = 2
+gamesInSession = 100
 gamesCompleted = 0
 recordingPath = None
 startTime = 0
@@ -252,12 +258,13 @@ def checkClick():
 
         # test click to see if it hit any buttons
         if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
-            newGame()
             if not recordingGame:
                 AgentActive = False
-            gameLoop()
+                newGame()
+                gameLoop()
         elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
-            AgentActive = not AgentActive
+            if not recordingGame:
+                AgentActive = not AgentActive
 
 
 def newGame():

@@ -3,8 +3,8 @@
 # Operations used by 2048 game and agents
 
 import copy
-import random
 import os
+import random
 
 
 def readBoard():
@@ -44,6 +44,12 @@ def writeBoard(board):
 
 
 def findSessionNum():
+    # TODO
+    # make this usable for move logs
+
+    # TODO
+    # BUG: sessions will stop working when number reaches double digits
+
     # figure out number of sessions that have already been recorded
     for (root, dirs, files) in os.walk('/Users/lucasgoddin/Documents/PycharmProjects/GameRecording', topdown=True):
         nextSession = 0
@@ -90,6 +96,10 @@ def createSession():
 
 
 def recordMove(board, m, gameNumber, path):
+    # TODO
+    # work on making this more intuitive and add game over line
+    # add initial boar write
+
     moveLog = open((str(path) + '/MoveLogs/moveLogGame' + str(gameNumber) + '.txt'), 'a+')
 
     moveLog.write('\n')
@@ -104,6 +114,8 @@ def recordMove(board, m, gameNumber, path):
 
     moveLog.write('LAST MOVE: ' + str(m) + '\n')
     moveLog.write('-' * 10 + '\n')
+
+    moveLog.close()
 
 
 def recordGameSummary(endingBoard, moveNum, score, path):
@@ -189,16 +201,16 @@ def compileStats(timer, path):
         if int(stats[0]) >= 4096:
             num4096 += 1
 
-    percent128 = num128/numOfGames
-    percent256 = num256/numOfGames
-    percent512 = num512/numOfGames
-    percent1024 = num1024/numOfGames
-    percent2048 = num2048/numOfGames
-    percent4096 = num4096/numOfGames
+    percent128 = num128 / numOfGames
+    percent256 = num256 / numOfGames
+    percent512 = num512 / numOfGames
+    percent1024 = num1024 / numOfGames
+    percent2048 = num2048 / numOfGames
+    percent4096 = num4096 / numOfGames
 
-    averageScore = totalScore/numOfGames
-    averageMaxTile = totalMaxTile/numOfGames
-    averageMoves = totalMoveNumber/numOfGames
+    averageScore = totalScore / numOfGames
+    averageMaxTile = totalMaxTile / numOfGames
+    averageMoves = totalMoveNumber / numOfGames
     avgTime = computeAverageTime(numOfGames, timer)
 
     statFile.write('\nGames in Session:         ' + str(numOfGames) + '\n')
@@ -212,8 +224,10 @@ def compileStats(timer, path):
     statFile.write('\n512 Or Higher:            ' + str(percent512))
     statFile.write('\n256 Or Higher:            ' + str(percent256))
     statFile.write('\n128 Or Higher:            ' + str(percent128) + '\n')
-    statFile.write('\nAverage Game Time:        ' + str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's')
-    statFile.write('\nTotal Session Time:       ' + str(timer[0]) + 'h ' + str(timer[1]) + 'm ' + str(timer[2]) + 's' + '\n')
+    statFile.write(
+        '\nAverage Game Time:        ' + str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's')
+    statFile.write(
+        '\nTotal Session Time:       ' + str(timer[0]) + 'h ' + str(timer[1]) + 'm ' + str(timer[2]) + 's' + '\n')
 
     print('Session Complete!')
     print('Find stats in dir ' + str(path))

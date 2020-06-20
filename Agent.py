@@ -1,5 +1,6 @@
-from Operations import *
 import copy
+
+from Operations import *
 
 
 def myAlgorithm(board):
@@ -62,7 +63,6 @@ def cornerCheck(board):
 
 
 def comboCheck(board, possibleMove):
-
     score = 0
     xDirec = 0
     yDirec = 0
