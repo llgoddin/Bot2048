@@ -5,6 +5,7 @@
 import copy
 import os
 import random
+import time
 
 
 def readBoard():
@@ -72,33 +73,57 @@ def createMoveLog(num, path):
     moveLog.close()
 
 
-def createSession():
-    sessionNum = findSessionNum()
+def createSession(recording=True, totalGames=10):
+    session = {
+        'recording': recording,
+        'path': None,
+        'totalGames': totalGames,
+        'gamesCompleted': 0,
+        'currentGame': None,
+        'startTime': None,
+        'endTime': None
+    }
 
-    path = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum)
-    os.mkdir(path)
-    os.mkdir((path + str('/MoveLogs')))
+    if session['recording']:
+        sessionNum = findSessionNum()
+        session['path'] = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum)
+        os.mkdir(session['path'])
+        os.mkdir((session['path'] + str('/MoveLogs')))
 
-    createMoveLog(0, path)
+        createMoveLog(0, session['path'])
 
-    stats = open(path + '/sessionStats.txt', 'w+')
-    stats.write('STATS\n')
-    stats.write('-' * 10 + '\n')
-    stats.close()
+        stats = open(session['path'] + '/sessionStats.txt', 'w+')
+        stats.write('STATS\n')
+        stats.write('-' * 10 + '\n')
+        stats.close()
 
-    gameSummaries = open(path + '/gameSummaries.txt', 'w+')
-    gameSummaries.write('GAME SUMMARIES\n')
-    gameSummaries.write('Game #- Max Tile, Score, Number Of Moves\n')
-    gameSummaries.write('-' * 10 + '\n')
-    gameSummaries.close()
+        gameSummaries = open(session['path'] + '/gameSummaries.txt', 'w+')
+        gameSummaries.write('GAME SUMMARIES\n')
+        gameSummaries.write('Game #- Max Tile, Score, Number Of Moves\n')
+        gameSummaries.write('-' * 10 + '\n')
+        gameSummaries.close()
 
-    return path
+    return session
+
+
+def endSession(game, session):
+    # reset agent and game recording info
+    session['recording'] = False
+    game['agentActive'] = False
+    session['gamesCompleted'] = 0
+    # gather time information and compile stats
+    session['endTime'] = time.time()
+    t = computeTotalTime(session['startTime'], session['endTime'])
+    compileStats(t, session['path'])
 
 
 def recordMove(game, session):
     # TODO
     # work on making this more intuitive and add game over line
     # add initial boar write
+
+    if not session['recording']:
+        return None
 
     moveLog = open((str(session['path']) + '/MoveLogs/moveLogGame' + str(session['gamesCompleted']) + '.txt'), 'a+')
 
@@ -114,37 +139,31 @@ def recordMove(game, session):
                 moveLog.write(str(game['board'][i][j]))
 
         moveLog.write('\n')
+    moveLog.write('-' * 10 + '\n')
 
     moveLog.close()
 
 
-def recordGameSummary(endingBoard, moveNum, score, path):
-    gameSumFile = open((str(path) + '/gameSummaries.txt'), 'r')
-
-    lines = gameSumFile.readlines()
-
-    nextGameNum = 0
-    for l in lines[3:]:
-        try:
-            if int(l[5]) >= nextGameNum:
-                nextGameNum = int(l[5]) + 1
-        except ValueError as verr:
-            print('Error Parsing Game Summary File')
-            print(verr)
-
-    gameSumFile.close()
+def recordGameSummary(game, session):
+    if not session['recording']:
+        return None
 
     maxTile = 0
     for i in range(4):
         for j in range(4):
-            if endingBoard[i][j] > maxTile:
-                maxTile = endingBoard[i][j]
+            if game['board'][i][j] > maxTile:
+                maxTile = game['board'][i][j]
 
-    gameSumFile = open((str(path) + '/gameSummaries.txt'), 'a+')
+    gameSumFile = open((str(session['path']) + '/gameSummaries.txt'), 'a+')
 
-    gameSumFile.write('Game ' + str(nextGameNum) + '- ' + str(maxTile) + ', ' + str(score) + ', ' + str(moveNum) + '\n')
+    gameSumFile.write('Game ' + str(session['gamesCompleted']) + '- ' + str(maxTile) + ', ' + str(game['score']) + ', ' + str(game['totalMoves']) + '\n')
 
     gameSumFile.close()
+
+    session['gamesCompleted'] += 1
+
+    if session['gamesCompleted'] < session['totalGames']:
+        createMoveLog(session['gamesCompleted'], session['path'])
 
 
 def compileStats(timer, path):
@@ -303,6 +322,24 @@ def combineTiles(board, xDirec, yDirec):
                         break
 
 
+def createGame():
+    game = {
+        'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+        'move': None,
+        'newTile': (4, 4),
+        'animationTimer': 0,
+        'score': 0,
+        'agentActive': False,
+        'totalMoves': 0,
+        'lost': False
+    }
+
+    genTile(game)
+    genTile(game)
+
+    return game
+
+
 def genTile(game):
     newPos = (4, 4)
     r = random.random()
@@ -331,7 +368,7 @@ def genTile(game):
 
 def move(game, newTile=True):
     if game['move'] is None:
-        return 0
+        return None
 
     boardCopy = copy.deepcopy(game['board'])
 
