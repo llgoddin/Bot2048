@@ -2,11 +2,6 @@
 # 2048 Bot - 0.1
 # Feb 25, 2020
 
-# TODO LIST
-# fix max range combination bug (FIXED)
-# add game initializer and restart
-# add tile animation
-
 # GOOD TEST CASE (used to cause bugs)
 # 0,2,0,0
 # 0,2,0,0
@@ -16,7 +11,6 @@
 
 import math
 import sys
-import time
 
 import pygame
 
@@ -106,8 +100,9 @@ def gameLoop(game, session):
 
     recordGameSummary(game, session)
 
-    if session['gamesCompleted'] == session['totalGames']:
-        endSession(game, session)
+    if session['recording']:
+        game = createGame()
+        gameLoop(game, session)
 
     while waitingToReset:
 
@@ -144,6 +139,8 @@ def calculateScore(game):
 
 
 def screenUpdate(game, session):
+    if session['recording']:
+        return None
 
     # draws grid outline
     pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
@@ -265,7 +262,7 @@ def checkGameLost(game):
 # print('Next Move = ' + myAlgorithm(tempBoard))
 
 g = createGame()
-s = createSession(recording=False, totalGames=1)
+s = createSession(recording=True)
 
 gameLoop(g, s)
 

@@ -45,11 +45,6 @@ def writeBoard(board):
 
 
 def findSessionNum():
-    # TODO
-    # make this usable for move logs
-
-    # TODO
-    # BUG: sessions will stop working when number reaches double digits
 
     # figure out number of sessions that have already been recorded
     for (root, dirs, files) in os.walk('/Users/lucasgoddin/Documents/PycharmProjects/GameRecording', topdown=True):
@@ -57,23 +52,30 @@ def findSessionNum():
 
         for d in dirs:
             try:
-                if int(d[-1]) >= nextSession:
-                    nextSession = int(d[-1]) + 1
+
+                if int(d[-2:]) >= nextSession:
+                    nextSession = int(d[-2:]) + 1
 
             except ValueError as verr:
                 print('Directory ' + str(d) + ' does not end in a number!')
 
+        if nextSession > 99:
+            return -1
         return nextSession
 
 
 def createMoveLog(num, path):
-    moveLog = open(path + '/MoveLogs/moveLogGame' + str(num) + '.txt', 'w+')
+    if num < 10:
+        numStr = '0' + str(num)
+    moveLog = open(path + '/MoveLogs/moveLogGame' + numStr + '.txt', 'w+')
     moveLog.write('START MOVE LOG\n')
     moveLog.write('-' * 10 + '\n')
     moveLog.close()
 
 
 def createSession(recording=True, totalGames=10):
+    print('Creating Session...')
+
     session = {
         'recording': recording,
         'path': None,
@@ -86,7 +88,13 @@ def createSession(recording=True, totalGames=10):
 
     if session['recording']:
         sessionNum = findSessionNum()
-        session['path'] = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum)
+        if sessionNum < 10:
+            sessionStr = '0' + str(sessionNum)
+        elif sessionNum == -1:
+            session['recording'] = False
+            return session
+
+        session['path'] = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + sessionStr
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))
 
@@ -103,10 +111,13 @@ def createSession(recording=True, totalGames=10):
         gameSummaries.write('-' * 10 + '\n')
         gameSummaries.close()
 
+    session['startTime'] = time.time()
+
     return session
 
 
 def endSession(game, session):
+    print('Ending Session...')
     # reset agent and game recording info
     session['recording'] = False
     game['agentActive'] = False
@@ -125,7 +136,12 @@ def recordMove(game, session):
     if not session['recording']:
         return None
 
-    moveLog = open((str(session['path']) + '/MoveLogs/moveLogGame' + str(session['gamesCompleted']) + '.txt'), 'a+')
+    if session['gamesCompleted'] < 10:
+        gameNumStr = '0' + str(session['gamesCompleted'])
+    else:
+        gameNumStr = str(session['gamesCompleted'])
+
+    moveLog = open((str(session['path']) + '/MoveLogs/moveLogGame' + gameNumStr + '.txt'), 'a+')
 
     moveLog.write('MOVE: ' + str(game['move']) + '\n')
     moveLog.write('-' * 10 + '\n')
@@ -148,6 +164,7 @@ def recordGameSummary(game, session):
     if not session['recording']:
         return None
 
+    print('Recording Game ' + str(session['gamesCompleted']))
     maxTile = 0
     for i in range(4):
         for j in range(4):
@@ -163,7 +180,10 @@ def recordGameSummary(game, session):
     session['gamesCompleted'] += 1
 
     if session['gamesCompleted'] < session['totalGames']:
+        print('Creating Game ' + str(session['gamesCompleted']) + ' Move Log')
         createMoveLog(session['gamesCompleted'], session['path'])
+    else:
+        endSession(game, session)
 
 
 def compileStats(timer, path):
