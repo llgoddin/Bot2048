@@ -49,84 +49,83 @@ pygame.display.flip()
 mouseDown = False
 
 
-def gameLoop(game, session):
+def gameLoop(session):
 
     if session['recording']:
-        game['agentActive'] = True
+        session['game']['agentActive'] = True
 
     waitingToReset = True
 
     FPS = 30
     fpsClock = pygame.time.Clock()
 
-    screenUpdate(game, session)
-    while not game['lost']:
-        game['move'] = None
+    screenUpdate(session)
+    while not session['game']['lost']:
+        session['game']['move'] = None
 
         # handle keyboard events while no agent is active
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if not game['agentActive'] or game['newTile'] == (4, 4):
+            if not session['game']['agentActive'] or session['game']['newTile'] == (4, 4):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        game['move'] = 'u'
+                        session['game']['move'] = 'u'
                     if event.key == pygame.K_DOWN:
-                        game['move'] = 'd'
+                        session['game']['move'] = 'd'
                     if event.key == pygame.K_LEFT:
-                        game['move'] = 'l'
+                        session['game']['move'] = 'l'
                     if event.key == pygame.K_RIGHT:
-                        game['move'] = 'r'
+                        session['game']['move'] = 'r'
 
         # agent move
-        if game['agentActive']:
-            game['move'] = myAlgorithm(game)
+        if session['game']['agentActive']:
+            session['game']['move'] = myAlgorithm(session['game'])
 
-        move(game)
+        move(session['game'])
 
-        recordMove(game, session)
+        recordMove(session)
 
-        calculateScore(game)
+        calculateScore(session['game'])
 
-        checkGameLost(game)
+        checkGameLost(session['game'])
 
-        checkClick(game, session)
+        checkClick(session)
 
-        updateAnimation(game, session)
+        updateAnimation(session)
 
-        screenUpdate(game, session)
+        screenUpdate(session)
 
         fpsClock.tick(FPS)
 
-    recordGameSummary(game, session)
+    recordGameSummary(session)
 
     if session['recording']:
-        game = createGame()
-        gameLoop(game, session)
+        gameLoop(session)
 
     while waitingToReset:
 
         for event in pygame.event.get():
-            checkClick(game, session)
+            checkClick(session)
             if event.type == pygame.QUIT:
-                waitingToReset = False
+                sys.exit()
 
-        screenUpdate(game, session)
+        screenUpdate(session)
 
 
-def updateAnimation(game, session):
+def updateAnimation(session):
     if session['recording']:
-        game['animationTimer'] = 0
+        session['game']['animationTimer'] = 0
     else:
         # track and update animation
-        if game['newTile'] != (4, 4) and game['animationTimer'] == 0:
-            game['animationTimer'] = 1
+        if session['game']['newTile'] != (4, 4) and session['game']['animationTimer'] == 0:
+            session['game']['animationTimer'] = 1
 
-        if 0 < game['animationTimer'] < 10:
-            game['animationTimer'] += math.floor((11 - game['animationTimer']) / 2)
-        elif game['animationTimer'] >= 10:
-            game['animationTimer'] = 0
-            game['newTile'] = (4, 4)
+        if 0 < session['game']['animationTimer'] < 10:
+            session['game']['animationTimer'] += math.floor((11 - session['game']['animationTimer']) / 2)
+        elif session['game']['animationTimer'] >= 10:
+            session['game']['animationTimer'] = 0
+            session['game']['newTile'] = (4, 4)
 
 
 def calculateScore(game):
@@ -138,7 +137,7 @@ def calculateScore(game):
     game['score'] = s
 
 
-def screenUpdate(game, session):
+def screenUpdate(session):
     if session['recording']:
         return None
 
@@ -181,10 +180,10 @@ def screenUpdate(game, session):
         # draws tiles
         for i in range(0, 4):
             for j in range(0, 4):
-                if game['newTile'] == (i, j):
+                if session['game']['newTile'] == (i, j):
                     # animate new tiles
                     tileCord = (27 + (j * 115), 130 + (i * 115))
-                    scale = game['animationTimer'] * .1
+                    scale = session['game']['animationTimer'] * .1
 
                     sideLen = int(100 * scale)
 
@@ -192,13 +191,13 @@ def screenUpdate(game, session):
                     y = tileCord[1] + (100 - sideLen) / 2
 
                     pygame.draw.rect(screen, colorDict[0], [tileCord[0], tileCord[1], 100, 100])
-                    pygame.draw.rect(screen, colorDict[game['board'][i][j]], [x, y, sideLen, sideLen])
+                    pygame.draw.rect(screen, colorDict[session['game']['board'][i][j]], [x, y, sideLen, sideLen])
                 else:
                     # draw old tiles
-                    pygame.draw.rect(screen, colorDict[game['board'][i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
+                    pygame.draw.rect(screen, colorDict[session['game']['board'][i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
 
                     # create tile text
-                    tileText = textRend("" if game['board'][i][j] == 0 else str(game['board'][i][j]), 40, BLACK)
+                    tileText = textRend("" if session['game']['board'][i][j] == 0 else str(session['game']['board'][i][j]), 40, BLACK)
                     tileTextRect = tileText.get_rect()
                     tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
                     screen.blit(tileText, tileTextRect)
@@ -212,7 +211,7 @@ def textRend(message, size, color):
     return textObj
 
 
-def checkClick(game, session):
+def checkClick(session):
     global mouseDown
 
     # handle mouse events
@@ -228,12 +227,12 @@ def checkClick(game, session):
         # test click to see if it hit any buttons
         if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
             if not session['recording']:
-                game['agentActive'] = False
+                session['game']['agentActive'] = False
                 game = createGame()
                 gameLoop(game, session)
         elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
             if not session['recording']:
-                game['agentActive'] = not game['agentActive']
+                session['game']['agentActive'] = not session['game']['agentActive']
 
 
 def checkGameLost(game):
@@ -261,10 +260,9 @@ def checkGameLost(game):
 # move(board, myAlgorithm(tempBoard), False)
 # print('Next Move = ' + myAlgorithm(tempBoard))
 
-g = createGame()
-s = createSession(recording=True)
+s = createSession(recording=False)
 
-gameLoop(g, s)
+gameLoop(s)
 
 pygame.quit()
 sys.exit()

@@ -81,7 +81,7 @@ def createSession(recording=True, totalGames=10):
         'path': None,
         'totalGames': totalGames,
         'gamesCompleted': 0,
-        'currentGame': None,
+        'game': None,
         'startTime': None,
         'endTime': None
     }
@@ -98,8 +98,6 @@ def createSession(recording=True, totalGames=10):
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))
 
-        createMoveLog(0, session['path'])
-
         stats = open(session['path'] + '/sessionStats.txt', 'w+')
         stats.write('STATS\n')
         stats.write('-' * 10 + '\n')
@@ -112,15 +110,16 @@ def createSession(recording=True, totalGames=10):
         gameSummaries.close()
 
     session['startTime'] = time.time()
+    session['game'] = createGame(session)
 
     return session
 
 
-def endSession(game, session):
+def endSession(session):
     print('Ending Session...')
     # reset agent and game recording info
     session['recording'] = False
-    game['agentActive'] = False
+    session['game']['agentActive'] = False
     session['gamesCompleted'] = 0
     # gather time information and compile stats
     session['endTime'] = time.time()
@@ -128,10 +127,10 @@ def endSession(game, session):
     compileStats(t, session['path'])
 
 
-def recordMove(game, session):
+def recordMove(session, initialMove=False):
     # TODO
     # work on making this more intuitive and add game over line
-    # add initial boar write
+    # add initial board write
 
     if not session['recording']:
         return None
@@ -143,24 +142,27 @@ def recordMove(game, session):
 
     moveLog = open((str(session['path']) + '/MoveLogs/moveLogGame' + gameNumStr + '.txt'), 'a+')
 
-    moveLog.write('MOVE: ' + str(game['move']) + '\n')
+    if initialMove:
+        print('Recording initial board')
+        moveLog.write('INITIAL BOARD\n')
+    else:
+        moveLog.write('MOVE ' + str(session['game']['totalMoves']) + ': ' + str(session['game']['move']) + '\n')
     moveLog.write('-' * 10 + '\n')
 
-    moveLog.write('\n')
     for i in range(4):
         for j in range(4):
             if j < 3:
-                moveLog.write(str(game['board'][i][j]) + ', ')
+                moveLog.write(str(session['game']['board'][i][j]) + ', ')
             else:
-                moveLog.write(str(game['board'][i][j]))
+                moveLog.write(str(session['game']['board'][i][j]))
 
         moveLog.write('\n')
     moveLog.write('-' * 10 + '\n')
-
+    moveLog.write('\n')
     moveLog.close()
 
 
-def recordGameSummary(game, session):
+def recordGameSummary(session):
     if not session['recording']:
         return None
 
@@ -168,22 +170,22 @@ def recordGameSummary(game, session):
     maxTile = 0
     for i in range(4):
         for j in range(4):
-            if game['board'][i][j] > maxTile:
-                maxTile = game['board'][i][j]
+            if session['game']['board'][i][j] > maxTile:
+                maxTile = session['game']['board'][i][j]
 
     gameSumFile = open((str(session['path']) + '/gameSummaries.txt'), 'a+')
 
-    gameSumFile.write('Game ' + str(session['gamesCompleted']) + '- ' + str(maxTile) + ', ' + str(game['score']) + ', ' + str(game['totalMoves']) + '\n')
+    gameSumFile.write('Game ' + str(session['gamesCompleted']) + '- ' + str(maxTile) + ', ' + str(session['game']['score']) + ', ' + str(session['game']['totalMoves']) + '\n')
 
     gameSumFile.close()
 
     session['gamesCompleted'] += 1
 
     if session['gamesCompleted'] < session['totalGames']:
-        print('Creating Game ' + str(session['gamesCompleted']) + ' Move Log')
-        createMoveLog(session['gamesCompleted'], session['path'])
+        session['game'] = createGame(session)
+
     else:
-        endSession(game, session)
+        endSession(session)
 
 
 def compileStats(timer, path):
@@ -198,6 +200,16 @@ def compileStats(timer, path):
 
     maxTile = 0
 
+    bestGame = {
+        'id': 0,
+        'score': 0
+    }
+
+    worstGame = {
+        'id': 0,
+        'score': 10000
+    }
+
     totalMaxTile = 0
     totalScore = 0
     totalMoveNumber = 0
@@ -211,14 +223,20 @@ def compileStats(timer, path):
 
     numOfGames = len(lines) - 3
 
-    print('Number Of Games: ' + str(numOfGames))
-
     for l in lines[3:]:
-        statString = (l.split('-')[1])
-        stats = statString.split(', ')
+        statString = l.split('-')
+        stats = statString[1].split(', ')
 
         for s in stats:
             s = s.strip()
+
+        if int(stats[1]) < worstGame['score']:
+            worstGame['score'] = int(stats[1])
+            worstGame['id'] = statString[0][-2:]
+
+        if int(stats[1]) > bestGame['score']:
+            bestGame['score'] = int(stats[1])
+            bestGame['id'] = statString[0][-2:]
 
         totalMaxTile += int(stats[0])
         totalScore += int(stats[1])
@@ -267,6 +285,9 @@ def compileStats(timer, path):
         '\nAverage Game Time:        ' + str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's')
     statFile.write(
         '\nTotal Session Time:       ' + str(timer[0]) + 'h ' + str(timer[1]) + 'm ' + str(timer[2]) + 's' + '\n')
+
+    statFile.write('\n\nWorst Game: #' + str(worstGame['id']) + ', Score: ' + str(worstGame['score']))
+    statFile.write('\nBest Game: #' + str(bestGame['id']) + ', Score: ' + str(bestGame['score']) + '\n')
 
     print('Session Complete!')
     print('Find stats in dir ' + str(path))
@@ -342,7 +363,7 @@ def combineTiles(board, xDirec, yDirec):
                         break
 
 
-def createGame():
+def createGame(session=None):
     game = {
         'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         'move': None,
@@ -356,6 +377,12 @@ def createGame():
 
     genTile(game)
     genTile(game)
+
+    if session is not None:
+        session['game'] = game
+        if session['recording']:
+            createMoveLog(session['gamesCompleted'], session['path'])
+            recordMove(session, initialMove=True)
 
     return game
 
