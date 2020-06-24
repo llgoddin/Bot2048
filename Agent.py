@@ -15,28 +15,35 @@ def myAlgorithm(game):
     for m in moves:
         # Used to help weight the ability to get the largest corner back into the corner
         largestInCorner = False
+
         score = 0
         tempGame['move'] = m
 
+        # check combos for immediate move
         score += comboCheck(tempGame)
 
         move(tempGame, newTile=False)
 
-        # calculate score
         tempScore = 0
         for nextM in moves:
+            tempGame['move'] = nextM
             moveScore = comboCheck(tempGame)
             if moveScore > tempScore:
                 tempScore = comboCheck(tempGame)
 
+        score += tempScore
+
         score += cornerCheck(tempGame['board'])
 
+        # eliminate moves that don't change the board
         if tempGame['board'] == game['board']:
             score = -1
 
+        # record the move score and reset temp board
         moveScoresDict[m] = score
         tempGame = copy.deepcopy(game)
 
+    # search moveScoresDict for the best move and return it
     bestMove = 'l'
     for m in moves:
         if moveScoresDict[m] > moveScoresDict[bestMove]:
@@ -103,7 +110,7 @@ def comboCheck(game):
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
                     elif game['board'][i + (iterator * distance)][j] == game['board'][i][j]:
-                        score += 4 * game['board'][i][j]
+                        score += 2 * game['board'][i][j]
                         break
                     elif game['board'][i + (iterator * distance)][j] != 0:
                         break
@@ -111,7 +118,7 @@ def comboCheck(game):
                     if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
                         break
                     elif game['board'][i][j + (iterator * distance)] == game['board'][i][j]:
-                        score += 4 * game['board'][i][j]
+                        score += 2 * game['board'][i][j]
                         break
                     elif game['board'][i][j + (iterator * distance)] != 0:
                         break

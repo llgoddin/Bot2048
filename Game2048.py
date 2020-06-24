@@ -260,7 +260,7 @@ def checkGameLost(game):
 # move(board, myAlgorithm(tempBoard), False)
 # print('Next Move = ' + myAlgorithm(tempBoard))
 
-s = createSession(recording=False)
+s = createSession(recording=True, totalGames=100)
 
 gameLoop(s)
 
