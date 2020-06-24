@@ -67,6 +67,8 @@ def findSessionNum():
 def createMoveLog(num, path):
     if num < 10:
         numStr = '0' + str(num)
+    else:
+        numStr = str(num)
     moveLog = open(path + '/MoveLogs/moveLogGame' + numStr + '.txt', 'w+')
     moveLog.write('START MOVE LOG\n')
     moveLog.write('-' * 10 + '\n')
@@ -143,7 +145,6 @@ def recordMove(session, initialMove=False):
     moveLog = open((str(session['path']) + '/MoveLogs/moveLogGame' + gameNumStr + '.txt'), 'a+')
 
     if initialMove:
-        print('Recording initial board')
         moveLog.write('INITIAL BOARD\n')
     else:
         moveLog.write('MOVE ' + str(session['game']['totalMoves']) + ': ' + str(session['game']['move']) + '\n')
@@ -381,6 +382,7 @@ def createGame(session=None):
     if session is not None:
         session['game'] = game
         if session['recording']:
+            session['game']['animationTimer'] = 10
             createMoveLog(session['gamesCompleted'], session['path'])
             recordMove(session, initialMove=True)
 

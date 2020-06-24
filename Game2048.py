@@ -44,6 +44,7 @@ pygame.init()
 pygame.display.set_caption('2048')
 screen = pygame.display.set_mode((500, 600))
 screen.fill(LIGHT_GREY)
+pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
 pygame.display.flip()
 
 mouseDown = False
@@ -115,7 +116,7 @@ def gameLoop(session):
 
 def updateAnimation(session):
     if session['recording']:
-        session['game']['animationTimer'] = 0
+        session['game']['animationTimer'] = 10
     else:
         # track and update animation
         if session['game']['newTile'] != (4, 4) and session['game']['animationTimer'] == 0:
@@ -138,11 +139,6 @@ def calculateScore(game):
 
 
 def screenUpdate(session):
-    if session['recording']:
-        return None
-
-    # draws grid outline
-    pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
 
     # draws title font
     titleText = textRend('2048', 120, DARK_GREY)
@@ -173,10 +169,16 @@ def screenUpdate(session):
     pygame.draw.polygon(screen, WHITE, [(362, 65), (402, 85), (362, 105)])
 
     # I use the window caption as a progress bar to show the session progress when recording and not updating the screen
-    if session['recording']:
+    if session['recording'] and not session['game']['lost']:
         pygame.display.set_caption(str(session['gamesCompleted']) + ' / ' + str(session['totalGames']))
+        pygame.display.flip()
+        return None
     else:
         pygame.display.set_caption('2048')
+
+        # draws grid outline
+        pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
+
         # draws tiles
         for i in range(0, 4):
             for j in range(0, 4):
@@ -192,6 +194,13 @@ def screenUpdate(session):
 
                     pygame.draw.rect(screen, colorDict[0], [tileCord[0], tileCord[1], 100, 100])
                     pygame.draw.rect(screen, colorDict[session['game']['board'][i][j]], [x, y, sideLen, sideLen])
+
+                    if session['game']['animationTimer'] == 10:
+                        # create tile text
+                        tileText = textRend("" if session['game']['board'][i][j] == 0 else str(session['game']['board'][i][j]), 40, BLACK)
+                        tileTextRect = tileText.get_rect()
+                        tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
+                        screen.blit(tileText, tileTextRect)
                 else:
                     # draw old tiles
                     pygame.draw.rect(screen, colorDict[session['game']['board'][i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
@@ -255,12 +264,7 @@ def checkGameLost(game):
         game['lost'] = True
 
 
-# tempBoard = board.copy()
-# print('Move Chosen: ' + myAlgorithm(tempBoard))
-# move(board, myAlgorithm(tempBoard), False)
-# print('Next Move = ' + myAlgorithm(tempBoard))
-
-s = createSession(recording=True, totalGames=100)
+s = createSession(recording=True, totalGames=2)
 
 gameLoop(s)
 

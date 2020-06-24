@@ -49,6 +49,8 @@ def myAlgorithm(game):
         if moveScoresDict[m] > moveScoresDict[bestMove]:
             bestMove = m
 
+    print(moveScoresDict)
+
     return bestMove
 
 
