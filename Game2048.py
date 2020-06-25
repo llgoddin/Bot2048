@@ -264,7 +264,7 @@ def checkGameLost(game):
         game['lost'] = True
 
 
-s = createSession(recording=True, totalGames=2)
+s = createSession(recording=True, totalGames=100)
 
 gameLoop(s)
 

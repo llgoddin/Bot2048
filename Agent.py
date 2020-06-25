@@ -24,6 +24,8 @@ def myAlgorithm(game):
 
         move(tempGame, newTile=False)
 
+        score += checkCornerStacking(tempGame)
+
         tempScore = 0
         for nextM in moves:
             tempGame['move'] = nextM
@@ -124,5 +126,48 @@ def comboCheck(game):
                         break
                     elif game['board'][i][j + (iterator * distance)] != 0:
                         break
+
+    return score
+
+
+def mapTileSizes(game):
+    tileInfo = {
+        'values': [0],
+        'locations': []
+    }
+
+    for i in range(4):
+        for j in range(4):
+            for pos in range(len(tileInfo['values'])):
+                if game['board'][i][j] > tileInfo['values'][pos]:
+                    tileInfo['values'].insert(pos, game['board'][i][j])
+                    tileInfo['locations'].insert(pos, [i, j])
+                    break
+
+    tileInfo['values'].remove(0)
+
+    return tileInfo
+
+
+def checkCornerStacking(game):
+    tileInfo = mapTileSizes(game)
+
+    score = 0
+
+    for i in range(len(tileInfo['locations']) - 1):
+
+        currentTilePos = tileInfo['locations'][i]
+        nextTilePos = tileInfo['locations'][i + 1]
+
+        searches = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+
+        for coordChange in searches:
+            nextTilePos = [tileInfo['locations'][i + 1][0] + coordChange[0], tileInfo['locations'][i + 1][1] + coordChange[1]]
+
+            if currentTilePos == nextTilePos:
+                score += tileInfo['values'][i + 1] / 2
+
+        if i > 2:
+            break
 
     return score

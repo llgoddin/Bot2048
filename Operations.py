@@ -95,6 +95,8 @@ def createSession(recording=True, totalGames=10):
         elif sessionNum == -1:
             session['recording'] = False
             return session
+        else:
+            sessionStr = str(sessionNum)
 
         session['path'] = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + sessionStr
         os.mkdir(session['path'])
