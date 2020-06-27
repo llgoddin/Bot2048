@@ -1,6 +1,5 @@
 import copy
-
-from Operations import *
+import GameOperations
 
 
 def myAlgorithm(game):
@@ -22,7 +21,7 @@ def myAlgorithm(game):
         # check combos for immediate move
         score += comboCheck(tempGame)
 
-        move(tempGame, newTile=False)
+        GameOperations.move(tempGame, newTile=False)
 
         score += checkCornerStacking(tempGame)
 
@@ -50,8 +49,6 @@ def myAlgorithm(game):
     for m in moves:
         if moveScoresDict[m] > moveScoresDict[bestMove]:
             bestMove = m
-
-    print(moveScoresDict)
 
     return bestMove
 

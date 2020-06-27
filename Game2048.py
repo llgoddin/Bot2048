@@ -15,7 +15,7 @@ import sys
 import pygame
 
 from Agent import myAlgorithm
-from Operations import *
+from GameOperations import *
 
 WHITE = (255, 255, 255)
 LIGHT_GREY = (200, 200, 200)
@@ -129,15 +129,6 @@ def updateAnimation(session):
             session['game']['newTile'] = (4, 4)
 
 
-def calculateScore(game):
-    s = 0
-    for i in range(4):
-        for j in range(4):
-            s += game['board'][i][j]
-
-    game['score'] = s
-
-
 def screenUpdate(session):
 
     # draws title font
@@ -242,26 +233,6 @@ def checkClick(session):
         elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
             if not session['recording']:
                 session['game']['agentActive'] = not session['game']['agentActive']
-
-
-def checkGameLost(game):
-    moves = ['l', 'r', 'u', 'd']
-    movesLeft = 4
-
-    for m in moves:
-        tempGame = copy.deepcopy(game)
-
-        tempGame['move'] = m
-
-        move(tempGame, False)
-
-        if tempGame['board'] == game['board']:
-            movesLeft -= 1
-
-    if movesLeft > 0:
-        game['lost'] = False
-    else:
-        game['lost'] = True
 
 
 s = createSession(recording=True, totalGames=100)
