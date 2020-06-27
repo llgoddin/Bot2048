@@ -136,6 +136,8 @@ def outputMoveLog(game):
 
     moveLog.close()
 
+    del game['moveHistory']
+
 
 def compileStats(session):
     gameSummaries = open((session['path'] + '/gameSummaries.txt'), 'r')

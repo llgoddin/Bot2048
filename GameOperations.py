@@ -83,9 +83,6 @@ def endSession(session):
     # gather time information and compile stats
     session['endTime'] = time.time()
 
-    for game in session['games']:
-        recordGameSummary(game)
-
     compileStats(session)
 
 
@@ -296,3 +293,5 @@ def runGame(game):
         recordMove(game)
 
     outputMoveLog(game)
+
+    return game
