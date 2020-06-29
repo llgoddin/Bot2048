@@ -105,7 +105,7 @@ def endSession(session):
     compileStats(session)
 
 
-def createGame(gameID, session=None, agent=False):
+def createGame(gameID=0, session=None, agent=False):
     game = {
         'id': gameID,
         'logPath': None,
@@ -114,6 +114,7 @@ def createGame(gameID, session=None, agent=False):
         'moveHistory': [],
         'newTile': (4, 4),
         'score': 0,
+        'animationTimer': 0,
         'agentActive': agent,
         'totalMoves': 0,
         'lost': False
