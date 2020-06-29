@@ -2,6 +2,7 @@
 
 from Agent import *
 from InputOutputFunctions import *
+import multiprocessing
 import copy
 import os
 import time
@@ -34,8 +35,6 @@ def createSession(recording=True, totalGames=10):
     session = {
         'recording': recording,
         'path': None,
-        'totalGames': totalGames,
-        'gamesCompleted': 0,
         'games': [],
         'startTime': None,
         'endTime': None
@@ -69,24 +68,44 @@ def createSession(recording=True, totalGames=10):
 
     session['startTime'] = time.time()
 
-    for i in range(session['totalGames']):
+    for i in range(totalGames):
         session['games'].append(createGame(i, session))
 
     return session
+
+
+def runSession(s, threads=8):
+    if len(s['games']) > 1 and len(s['games']) >= threads:
+        p = multiprocessing.Pool(processes=threads)
+
+        results = p.map_async(runGame, s['games'])
+
+        p.close()
+        p.join()
+
+        games = results.get()
+
+        for g in games:
+            recordGameSummary(g)
+    else:
+        for g in s['games']:
+            runGame(g)
+            recordGameSummary(g)
+
+    endSession(s)
 
 
 def endSession(session):
     print('Ending Session...')
     # reset agent and game recording info
     session['recording'] = False
-    session['gamesCompleted'] = 0
     # gather time information and compile stats
     session['endTime'] = time.time()
 
     compileStats(session)
 
 
-def createGame(gameID, session=None):
+def createGame(gameID, session=None, agent=False):
     game = {
         'id': gameID,
         'logPath': None,
@@ -95,7 +114,7 @@ def createGame(gameID, session=None):
         'moveHistory': [],
         'newTile': (4, 4),
         'score': 0,
-        'agentActive': True,
+        'agentActive': agent,
         'totalMoves': 0,
         'lost': False
     }
@@ -105,6 +124,7 @@ def createGame(gameID, session=None):
 
     if session is not None:
         if session['recording']:
+            game['agentActive'] = True
             game['logPath'] = createMoveLog(game, session)
 
     return game

@@ -50,86 +50,72 @@ pygame.display.flip()
 mouseDown = False
 
 
-def gameLoop(session):
-
-    if session['recording']:
-        session['game']['agentActive'] = True
+def gameLoop(game):
 
     waitingToReset = True
 
     FPS = 30
     fpsClock = pygame.time.Clock()
 
-    screenUpdate(session)
-    while not session['game']['lost']:
-        session['game']['move'] = None
+    screenUpdate(game)
+    while not game['lost']:
+        game['move'] = None
 
         # handle keyboard events while no agent is active
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if not session['game']['agentActive'] or session['game']['newTile'] == (4, 4):
+            if not game['agentActive'] or game['newTile'] == (4, 4):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        session['game']['move'] = 'u'
+                        game['move'] = 'u'
                     if event.key == pygame.K_DOWN:
-                        session['game']['move'] = 'd'
+                        game['move'] = 'd'
                     if event.key == pygame.K_LEFT:
-                        session['game']['move'] = 'l'
+                        game['move'] = 'l'
                     if event.key == pygame.K_RIGHT:
-                        session['game']['move'] = 'r'
+                        game['move'] = 'r'
 
         # agent move
-        if session['game']['agentActive']:
-            session['game']['move'] = myAlgorithm(session['game'])
+        if game['agentActive']:
+            game['move'] = myAlgorithm(game)
 
-        move(session['game'])
+        move(game)
 
-        recordMove(session)
+        calculateScore(game)
 
-        calculateScore(session['game'])
+        checkGameLost(game)
 
-        checkGameLost(session['game'])
+        checkClick(game)
 
-        checkClick(session)
+        updateAnimation(game)
 
-        updateAnimation(session)
-
-        screenUpdate(session)
+        screenUpdate(game)
 
         fpsClock.tick(FPS)
 
-    recordGameSummary(session)
-
-    if session['recording']:
-        gameLoop(session)
-
     while waitingToReset:
-
         for event in pygame.event.get():
-            checkClick(session)
+            checkClick(game)
             if event.type == pygame.QUIT:
                 sys.exit()
 
-        screenUpdate(session)
+        screenUpdate(game)
 
 
-def updateAnimation(session):
-    if session['recording']:
-        session['game']['animationTimer'] = 10
-    else:
-        # track and update animation
-        if session['game']['newTile'] != (4, 4) and session['game']['animationTimer'] == 0:
-            session['game']['animationTimer'] = 1
+def updateAnimation(game):
+    # track and update animation
+    if game['newTile'] != (4, 4) and game['animationTimer'] == 0:
+        game['animationTimer'] = 1
 
-        if 0 < session['game']['animationTimer'] < 10:
-            session['game']['animationTimer'] += math.floor((11 - session['game']['animationTimer']) / 2)
-        elif session['game']['animationTimer'] >= 10:
-            session['game']['animationTimer'] = 0
-            session['game']['newTile'] = (4, 4)
+    if 0 < game['animationTimer'] < 10:
+        game['animationTimer'] += math.floor((11 - game['animationTimer']) / 2)
+    elif game['animationTimer'] >= 10:
+        game['animationTimer'] = 0
+        game['newTile'] = (4, 4)
 
 
-def screenUpdate(session):
+def screenUpdate(game):
 
     # draws title font
     titleText = textRend('2048', 120, DARK_GREY)
@@ -160,47 +146,36 @@ def screenUpdate(session):
     pygame.draw.polygon(screen, WHITE, [(362, 65), (402, 85), (362, 105)])
 
     # I use the window caption as a progress bar to show the session progress when recording and not updating the screen
-    if session['recording'] and not session['game']['lost']:
-        pygame.display.set_caption(str(session['gamesCompleted']) + ' / ' + str(session['totalGames']))
-        pygame.display.flip()
-        return None
-    else:
-        pygame.display.set_caption('2048')
+    pygame.display.set_caption('2048')
 
-        # draws grid outline
-        pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
+    # draws grid outline
+    pygame.draw.rect(screen, DARK_GREY, (17, 120, 465, 465))
 
-        # draws tiles
-        for i in range(0, 4):
-            for j in range(0, 4):
-                if session['game']['newTile'] == (i, j):
-                    # animate new tiles
-                    tileCord = (27 + (j * 115), 130 + (i * 115))
-                    scale = session['game']['animationTimer'] * .1
+    # draws tiles
+    for i in range(0, 4):
+        for j in range(0, 4):
+            if game['newTile'] == (i, j) and not game['animationTimer'] == 10:
+                # animate new tiles
+                tileCord = (27 + (j * 115), 130 + (i * 115))
+                scale = game['animationTimer'] * .1
 
-                    sideLen = int(100 * scale)
+                sideLen = int(100 * scale)
 
-                    x = tileCord[0] + (100 - sideLen) / 2
-                    y = tileCord[1] + (100 - sideLen) / 2
+                x = tileCord[0] + (100 - sideLen) / 2
+                y = tileCord[1] + (100 - sideLen) / 2
 
-                    pygame.draw.rect(screen, colorDict[0], [tileCord[0], tileCord[1], 100, 100])
-                    pygame.draw.rect(screen, colorDict[session['game']['board'][i][j]], [x, y, sideLen, sideLen])
+                pygame.draw.rect(screen, colorDict[0], [tileCord[0], tileCord[1], 100, 100])
+                pygame.draw.rect(screen, colorDict[game['board'][i][j]], [x, y, sideLen, sideLen])
 
-                    if session['game']['animationTimer'] == 10:
-                        # create tile text
-                        tileText = textRend("" if session['game']['board'][i][j] == 0 else str(session['game']['board'][i][j]), 40, BLACK)
-                        tileTextRect = tileText.get_rect()
-                        tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
-                        screen.blit(tileText, tileTextRect)
-                else:
-                    # draw old tiles
-                    pygame.draw.rect(screen, colorDict[session['game']['board'][i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
+            else:
+                # draw old tiles
+                pygame.draw.rect(screen, colorDict[game['board'][i][j]], (27 + (j * 115), 130 + (i * 115), 100, 100))
 
-                    # create tile text
-                    tileText = textRend("" if session['game']['board'][i][j] == 0 else str(session['game']['board'][i][j]), 40, BLACK)
-                    tileTextRect = tileText.get_rect()
-                    tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
-                    screen.blit(tileText, tileTextRect)
+                # create tile text
+                tileText = textRend("" if game['board'][i][j] == 0 else str(game['board'][i][j]), 40, BLACK)
+                tileTextRect = tileText.get_rect()
+                tileTextRect.center = (75 + (j * 115), 180 + (i * 115))
+                screen.blit(tileText, tileTextRect)
 
     pygame.display.flip()
 
@@ -211,7 +186,7 @@ def textRend(message, size, color):
     return textObj
 
 
-def checkClick(session):
+def checkClick(game):
     global mouseDown
 
     # handle mouse events
@@ -226,13 +201,66 @@ def checkClick(session):
 
         # test click to see if it hit any buttons
         if 422 < mouse[0] < 482 and 55 < mouse[1] < 115:
-            if not session['recording']:
-                session['game']['agentActive'] = False
-                game = createGame()
-                gameLoop(game, session)
+            game = createGame()
+            gameLoop(game)
         elif 352 < mouse[0] < 412 and 55 < mouse[1] < 115:
-            if not session['recording']:
-                session['game']['agentActive'] = not session['game']['agentActive']
+            game['agentActive'] = not game['agentActive']
+
+
+def createButton(rect=[10, 10, 90, 90], text='BTN', fgColor=LIGHT_GREY, bgColor=DARK_GREY, symbol=[['c', [20, 20, 20]], ['p', [10, 10, 10, 20, 20, 30]]]):
+    btn = {
+        'rect': pygame.rect(rect),
+        'text': text,
+        'fgColor': fgColor,
+        'bgColor': bgColor,
+        'symbol': symbol,
+        'textSize': None
+    }
+
+
+def renderButtons(btns=[]):
+    for b in btns:
+        pygame.draw.rect(screen, b['bgColor'], b['rect'])
+
+        textObj = None
+        if b['text'] is not None:
+            textSmallEnough = False
+            if b['textSize'] is None:
+                textSize = 100
+            else:
+                textSize = b['textSize']
+
+            while not textSmallEnough:
+                textObj = textRend(b['text'], b['textSize'], b['fgColor'])
+                textRect = textObj.get_rect()
+                if textRect[2] >= b['rect'][2] or textRect[3] >= b['rect'][3]:
+                    textSize -= 1
+                    del textObj
+                    del textRect
+                else:
+                    b['textSize'] = textSize
+
+        for shape in b['symbol']:
+            x = b['rect'].topleft[0] + shape[1][0]
+            y = b['rect'].topleft[1] + shape[1][1]
+            symbolColor = b['fgColor']
+            
+            if shape[0] == 'c':
+                pygame.draw.circle(screen, symbolColor, (x, y), shape[1][3])
+            elif shape[0] == 'r':
+                pygame.draw.rect(screen, b['fgColor'], shape[1])
+            elif shape[0] == 'p':
+                pointList = [(x, y)]
+                for i in range(2, len(shape[1]), step=2):
+                    newX = x + shape[1][i]
+                    newY = y + shape[1][i + 1]
+                    pointList.append((newX, newY))
+                
+                pygame.draw.polygon(screen, symbolColor, pointList)
+
+        if textObj is not None:
+            textRect.center = b['rect'].center
+            screen.blit(textObj, textRect)
 
 
 s = createSession(recording=True, totalGames=100)
