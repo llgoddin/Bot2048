@@ -14,7 +14,6 @@ import sys
 
 import pygame
 
-from Agent import myAlgorithm
 from GameOperations import *
 
 RED = (255, 0, 0)
@@ -50,17 +49,17 @@ pygame.display.flip()
 
 mouseDown = False
 
-buttons = {}
+gameScreenButtons = {}
+settingsButtons = {}
+
+FPS = 30
+fpsClock = pygame.time.Clock()
 
 
 def gameLoop(game):
-
     waitingToReset = True
 
-    FPS = 30
-    fpsClock = pygame.time.Clock()
-
-    screenUpdate(game)
+    gameScreenUpdate(game)
     while not game['lost']:
         game['move'] = None
 
@@ -90,21 +89,35 @@ def gameLoop(game):
 
         checkGameLost(game)
 
-        checkClick(game)
+        checkClick(gameScreenButtons, game)
 
         updateAnimation(game)
 
-        screenUpdate(game)
+        gameScreenUpdate(game)
 
         fpsClock.tick(FPS)
 
     while waitingToReset:
         for event in pygame.event.get():
-            checkClick(game)
+            checkClick(gameScreenButtons, game)
             if event.type == pygame.QUIT:
+                pygame.quit()
                 sys.exit()
 
-        screenUpdate(game)
+        gameScreenUpdate(game)
+
+
+def settingsLoop(game):
+    inSettings = True
+
+    while inSettings:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        inSettings = checkClick(settingsButtons, game)
+        settingsScreenUpdate(settingsButtons)
+        fpsClock.tick(FPS)
 
 
 def updateAnimation(game):
@@ -125,8 +138,8 @@ def updateAnimation(game):
         game['newTile'] = (4, 4)
 
 
-def screenUpdate(game):
-    global buttons
+def gameScreenUpdate(game):
+    global gameScreenButtons
 
     screen.fill(LIGHT_GREY)
 
@@ -139,14 +152,14 @@ def screenUpdate(game):
     mouse = pygame.mouse.get_pos()
 
     # check buttons to see if they are hovered and change color if they are
-    for k, btn in buttons.items():
+    for k, btn in gameScreenButtons.items():
         if btn['rect'][0] < mouse[0] < btn['rect'][0] + btn['rect'][2]:
             if btn['rect'][1] < mouse[1] < btn['rect'][1] + btn['rect'][3]:
                 changeButtonColor(btn, WHITE, GREY)
         else:
             changeButtonColor(btn, WHITE, DARK_GREY)
 
-    renderButtons()
+    renderButtons(gameScreenButtons)
 
     # I use the window caption as a progress bar to show the session progress when recording and not updating the screen
     pygame.display.set_caption('2048')
@@ -183,13 +196,38 @@ def screenUpdate(game):
     pygame.display.flip()
 
 
+def settingsScreenUpdate(buttons):
+    screenWidth = pygame.display.get_surface().get_width()
+    screenHeight = pygame.display.get_surface().get_height()
+
+    screen.fill(LIGHT_GREY)
+
+    padding = 10
+    settingsText = textRend('SETTINGS', 60, DARK_GREY)
+    settingsTextRect = settingsText.get_rect()
+    settingsTextRect.center = (int(screenWidth / 2), int(settingsTextRect.height / 2) + padding)
+    screen.blit(settingsText, settingsTextRect)
+
+    mouse = pygame.mouse.get_pos()
+
+    for k, btn in buttons.items():
+        if btn['rect'][0] < mouse[0] < btn['rect'][0] + btn['rect'][2]:
+            if btn['rect'][1] < mouse[1] < btn['rect'][1] + btn['rect'][3]:
+                changeButtonColor(btn, WHITE, GREY)
+        else:
+            changeButtonColor(btn, WHITE, DARK_GREY)
+
+    renderButtons(buttons)
+    pygame.display.flip()
+
+
 def textRend(message, size, color):
     font1 = pygame.font.Font('/System/Library/Fonts/AppleSDGothicNeo.ttc', size)
     textObj = font1.render(message, True, color)
     return textObj
 
 
-def checkClick(game):
+def checkClick(btns, game=None):
     global mouseDown
 
     # handle mouse events
@@ -198,13 +236,13 @@ def checkClick(game):
     # testing click for 0's makes user let go in between button clicks
     if click == (0, 0, 0):
         mouseDown = False
-        return None
+        return True
     elif click == (1, 0, 0) and not mouseDown:
         mouseDown = True
         mouse = pygame.mouse.get_pos()
 
         # test click to see if it hit any buttons
-        for key, btn in buttons.items():
+        for key, btn in btns.items():
             if btn['rect'][0] < mouse[0] < btn['rect'][0] + btn['rect'][2]:
                 if btn['rect'][1] < mouse[1] < btn['rect'][1] + btn['rect'][3]:
                     if key == 'newGame':
@@ -213,6 +251,11 @@ def checkClick(game):
                     elif key == 'agent':
                         print('Activating Agent')
                         game['agentActive'] = not game['agentActive']
+                    elif key == 'settings':
+                        settingsLoop(game)
+                    elif key == 'back':
+                        gameLoop(game)
+    return True
 
 
 def createButton(rect=[10, 10, 90, 90], text='BTN', fgColor=LIGHT_GREY, bgColor=DARK_GREY, symbol=None):
@@ -228,9 +271,7 @@ def createButton(rect=[10, 10, 90, 90], text='BTN', fgColor=LIGHT_GREY, bgColor=
     return btn
 
 
-def renderButtons():
-    global buttons
-
+def renderButtons(buttons):
     for k, b in buttons.items():
         pygame.draw.rect(screen, b['bgColor'], b['rect'])
 
@@ -264,7 +305,7 @@ def renderButtons():
                     symbolColor = b['fgColor']
                 elif shape[1] == 'bg':
                     symbolColor = b['bgColor']
-            
+
                 if shape[0] == 'c':
                     pygame.draw.circle(screen, symbolColor, (x + shape[2][0], y + shape[2][1]), shape[2][2])
                 elif shape[0] == 'r':
@@ -292,9 +333,16 @@ def changeButtonColor(btn, newFG=WHITE, newBG=DARK_GREY):
     btn['bgColor'] = newBG
 
 
-buttons['agent'] = createButton([290, 68, 46, 46], None, WHITE, DARK_GREY, [['p', 'fg', [7, 7, 7, 39, 39, 23]]])
-buttons['newGame'] = createButton([344, 68, 46, 46], None, WHITE, DARK_GREY, [['c', 'fg', [23, 23, 14]], ['c', 'bg', [23, 23, 12]], ['p', 'bg', [23, 23, 0, 23, 13, 40]], ['p', 'fg', [5, 23, 15, 23, 10, 30]]])
-buttons['settings'] = createButton([398, 68, 75, 46], 'SETTINGS', WHITE, DARK_GREY)
+gameScreenButtons['agent'] = createButton([290, 68, 46, 46], None, WHITE, DARK_GREY,
+                                          [['p', 'fg', [7, 7, 7, 39, 39, 23]]])
+gameScreenButtons['newGame'] = createButton([344, 68, 46, 46], None, WHITE, DARK_GREY,
+                                            [['c', 'fg', [23, 23, 14]],
+                                             ['c', 'bg', [23, 23, 12]],
+                                             ['p', 'bg', [23, 23, 0, 23, 13, 40]],
+                                             ['p', 'fg', [5, 23, 15, 23, 10, 30]]])
+gameScreenButtons['settings'] = createButton([398, 68, 75, 46], 'SETTINGS', WHITE, DARK_GREY)
+
+settingsButtons['back'] = createButton([10, 560, 130, 30], '<-- BACK --', WHITE, DARK_GREY)
 
 g = createGame()
 
