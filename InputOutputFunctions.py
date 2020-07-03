@@ -2,6 +2,8 @@
 
 import os
 import time
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def printBoard(board):
@@ -66,6 +68,19 @@ def createMoveLog(game, session):
     return logPath
 
 
+def createScoreLog(game, session):
+    if game['id'] < 10:
+        numStr = '0' + str(game['id'])
+    else:
+        numStr = str(game['id'])
+
+    logPath = session['path'] + '/MoveLogs/MoveScores/scoreDataGame' + numStr + '.txt'
+
+    scoreLog = open(logPath, 'w+')
+
+    scoreLog.close()
+
+
 def recordMove(game, initialMove=False):
     if game['logPath'] is None:
         return None
@@ -81,9 +96,9 @@ def recordMove(game, initialMove=False):
         boardStr += '|'
 
     if initialMove:
-        move = ('INITIAL MOVE\n', None, boardStr)
+        move = ('INITIAL MOVE\n', None, boardStr, None)
     else:
-        move = (game['totalMoves'], game['move'], boardStr)
+        move = (game['totalMoves'], game['move'], boardStr, game['moveScores'])
 
     game['moveHistory'].append(move)
 
@@ -116,7 +131,12 @@ def outputMoveLog(game):
 
     moveLog = open(game['logPath'], 'a+')
 
+    moveScores = []
+
     for moves in game['moveHistory']:
+
+        moveScores.append(moves[3])
+
         if moves[0] == 'INITIAL MOVE\n':
             moveLog.write(moves[0])
         else:
@@ -136,7 +156,35 @@ def outputMoveLog(game):
 
     moveLog.close()
 
+    outputScoresLog(moveScores, game['logPath'])
+
     del game['moveHistory']
+
+
+def outputScoresLog(moveScores, path):
+    totalScores = []
+    highestTile = []
+    comboScore = []
+    cornerStackScore = []
+
+    recordingPath = path.split('moveLogGame')
+
+    gameID = recordingPath[1].split('.')[0]
+    path = recordingPath[0] + 'MoveScores/scoreLog' + str(gameID) + '.csv'
+
+    print('Move Scores ' + str(moveScores))
+
+    for record in moveScores:
+        totalScores.append(record[0])
+        highestTile.append(record[1])
+        comboScore.append(record[2])
+        cornerStackScore.append(record[3])
+
+    outputTable = list(zip(totalScores, highestTile, comboScore, cornerStackScore))
+
+    df = pd.DataFrame(data=outputTable, columns=['Total', 'High Tile', 'Combo', 'Corner Stacking'])
+
+    df.to_csv(path, index=False)
 
 
 def compileStats(session):

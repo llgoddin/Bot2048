@@ -3,111 +3,66 @@ import copy
 import GameOperations
 
 
-def determineConserveSpace(game):
-    maxTile = 0
-    numOfBlanks = 0
-
-    for i in range(4):
-        for j in range(4):
-            if game['board'][i][j] > maxTile:
-                maxTile = game['board'][i][j]
-            elif game['board'][i][j] == 0:
-                numOfBlanks += 1
-
-    blanksThreshold = 0
-    if maxTile >= 512:
-        blanksThreshold = 2
-    elif maxTile >= 256:
-        blanksThreshold = 3
-    else:
-        blanksThreshold = 4
-
-    if blanksThreshold >= numOfBlanks:
-        return True
-    return False
-
-
-def conservationAlg(game):
-    moves = ['l', 'r', 'u', 'd']
-    moveScoresDict = {}
-    tempGame = copy.deepcopy(game)
-
-    for m in moves:
-        score = 0
-        tempGame['move'] = m
-        score += comboCheck(tempGame, conserveMode=True)
-
-        GameOperations.move(tempGame, newTile=False)
-        score += cornerCheck(tempGame['board'], conserveMode=True)
-
-        if tempGame['board'] == game['board']:
-            moveScoresDict[m] = -1
-        else:
-            moveScoresDict[m] = score
-
-        tempGame = copy.deepcopy(game)
-
-    return moveScoresDict
-
-
-def calculateScores(game, currentScore=0, level=0, maxLevel=1):
-    moves = ['l', 'r', 'u', 'd']
-    moveScoresDict = {}
-
-    tempGame = copy.deepcopy(game)
-
-    for m in moves:
-        score = currentScore
-        tempGame['move'] = m
-
-        # check combos for immediate move
-        score += comboCheck(tempGame)
-
-        GameOperations.move(tempGame, newTile=False)
-
-        score += checkCornerStacking(tempGame)
-
-        score += cornerCheck(tempGame['board'])
-
-        # eliminate moves that don't change the board
-        if tempGame['board'] == game['board']:
-            score = -1
-        elif level < maxLevel:
-            score = calculateScores(tempGame, score, level=level + 1, maxLevel=maxLevel)
-
-        # record the move score and reset temp board
-        moveScoresDict[m] = score
-        tempGame = copy.deepcopy(game)
-
-    if level == 0:
-        return moveScoresDict
-    else:
-        maxScore = 0
-        for key, value in moveScoresDict.items():
-            if value > maxScore:
-                maxScore = value
-        return maxScore
-
-
 def myAlgorithm(game):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
+    moves = ['l', 'r', 'u', 'd']
+    scoresBreakDown = {}
+    moveScoresDict = {}
 
-    moveScoresDict = calculateScores(game, currentScore=0, maxLevel=2)
+    for m in moves:
+        totalScore = 0
+        highTileScore = 0
+        comboScore = 0
+        cornerStackScore = 0
 
-    if game['logPath'] is None:
-        print(moveScoresDict)
+        tempGame = copy.deepcopy(game)
+        tempGame['move'] = m
+        comboScore += comboCheck(tempGame)
+
+        GameOperations.move(tempGame, newTile=False)
+
+        tempScore = 0
+        for nextM in moves:
+            tempGame['move'] = nextM
+            if tempGame['logPath'] is None:
+                print(str(m) + ' then ' + str(nextM) + ' produces ' + str(comboCheck(tempGame, verbose=True)))
+            if tempScore < comboCheck(tempGame):
+                tempScore = comboCheck(tempGame)
+        comboScore += tempScore
+
+        cornerStackScore += checkCornerStacking(tempGame)
+        highTileScore += cornerCheck(tempGame['board'])
+
+        totalScore = highTileScore + comboScore + cornerStackScore
+
+        if tempGame['board'] == game['board']:
+            totalScore = -1
+
+        # record the move score and reset temp board
+        scoresBreakDown[m] = [totalScore, highTileScore, comboScore, cornerStackScore]
+        if totalScore == -1:
+            scoresBreakDown[m] = totalScore
+        moveScoresDict[m] = totalScore
 
     # search moveScoresDict for the best move and return it
     bestMove = 'l'
+    scoreData = []
     for key, value in moveScoresDict.items():
         if moveScoresDict[bestMove] < value:
             bestMove = key
 
-    return bestMove
+    scoreData = scoresBreakDown[bestMove]
+    if game['logPath'] is None:
+        print(moveScoresDict)
+        print(scoresBreakDown)
+        print('Alg Chose move ' + str(bestMove))
+        print('Score Breakdown: ' + str(scoreData))
+
+    return bestMove, scoreData
 
 
-def cornerCheck(board, conserveMode=False):
+def cornerCheck(board):
     # find the largest tile
     largestTile = 0
     for i in range(4):
@@ -120,21 +75,15 @@ def cornerCheck(board, conserveMode=False):
 
     for corner in cornerCoord:
         if board[corner[0]][corner[1]] == largestTile:
-            if conserveMode:
-                blankSpaces = 0
-                for i in range(4):
-                    for j in range(4):
-                        if board[i][j] == 0:
-                            blankSpaces += 1
-
-                return blankSpaces
-            else:
-                return largestTile
+            return largestTile
 
     return 0
 
 
-def comboCheck(game, conserveMode=False):
+def comboCheck(game, verbose=False):
+
+    game = copy.deepcopy(game)
+
     score = 0
     xDirec = 0
     yDirec = 0
@@ -173,22 +122,22 @@ def comboCheck(game, conserveMode=False):
                 if vert:
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
-                    elif game['board'][i + (iterator * distance)][j] == game['board'][i][j]:
-                        if conserveMode and game['board'][i][j] != 0:
-                            score += 1
-                        else:
-                            score += 2 * game['board'][i][j]
+                    elif game['board'][i + (iterator * distance)][j] == game['board'][i][j] and game['board'][i][j] != 0:
+                        if verbose:
+                            print(str(game['board'][i + (iterator * distance)][j]) + ' combines with ' + str(game['board'][i][j]) + ' when moved ' + str(game['move']))
+                        score += 2 * game['board'][i][j]
+                        game['board'][i + (iterator * distance)][j] = 0
                         break
                     elif game['board'][i + (iterator * distance)][j] != 0:
                         break
                 else:
                     if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
                         break
-                    elif game['board'][i][j + (iterator * distance)] == game['board'][i][j]:
-                        if conserveMode and game['board'][i][j] != 0:
-                            score += 1
-                        else:
-                            score += 2 * game['board'][i][j]
+                    elif game['board'][i][j + (iterator * distance)] == game['board'][i][j] and game['board'][i][j] != 0:
+                        if verbose:
+                            print(str(game['board'][i][j + (iterator * distance)]) + ' combines with ' + str(game['board'][i][j]) + ' when moved ' + str(game['move']))
+                        score += 2 * game['board'][i][j]
+                        game['board'][i][j + (iterator * distance)] = 0
                         break
                     elif game['board'][i][j + (iterator * distance)] != 0:
                         break
@@ -233,7 +182,6 @@ def checkCornerStacking(game):
 
             if currentTilePos == nextTilePos:
                 score += tileInfo['values'][i + 1] / 2
-            else:
                 break
 
         if i > 2:

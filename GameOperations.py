@@ -54,6 +54,7 @@ def createSession(recording=True, totalGames=10):
         session['path'] = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + sessionStr
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))
+        os.mkdir((session['path'] + str('/MoveLogs/MoveScores')))
 
         stats = open(session['path'] + '/sessionStats.txt', 'w+')
         stats.write('STATS\n')
@@ -75,7 +76,7 @@ def createSession(recording=True, totalGames=10):
 
 
 def runSession(s, threads=8):
-    if len(s['games']) > 1 and len(s['games']) >= threads:
+    if threads > 1:
         p = multiprocessing.Pool(processes=threads)
 
         results = p.map_async(runGame, s['games'])
@@ -112,6 +113,7 @@ def createGame(gameID=0, session=None, agent=False):
         'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         'move': None,
         'moveHistory': [],
+        'moveScores': [],
         'newTile': (4, 4),
         'score': 0,
         'animationTimer': 0,
@@ -303,7 +305,7 @@ def runGame(game):
     while not game['lost']:
 
         if game['agentActive']:
-            game['move'] = myAlgorithm(game)
+            game['move'], game['moveScores'] = myAlgorithm(game)
 
         move(game)
 
