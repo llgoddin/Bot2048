@@ -110,6 +110,7 @@ def createGame(gameID=0, session=None, agent=False):
     game = {
         'id': gameID,
         'logPath': None,
+        'logFile': None,
         'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         'move': None,
         'moveHistory': [],
@@ -128,7 +129,7 @@ def createGame(gameID=0, session=None, agent=False):
     if session is not None:
         if session['recording']:
             game['agentActive'] = True
-            game['logPath'] = createMoveLog(game, session)
+            game['logPath'], game['logFile'] = createMoveLog(game, session)
 
     return game
 
@@ -273,8 +274,17 @@ def checkGameLost(game):
     moves = ['l', 'r', 'u', 'd']
     movesLeft = 4
 
+    if game['score'] > 5000:
+        game['lost'] = True
+        print('Game Stopped at 5k')
+
+    filterGame = {
+        'move': game['move'],
+        'board': game['board']
+    }
+
     for m in moves:
-        tempGame = copy.deepcopy(game)
+        tempGame = copy.deepcopy(filterGame)
 
         tempGame['move'] = m
 
@@ -282,6 +292,9 @@ def checkGameLost(game):
 
         if tempGame['board'] == game['board']:
             movesLeft -= 1
+
+        del tempGame
+    del filterGame
 
     if movesLeft > 0:
         game['lost'] = False

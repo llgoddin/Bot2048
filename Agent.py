@@ -16,27 +16,46 @@ def myAlgorithm(game):
         comboScore = 0
         cornerStackScore = 0
 
-        tempGame = copy.deepcopy(game)
+        filterGame = {
+            'logPath': game['logPath'],
+            'id': game['id'],
+            'move': game['move'],
+            'board': game['board']
+        }
+
+        tempGame = copy.deepcopy(filterGame)
         tempGame['move'] = m
         comboScore += comboCheck(tempGame)
 
         GameOperations.move(tempGame, newTile=False)
 
+        highTileScore += cornerCheck(tempGame['board'])
+
         tempScore = 0
+        tempHighTileScore = 0
         for nextM in moves:
             tempGame['move'] = nextM
             if tempGame['logPath'] is None:
                 print(str(m) + ' then ' + str(nextM) + ' produces ' + str(comboCheck(tempGame)))
             if tempScore < comboCheck(tempGame):
                 tempScore = comboCheck(tempGame)
+            # if highTileScore == 0:
+            #     GameOperations.move(tempGame, newTile=False)
+            #     s = cornerCheck(tempGame['board'])
+            #     if tempHighTileScore < s:
+            #         tempHighTileScore = s
+            #     del tempGame
+            #     tempGame = copy.deepcopy(filterGame)
+
+        highTileScore += tempHighTileScore
+
         comboScore += tempScore
 
         cornerStackScore += checkCornerStacking(tempGame)
-        highTileScore += cornerCheck(tempGame['board'])
 
         totalScore = highTileScore + comboScore + cornerStackScore
 
-        if tempGame['board'] == game['board']:
+        if tempGame['board'] == filterGame['board']:
             totalScore = -1
 
         # record the move score and reset temp board
@@ -53,11 +72,13 @@ def myAlgorithm(game):
             bestMove = key
 
     scoreData = scoresBreakDown[bestMove]
-    if game['logPath'] is None:
+    if filterGame['logPath'] is None:
         print(moveScoresDict)
         print(scoresBreakDown)
         print('Alg Chose move ' + str(bestMove))
         print('Score Breakdown: ' + str(scoreData))
+
+    del tempGame
 
     return bestMove, scoreData
 
@@ -75,14 +96,19 @@ def cornerCheck(board):
 
     for corner in cornerCoord:
         if board[corner[0]][corner[1]] == largestTile:
-            return largestTile
+            return max(64, largestTile)
 
     return 0
 
 
 def comboCheck(game, verbose=False):
 
-    game = copy.deepcopy(game)
+    filterGame = {
+        'move': game['move'],
+        'board': game['board']
+    }
+
+    tempGame = copy.deepcopy(filterGame)
 
     score = 0
     xDirec = 0
@@ -92,13 +118,13 @@ def comboCheck(game, verbose=False):
     end = 0
     vert = True
 
-    if game['move'] == 'l':
+    if tempGame['move'] == 'l':
         xDirec = -1
         vert = False
-    elif game['move'] == 'r':
+    elif tempGame['move'] == 'r':
         xDirec = 1
         vert = False
-    elif game['move'] == 'u':
+    elif tempGame['move'] == 'u':
         yDirec = -1
     else:
         yDirec = 1
@@ -122,26 +148,28 @@ def comboCheck(game, verbose=False):
                 if vert:
                     if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
                         break
-                    elif game['board'][i + (iterator * distance)][j] == game['board'][i][j] and game['board'][i][j] != 0:
+                    elif tempGame['board'][i + (iterator * distance)][j] == tempGame['board'][i][j] and tempGame['board'][i][j] != 0:
                         if verbose:
-                            print(str(game['board'][i + (iterator * distance)][j]) + ' combines with ' + str(game['board'][i][j]) + ' when moved ' + str(game['move']))
-                        score += 2 * game['board'][i][j]
-                        game['board'][i + (iterator * distance)][j] = 0
+                            print(str(tempGame['board'][i + (iterator * distance)][j]) + ' combines with ' + str(tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
+                        score += 2 * tempGame['board'][i][j]
+                        tempGame['board'][i + (iterator * distance)][j] = 0
                         break
-                    elif game['board'][i + (iterator * distance)][j] != 0:
+                    elif tempGame['board'][i + (iterator * distance)][j] != 0:
                         break
                 else:
                     if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
                         break
-                    elif game['board'][i][j + (iterator * distance)] == game['board'][i][j] and game['board'][i][j] != 0:
+                    elif tempGame['board'][i][j + (iterator * distance)] == tempGame['board'][i][j] and tempGame['board'][i][j] != 0:
                         if verbose:
-                            print(str(game['board'][i][j + (iterator * distance)]) + ' combines with ' + str(game['board'][i][j]) + ' when moved ' + str(game['move']))
-                        score += 2 * game['board'][i][j]
-                        game['board'][i][j + (iterator * distance)] = 0
+                            print(str(tempGame['board'][i][j + (iterator * distance)]) + ' combines with ' + str(tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
+                        score += 2 * tempGame['board'][i][j]
+                        tempGame['board'][i][j + (iterator * distance)] = 0
                         break
-                    elif game['board'][i][j + (iterator * distance)] != 0:
+                    elif tempGame['board'][i][j + (iterator * distance)] != 0:
                         break
 
+    del tempGame
+    del filterGame
     return score
 
 
@@ -163,6 +191,9 @@ def mapTileSizes(game):
         print(tileInfo)
 
     tileInfo['values'].remove(0)
+
+    # if tileInfo['values'][0] > 2047:
+    #     print('Game ' + str(game['id']) + ' has reached ' + str(tileInfo['values'][0]))
 
     return tileInfo
 
@@ -210,22 +241,25 @@ def checkCornerStacking(game):
 
     score = 0
 
-    for i in range(len(tileInfo['locations']) - 1):
-
-        currentTilePos = tileInfo['locations'][i]
-        nextTilePos = tileInfo['locations'][i + 1]
-
-        searches = [[1, 0], [-1, 0], [0, 1], [0, -1]]
-
-        for coordChange in searches:
-            nextTilePos = [tileInfo['locations'][i + 1][0] + coordChange[0],
-                           tileInfo['locations'][i + 1][1] + coordChange[1]]
-
-            if currentTilePos == nextTilePos:
-                score += tileInfo['values'][i + 1] / 2
-                break
-
-        if i > 2:
-            break
+    score += compareTileCoords(largestTiles, secondTiles)
+    # added in Session 15
+    # score += compareTileCoords(largestTiles, thirdTiles)
+    score += compareTileCoords(secondTiles, thirdTiles)
 
     return score
+
+
+def compareTileCoords(largerTile, smallerTile):
+    searches = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+
+    for coord1 in largerTile['locations']:
+        for coord2 in smallerTile['locations']:
+            for search in searches:
+                newCoord = [coord1[0] + search[0], coord1[1] + search[1]]
+
+                if newCoord == coord2:
+                    i = smallerTile['locations'].index(coord2)
+                    # Score was divided by 2 up until Session 16
+                    score = int(smallerTile['values'][i])
+                    return score
+    return 0

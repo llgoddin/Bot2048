@@ -59,13 +59,11 @@ def createMoveLog(game, session):
 
     logPath = session['path'] + '/MoveLogs/moveLogGame' + numStr + '.txt'
 
-    moveLog = open(logPath, 'w+')
+    moveLog = open(logPath, 'a+')
     moveLog.write('START MOVE LOG\n')
     moveLog.write('-' * 10 + '\n')
 
-    moveLog.close()
-
-    return logPath
+    return logPath, moveLog
 
 
 def createScoreLog(game, session):
@@ -102,10 +100,16 @@ def recordMove(game, initialMove=False):
 
     game['moveHistory'].append(move)
 
+    if game['totalMoves'] % 500 == 0:
+        print('Game hit move ' + str(game['totalMoves']))
+        outputMoveLog(game)
+
 
 def recordGameSummary(game):
     if game['logPath'] is None:
         return None
+
+    game['logFile'].close()
 
     # find the biggest tile
     maxTile = 0
@@ -129,35 +133,32 @@ def outputMoveLog(game):
 
     print('Saving Game ' + str(game['id']) + ' Move Log')
 
-    moveLog = open(game['logPath'], 'a+')
-
     moveScores = []
 
     for moves in game['moveHistory']:
 
         if moves[0] == 'INITIAL MOVE\n':
-            moveLog.write(moves[0])
+            game['logFile'].write(moves[0])
         else:
             moveScores.append(moves[3])
-            moveLog.write('MOVE ' + str(moves[0]) + ': ' + str(moves[1]) + '\n')
-        moveLog.write('-' * 10 + '\n')
+            game['logFile'].write('MOVE ' + str(moves[0]) + ': ' + str(moves[1]) + '\n')
+        game['logFile'].write('-' * 10 + '\n')
 
         boardLines = str(moves[2]).split('|')
 
         for line in boardLines:
             if line != boardLines[len(boardLines) - 1]:
-                moveLog.write(line + '\n')
+                game['logFile'].write(line + '\n')
             else:
-                moveLog.write(line)
+                game['logFile'].write(line)
 
-        moveLog.write('-' * 10 + '\n')
-        moveLog.write('\n')
-
-    moveLog.close()
+        game['logFile'].write('-' * 10 + '\n')
+        game['logFile'].write('\n')
 
     outputScoresLog(moveScores, game['logPath'])
 
     del game['moveHistory']
+    game['moveHistory'] = []
 
 
 def outputScoresLog(moveScores, path):
