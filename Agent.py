@@ -26,7 +26,7 @@ def myAlgorithm(game):
         for nextM in moves:
             tempGame['move'] = nextM
             if tempGame['logPath'] is None:
-                print(str(m) + ' then ' + str(nextM) + ' produces ' + str(comboCheck(tempGame, verbose=True)))
+                print(str(m) + ' then ' + str(nextM) + ' produces ' + str(comboCheck(tempGame)))
             if tempScore < comboCheck(tempGame):
                 tempScore = comboCheck(tempGame)
         comboScore += tempScore
@@ -159,6 +159,9 @@ def mapTileSizes(game):
                     tileInfo['locations'].insert(pos, [i, j])
                     break
 
+    if game['logPath'] is None:
+        print(tileInfo)
+
     tileInfo['values'].remove(0)
 
     return tileInfo
@@ -166,6 +169,44 @@ def mapTileSizes(game):
 
 def checkCornerStacking(game):
     tileInfo = mapTileSizes(game)
+
+    largestTiles = {
+        'values': [],
+        'locations': []
+    }
+    secondTiles = {
+        'values': [],
+        'locations': []
+    }
+    thirdTiles = {
+        'values': [],
+        'locations': []
+    }
+
+    stage = 0
+    currentNumStartPos = 0
+    for i in range(len(tileInfo['locations']) - 1):
+        if tileInfo['values'][i] != tileInfo['values'][currentNumStartPos]:
+            stage += 1
+            currentNumStartPos = i
+
+        if stage == 0:
+            largestTiles['values'].append(tileInfo['values'][i])
+            largestTiles['locations'].append(tileInfo['locations'][i])
+        elif stage == 1:
+            secondTiles['values'].append(tileInfo['values'][i])
+            secondTiles['locations'].append(tileInfo['locations'][i])
+        elif stage == 2:
+            thirdTiles['values'].append(tileInfo['values'][i])
+            thirdTiles['locations'].append(tileInfo['locations'][i])
+
+        if stage > 2:
+            break
+
+    if game['logPath'] is None:
+        print('Largest: ' + str(largestTiles))
+        print('Second: ' + str(secondTiles))
+        print('Third: ' + str(thirdTiles))
 
     score = 0
 

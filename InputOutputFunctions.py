@@ -135,11 +135,10 @@ def outputMoveLog(game):
 
     for moves in game['moveHistory']:
 
-        moveScores.append(moves[3])
-
         if moves[0] == 'INITIAL MOVE\n':
             moveLog.write(moves[0])
         else:
+            moveScores.append(moves[3])
             moveLog.write('MOVE ' + str(moves[0]) + ': ' + str(moves[1]) + '\n')
         moveLog.write('-' * 10 + '\n')
 
@@ -171,8 +170,6 @@ def outputScoresLog(moveScores, path):
 
     gameID = recordingPath[1].split('.')[0]
     path = recordingPath[0] + 'MoveScores/scoreLog' + str(gameID) + '.csv'
-
-    print('Move Scores ' + str(moveScores))
 
     for record in moveScores:
         totalScores.append(record[0])
