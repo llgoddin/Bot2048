@@ -2,6 +2,7 @@
 
 import os
 import time
+from Graphing import *
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -63,7 +64,9 @@ def createMoveLog(game, session):
     moveLog.write('START MOVE LOG\n')
     moveLog.write('-' * 10 + '\n')
 
-    return logPath, moveLog
+    moveLog.close()
+
+    return logPath
 
 
 def createScoreLog(game, session):
@@ -99,17 +102,12 @@ def recordMove(game, initialMove=False):
         move = (game['totalMoves'], game['move'], boardStr, game['moveScores'])
 
     game['moveHistory'].append(move)
-
-    if game['totalMoves'] % 500 == 0:
-        print('Game hit move ' + str(game['totalMoves']))
-        outputMoveLog(game)
+    del move
 
 
 def recordGameSummary(game):
     if game['logPath'] is None:
         return None
-
-    game['logFile'].close()
 
     # find the biggest tile
     maxTile = 0
@@ -135,30 +133,32 @@ def outputMoveLog(game):
 
     moveScores = []
 
+    moveLog = open(game['logPath'], 'a+')
+
     for moves in game['moveHistory']:
 
         if moves[0] == 'INITIAL MOVE\n':
-            game['logFile'].write(moves[0])
+            moveLog.write(moves[0])
         else:
             moveScores.append(moves[3])
-            game['logFile'].write('MOVE ' + str(moves[0]) + ': ' + str(moves[1]) + '\n')
-        game['logFile'].write('-' * 10 + '\n')
+            moveLog.write('MOVE ' + str(moves[0]) + ': ' + str(moves[1]) + '\n')
+        moveLog.write('-' * 10 + '\n')
 
         boardLines = str(moves[2]).split('|')
 
         for line in boardLines:
             if line != boardLines[len(boardLines) - 1]:
-                game['logFile'].write(line + '\n')
+                moveLog.write(line + '\n')
             else:
-                game['logFile'].write(line)
+                moveLog.write(line)
 
-        game['logFile'].write('-' * 10 + '\n')
-        game['logFile'].write('\n')
+        moveLog.write('-' * 10 + '\n')
+        moveLog.write('\n')
 
+    moveLog.close()
     outputScoresLog(moveScores, game['logPath'])
 
     del game['moveHistory']
-    game['moveHistory'] = []
 
 
 def outputScoresLog(moveScores, path):
@@ -285,6 +285,11 @@ def compileStats(session):
 
     statFile.write('\n\nWorst Game: #' + str(worstGame['id']) + ', Score: ' + str(worstGame['score']))
     statFile.write('\nBest Game: #' + str(bestGame['id']) + ', Score: ' + str(bestGame['score']) + '\n')
+
+    sessionID = int(session['path'].split('Session')[1])
+
+    print('Session ID: ' + str(sessionID))
+    graphGames([worstGame['id'], bestGame['id']], sessionID)
 
     print('Session Complete!')
     print('Find stats in dir ' + str(session['path']))

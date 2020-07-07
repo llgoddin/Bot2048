@@ -110,7 +110,6 @@ def createGame(gameID=0, session=None, agent=False):
     game = {
         'id': gameID,
         'logPath': None,
-        'logFile': None,
         'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         'move': None,
         'moveHistory': [],
@@ -129,7 +128,7 @@ def createGame(gameID=0, session=None, agent=False):
     if session is not None:
         if session['recording']:
             game['agentActive'] = True
-            game['logPath'], game['logFile'] = createMoveLog(game, session)
+            game['logPath'] = createMoveLog(game, session)
 
     return game
 
