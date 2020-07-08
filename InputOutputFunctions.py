@@ -286,13 +286,10 @@ def compileStats(session):
     statFile.write('\n\nWorst Game: #' + str(worstGame['id']) + ', Score: ' + str(worstGame['score']))
     statFile.write('\nBest Game: #' + str(bestGame['id']) + ', Score: ' + str(bestGame['score']) + '\n')
 
-    sessionID = int(session['path'].split('Session')[1])
-
-    print('Session ID: ' + str(sessionID))
-    graphGames([worstGame['id'], bestGame['id']], sessionID)
-
     print('Session Complete!')
     print('Find stats in dir ' + str(session['path']))
+
+    return bestGame['id'], worstGame['id']
 
 
 def computeTotalTime(start, end):

@@ -103,7 +103,11 @@ def endSession(session):
     # gather time information and compile stats
     session['endTime'] = time.time()
 
-    compileStats(session)
+    bestGameID, worstGameID = compileStats(session)
+
+    qGames = findQuartileGames(session['path'])
+
+    graphGames([worstGameID, qGames[0], qGames[1], qGames[2], bestGameID], session['path'], names=['Worst', 'Q1', 'Q2', 'Q3', 'Best'])
 
 
 def createGame(gameID=0, session=None, agent=False):
