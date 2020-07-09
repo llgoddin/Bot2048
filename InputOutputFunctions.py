@@ -309,3 +309,42 @@ def computeAverageTime(games, totalTime):
     t = computeTotalTime(0, seconds)
 
     return t
+
+
+def parseMoveLog(gameNum, sessionNum):
+    if gameNum < 10:
+        gameStr = '0' + str(gameNum)
+    else:
+        gameStr = str(gameNum)
+
+    path = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum) + \
+           '/MoveLogs/moveLogGame' + str(gameStr) + '.txt'
+
+    logFile = open(path, 'r')
+
+    lines = logFile.readlines()[2:]
+
+    moves = []
+    boards = []
+    currentBoard = []
+
+    for i in range(len(lines)):
+        if lines[i][0] == 'I':
+            print('Found Initial Board')
+            continue
+        if lines[i][0] == 'M':
+            moves.append(lines[i][-2])
+
+        if lines[i][0] == '-':
+            if currentBoard != []:
+                boards.append(currentBoard)
+                currentBoard = []
+
+        if lines[i][0].isnumeric():
+            line = lines[i].split(', ')
+            boardLine = []
+            for num in line:
+                boardLine.append(num.split('\n')[0])
+            currentBoard.append(boardLine)
+
+    return moves, boards

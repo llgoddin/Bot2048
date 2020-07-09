@@ -110,10 +110,10 @@ def endSession(session):
     graphGames([worstGameID, qGames[0], qGames[1], qGames[2], bestGameID], session['path'], names=['Worst', 'Q1', 'Q2', 'Q3', 'Best'])
 
 
-def createGame(gameID=0, session=None, agent=False):
+def createGame(gameID=0, session=None, agent=False, path=None):
     game = {
         'id': gameID,
-        'logPath': None,
+        'logPath': path,
         'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         'move': None,
         'moveHistory': [],

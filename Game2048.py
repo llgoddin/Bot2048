@@ -51,15 +51,46 @@ mouseDown = False
 
 gameScreenButtons = {}
 settingsButtons = {}
+replayButtons = {}
 
 FPS = 30
 fpsClock = pygame.time.Clock()
 
 
+def replayLoop(gameNum, sessionNum):
+    moves, boards = parseMoveLog(gameNum, sessionNum)
+
+    game = {
+        'animationTimer': 10,
+        'newTile': (4, 4),
+        'score': None,
+        'board': None
+    }
+
+    running = True
+    index = 0
+
+    while running:
+        increment = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            increment = checkClick(replayButtons, waitForMouseDown=False)
+
+        index += increment
+
+        printBoard(boards[index])
+        game['board'] = boards[index]
+        game['score'] = moves[index]
+
+        gameScreenUpdate(game, buttons=replayButtons)
+
+
 def gameLoop(game):
     waitingToReset = True
 
-    gameScreenUpdate(game)
+    gameScreenUpdate(game, gameScreenButtons)
     while not game['lost']:
         game['move'] = None
 
@@ -81,7 +112,8 @@ def gameLoop(game):
 
         # agent move
         if game['agentActive']:
-            game['move'] = myAlgorithm(game)
+            scoreData = None
+            game['move'], scoreData = myAlgorithm(game)
 
         move(game)
 
@@ -93,7 +125,7 @@ def gameLoop(game):
 
         updateAnimation(game)
 
-        gameScreenUpdate(game)
+        gameScreenUpdate(game, gameScreenButtons)
 
         fpsClock.tick(FPS)
 
@@ -138,8 +170,7 @@ def updateAnimation(game):
         game['newTile'] = (4, 4)
 
 
-def gameScreenUpdate(game):
-    global gameScreenButtons
+def gameScreenUpdate(game, buttons):
 
     screen.fill(LIGHT_GREY)
 
@@ -159,7 +190,7 @@ def gameScreenUpdate(game):
         else:
             changeButtonColor(btn, WHITE, DARK_GREY)
 
-    renderButtons(gameScreenButtons)
+    renderButtons(buttons)
 
     # I use the window caption as a progress bar to show the session progress when recording and not updating the screen
     pygame.display.set_caption('2048')
@@ -227,7 +258,7 @@ def textRend(message, size, color):
     return textObj
 
 
-def checkClick(btns, game=None):
+def checkClick(btns, game=None, waitForMouseDown=True):
     global mouseDown
 
     # handle mouse events
@@ -237,7 +268,7 @@ def checkClick(btns, game=None):
     if click == (0, 0, 0):
         mouseDown = False
         return True
-    elif click == (1, 0, 0) and not mouseDown:
+    elif click == (1, 0, 0) and (not mouseDown or not waitForMouseDown):
         mouseDown = True
         mouse = pygame.mouse.get_pos()
 
@@ -246,15 +277,26 @@ def checkClick(btns, game=None):
             if btn['rect'][0] < mouse[0] < btn['rect'][0] + btn['rect'][2]:
                 if btn['rect'][1] < mouse[1] < btn['rect'][1] + btn['rect'][3]:
                     if key == 'newGame':
-                        game = createGame()
+                        game = createGame(path='NotRecording')
                         gameLoop(game)
                     elif key == 'agent':
                         print('Activating Agent')
                         game['agentActive'] = not game['agentActive']
+
+                        if game['lost']:
+                            game = createGame(path='NotRecording')
+                            gameLoop(game)
                     elif key == 'settings':
                         settingsLoop(game)
                     elif key == 'back':
-                        gameLoop(game)
+                        # TODO fix this back to how its supposed to be
+                        # gameLoop(game)
+                        replayLoop(00, 22)
+                    elif key == 'replayNext':
+                        return 1
+                    elif key == 'replayBack':
+                        return -1
+
     return True
 
 
@@ -344,7 +386,13 @@ gameScreenButtons['settings'] = createButton([398, 68, 75, 46], 'SETTINGS', WHIT
 
 settingsButtons['back'] = createButton([10, 560, 130, 30], '<-- BACK --', WHITE, DARK_GREY)
 
-g = createGame()
+replayButtons['replayBack'] = createButton([290, 68, 46, 46], None, WHITE, DARK_GREY,
+                                          [['p', 'fg', [7, 7, 7, 39, 39, 23]]])
+replayButtons['replayNext'] = createButton([344, 68, 46, 46], None, WHITE, DARK_GREY,
+                                            [['p', 'fg', [7, 7, 7, 39, 39, 23]]])
+
+
+g = createGame(path='NotRecording')
 
 gameLoop(g)
 
