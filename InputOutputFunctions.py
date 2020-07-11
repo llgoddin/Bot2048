@@ -344,7 +344,11 @@ def parseMoveLog(gameNum, sessionNum):
             line = lines[i].split(', ')
             boardLine = []
             for num in line:
-                boardLine.append(num.split('\n')[0])
+                boardLine.append(int(num.split('\n')[0]))
             currentBoard.append(boardLine)
 
+    moves.append('End')
+
+    print(len(moves))
+    print(len(boards))
     return moves, boards

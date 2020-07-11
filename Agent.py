@@ -78,9 +78,6 @@ def myAlgorithm(game):
         print('Alg Chose move ' + str(bestMove))
         print('Score Breakdown: ' + str(scoreData))
 
-    if game['logPath'] == 'NotRecording':
-        print('Best Move ' + str(bestMove))
-
     del tempGame
 
     return bestMove, scoreData

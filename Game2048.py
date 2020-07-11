@@ -57,30 +57,35 @@ FPS = 30
 fpsClock = pygame.time.Clock()
 
 
-def replayLoop(gameNum, sessionNum):
+def replayLoop(gameNum, sessionNum, startingMove=0):
     moves, boards = parseMoveLog(gameNum, sessionNum)
 
     game = {
         'animationTimer': 10,
         'newTile': (4, 4),
+        'moveNum': None,
         'score': None,
         'board': None
     }
 
     running = True
-    index = 0
+    index = startingMove
 
     while running:
-        increment = 0
+        incrementMessage = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            increment = checkClick(replayButtons, waitForMouseDown=False)
 
-        index += increment
+        incrementMessage = checkClick(replayButtons, waitForMouseDown=False)
 
-        printBoard(boards[index])
+        if incrementMessage == 'replayIncrement':
+            index += 1
+        elif incrementMessage == 'replayDecrement':
+            index -= 1
+
+        game['moveNum'] = index
         game['board'] = boards[index]
         game['score'] = moves[index]
 
@@ -136,7 +141,7 @@ def gameLoop(game):
                 pygame.quit()
                 sys.exit()
 
-        gameScreenUpdate(game)
+        gameScreenUpdate(game, gameScreenButtons)
 
 
 def settingsLoop(game):
@@ -180,10 +185,27 @@ def gameScreenUpdate(game, buttons):
     textRect.center = (148, 77)
     screen.blit(titleText, textRect)
 
+    scoreText = None
+    if str(game['score']).isnumeric():
+        scoreText = textRend('Score: ' + str(game['score']), 30, DARK_GREY)
+        scoreTextRect = scoreText.get_rect()
+        scoreTextRect.center = (390, 38)
+        screen.blit(scoreText, scoreTextRect)
+    else:
+        scoreText = textRend('Next Move: ' + str(game['score']).upper(), 30, DARK_GREY)
+        scoreTextRect = scoreText.get_rect()
+        scoreTextRect.center = (390, 38)
+        screen.blit(scoreText, scoreTextRect)
+
+        moveText = textRend('Move: ' + str(game['moveNum']), 20, RED)
+        moveTextRect = moveText.get_rect()
+        moveTextRect.center = (440, 90)
+        screen.blit(moveText, moveTextRect)
+
     mouse = pygame.mouse.get_pos()
 
     # check buttons to see if they are hovered and change color if they are
-    for k, btn in gameScreenButtons.items():
+    for k, btn in buttons.items():
         if btn['rect'][0] < mouse[0] < btn['rect'][0] + btn['rect'][2]:
             if btn['rect'][1] < mouse[1] < btn['rect'][1] + btn['rect'][3]:
                 changeButtonColor(btn, WHITE, GREY)
@@ -291,11 +313,11 @@ def checkClick(btns, game=None, waitForMouseDown=True):
                     elif key == 'back':
                         # TODO fix this back to how its supposed to be
                         # gameLoop(game)
-                        replayLoop(00, 22)
+                        replayLoop(00, 18, 200)
                     elif key == 'replayNext':
-                        return 1
+                        return 'replayIncrement'
                     elif key == 'replayBack':
-                        return -1
+                        return 'replayDecrement'
 
     return True
 
@@ -387,7 +409,7 @@ gameScreenButtons['settings'] = createButton([398, 68, 75, 46], 'SETTINGS', WHIT
 settingsButtons['back'] = createButton([10, 560, 130, 30], '<-- BACK --', WHITE, DARK_GREY)
 
 replayButtons['replayBack'] = createButton([290, 68, 46, 46], None, WHITE, DARK_GREY,
-                                          [['p', 'fg', [7, 7, 7, 39, 39, 23]]])
+                                          [['p', 'fg', [39, 39, 7, 23, 39, 7]]])
 replayButtons['replayNext'] = createButton([344, 68, 46, 46], None, WHITE, DARK_GREY,
                                             [['p', 'fg', [7, 7, 7, 39, 39, 23]]])
 
