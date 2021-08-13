@@ -3,3 +3,4 @@
 /.DS_Store
 /.idea/*
 /Board.txt
+/__pycache__/*
