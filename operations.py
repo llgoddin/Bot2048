@@ -2,142 +2,12 @@
 
 from Agent import *
 from InputOutputFunctions import *
-import multiprocessing
 import copy
-import os
-import time
 import random
 
 
-def findSessionNum():
-
-    # figure out number of sessions that have already been recorded
-    for (root, dirs, files) in os.walk('/Users/lucasgoddin/Documents/PycharmProjects/GameRecording', topdown=True):
-        nextSession = 0
-
-        for d in dirs:
-            try:
-
-                if int(d[-2:]) >= nextSession:
-                    nextSession = int(d[-2:]) + 1
-
-            except ValueError as verr:
-                print('Directory ' + str(d) + ' does not end in a number!')
-
-        if nextSession > 99:
-            return -1
-        return nextSession
-
-
-def createSession(recording=True, totalGames=10):
-    print('Creating Session...')
-
-    session = {
-        'recording': recording,
-        'path': None,
-        'games': [],
-        'startTime': None,
-        'endTime': None
-    }
-
-    if session['recording']:
-        sessionNum = findSessionNum()
-
-        if sessionNum < 10:
-            sessionStr = '0' + str(sessionNum)
-        elif sessionNum == -1:
-            session['recording'] = False
-            return session
-        else:
-            sessionStr = str(sessionNum)
-
-        session['path'] = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + sessionStr
-        os.mkdir(session['path'])
-        os.mkdir((session['path'] + str('/MoveLogs')))
-        os.mkdir((session['path'] + str('/MoveLogs/MoveScores')))
-
-        stats = open(session['path'] + '/sessionStats.txt', 'w+')
-        stats.write('STATS\n')
-        stats.write('-' * 10 + '\n')
-        stats.close()
-
-        gameSummaries = open(session['path'] + '/gameSummaries.txt', 'w+')
-        gameSummaries.write('GAME SUMMARIES\n')
-        gameSummaries.write('Game #- Max Tile, Score, Number Of Moves\n')
-        gameSummaries.write('-' * 10 + '\n')
-        gameSummaries.close()
-
-    session['startTime'] = time.time()
-
-    for i in range(totalGames):
-        session['games'].append(createGame(i, session))
-
-    return session
-
-
-def runSession(s, threads=8):
-    if threads > 1:
-        p = multiprocessing.Pool(processes=threads)
-
-        results = p.map_async(runGame, s['games'])
-
-        p.close()
-        p.join()
-
-        games = results.get()
-
-        for g in games:
-            recordGameSummary(g)
-    else:
-        for g in s['games']:
-            runGame(g)
-            recordGameSummary(g)
-
-    endSession(s)
-
-
-def endSession(session):
-    print('Ending Session...')
-    # reset agent and game recording info
-    session['recording'] = False
-    # gather time information and compile stats
-    session['endTime'] = time.time()
-
-    bestGameID, worstGameID = compileStats(session)
-
-    qGames = findQuartileGames(session['path'])
-
-    graphGames([worstGameID, qGames[0], qGames[1], qGames[2], bestGameID], session['path'], names=['Worst', 'Q1', 'Q2', 'Q3', 'Best'])
-
-
-def createGame(gameID=0, session=None, agent=False, path=None):
-    game = {
-        'id': gameID,
-        'logPath': path,
-        'board': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
-        'move': None,
-        'moveHistory': [],
-        'moveScores': [],
-        'newTile': (4, 4),
-        'score': 0,
-        'animationTimer': 0,
-        'agentActive': agent,
-        'totalMoves': 0,
-        'lost': False
-    }
-
-    genTile(game)
-    genTile(game)
-
-    if session is not None:
-        if session['recording']:
-            game['agentActive'] = True
-            game['logPath'] = createMoveLog(game, session)
-
-    return game
-
-
 def combineTiles(board, xDirec, yDirec):
+    scoreEarned = 0
     iterator = 0
     start = 0
     end = 0
@@ -164,6 +34,7 @@ def combineTiles(board, xDirec, yDirec):
                         break
                     elif board[i + (iterator * distance)][j] == board[i][j]:
                         board[i][j] *= 2
+                        scoreEarned += board[i][j]
                         board[i + (iterator * distance)][j] = 0
                         break
                     elif board[i + (iterator * distance)][j] != 0:
@@ -173,10 +44,13 @@ def combineTiles(board, xDirec, yDirec):
                         break
                     elif board[i][j + (iterator * distance)] == board[i][j]:
                         board[i][j] *= 2
+                        scoreEarned += board[i][j]
                         board[i][j + (iterator * distance)] = 0
                         break
                     elif board[i][j + (iterator * distance)] != 0:
                         break
+    
+    return scoreEarned
 
 
 def genTile(game):
@@ -219,18 +93,20 @@ def move(game, newTile=True):
     iterator = 0
 
     # determines which direction tiles should be moving and direction the loop should iterate
-    if game['move'] == 'l':
+    if game['move'] == 'a':
         xDirec = 1
         iterator = 1
-    elif game['move'] == 'r':
+    elif game['move'] == 'd':
         xDirec = -1
         iterator = -1
-    elif game['move'] == 'u':
+    elif game['move'] == 'w':
         yDirec = 1
         iterator = 1
-    else:
+    elif game['move'] == 's':
         yDirec = -1
         iterator = -1
+    else: 
+        return None
 
     if iterator < 0:
         start = 3
@@ -240,7 +116,8 @@ def move(game, newTile=True):
         end = 3
 
     # combine tiles
-    combineTiles(game['board'], xDirec, yDirec)
+    if 'score' in game.keys():
+        game['score'] += combineTiles(game['board'], xDirec, yDirec)
 
     # compress tiles
 
@@ -274,12 +151,8 @@ def move(game, newTile=True):
 
 
 def checkGameLost(game):
-    moves = ['l', 'r', 'u', 'd']
+    moves = ['w', 'a', 's', 'd']
     movesLeft = 4
-
-    if game['score'] > 5000:
-        game['lost'] = True
-        print('Game Stopped at 5k')
 
     filterGame = {
         'move': game['move'],
@@ -304,33 +177,3 @@ def checkGameLost(game):
     else:
         game['lost'] = True
 
-
-def calculateScore(game):
-    s = 0
-    for i in range(4):
-        for j in range(4):
-            s += game['board'][i][j]
-
-    game['score'] = s
-
-
-def runGame(game):
-
-    recordMove(game, initialMove=True)
-
-    while not game['lost']:
-
-        if game['agentActive']:
-            game['move'], game['moveScores'] = myAlgorithm(game)
-
-        move(game)
-
-        calculateScore(game)
-
-        checkGameLost(game)
-
-        recordMove(game)
-
-    outputMoveLog(game)
-
-    return game

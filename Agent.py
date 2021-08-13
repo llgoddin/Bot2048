@@ -1,12 +1,11 @@
 import copy
-
-import GameOperations
+import operations
 
 
 def myAlgorithm(game):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
-    moves = ['l', 'r', 'u', 'd']
+    moves = ['w', 'a', 's', 'd']
     scoresBreakDown = {}
     moveScoresDict = {}
 
@@ -17,7 +16,6 @@ def myAlgorithm(game):
         cornerStackScore = 0
 
         filterGame = {
-            'logPath': game['logPath'],
             'id': game['id'],
             'move': game['move'],
             'board': game['board']
@@ -27,7 +25,7 @@ def myAlgorithm(game):
         tempGame['move'] = m
         comboScore += comboCheck(tempGame)
 
-        GameOperations.move(tempGame, newTile=False)
+        operations.move(tempGame, newTile=False)
 
         highTileScore += cornerCheck(tempGame['board'])
 
@@ -35,8 +33,7 @@ def myAlgorithm(game):
         tempHighTileScore = 0
         for nextM in moves:
             tempGame['move'] = nextM
-            if tempGame['logPath'] is None:
-                print(str(m) + ' then ' + str(nextM) + ' produces ' + str(comboCheck(tempGame)))
+
             if tempScore < comboCheck(tempGame):
                 tempScore = comboCheck(tempGame)
             # if highTileScore == 0:
@@ -64,19 +61,15 @@ def myAlgorithm(game):
             scoresBreakDown[m] = totalScore
         moveScoresDict[m] = totalScore
 
+
     # search moveScoresDict for the best move and return it
-    bestMove = 'l'
+    bestMove = 'w'
     scoreData = []
     for key, value in moveScoresDict.items():
         if moveScoresDict[bestMove] < value:
             bestMove = key
 
     scoreData = scoresBreakDown[bestMove]
-    if filterGame['logPath'] is None:
-        print(moveScoresDict)
-        print(scoresBreakDown)
-        print('Alg Chose move ' + str(bestMove))
-        print('Score Breakdown: ' + str(scoreData))
 
     del tempGame
 
@@ -187,8 +180,6 @@ def mapTileSizes(game):
                     tileInfo['locations'].insert(pos, [i, j])
                     break
 
-    if game['logPath'] is None:
-        print(tileInfo)
 
     tileInfo['values'].remove(0)
 
@@ -234,11 +225,6 @@ def checkCornerStacking(game):
         if stage > 2:
             break
 
-    if game['logPath'] is None:
-        print('Largest: ' + str(largestTiles))
-        print('Second: ' + str(secondTiles))
-        print('Third: ' + str(thirdTiles))
-
     score = 0
 
     score += compareTileCoords(largestTiles, secondTiles)
@@ -250,6 +236,7 @@ def checkCornerStacking(game):
 
 
 def compareTileCoords(largerTile, smallerTile):
+
     searches = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
     for coord1 in largerTile['locations']:
@@ -263,3 +250,5 @@ def compareTileCoords(largerTile, smallerTile):
                     score = int(smallerTile['values'][i])
                     return score
     return 0
+
+

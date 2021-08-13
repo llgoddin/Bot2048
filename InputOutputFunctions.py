@@ -1,269 +1,109 @@
 # Lucas Goddin
 
-import os
-import time
+# Contains all functions used for...
+#   - Recording Games (Input and Output)
+#   - Compiling Statistics
+
+from datetime import time
 from Graphing import *
 import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def printBoard(board):
-    # prints board values to console
-    print('-' * 11)
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            print(board[i][j], end=', ')
-        print()
-
-
-def readBoard():
-    boardFile = open('Board.txt', 'r')
-    board = boardFile.read()
-
-    # splits rows by \n and elements in rows by ,
-    boardLines = board.split('\n')
-    boardArray = []
-    for line in boardLines:
-        boardArray.append(line.split(','))
-
-    # changes boardArray values from char to int
-    for i in range(0, 4):
-        for j in range(0, 4):
-            boardArray[i][j] = int(boardArray[i][j])
-
-    boardFile.close()
-
-    return boardArray
-
-
-def writeBoard(board):
-    boardFile = open('Board.txt', 'w')
-
-    # Writes the board with correct formatting to Board.txt
-    for i in range(0, 4):
-        for j in range(0, 4):
-            if j < 3:
-                boardFile.write(str(board[i][j]) + ',')
-            else:
-                boardFile.write(str(board[i][j]))
-        if i < 3:
-            boardFile.write('\n')
-
-    boardFile.close()
-
-
-def createMoveLog(game, session):
-    if game['id'] < 10:
-        numStr = '0' + str(game['id'])
-    else:
-        numStr = str(game['id'])
-
-    logPath = session['path'] + '/MoveLogs/moveLogGame' + numStr + '.txt'
-
-    moveLog = open(logPath, 'a+')
-    moveLog.write('START MOVE LOG\n')
-    moveLog.write('-' * 10 + '\n')
-
-    moveLog.close()
-
-    return logPath
-
-
-def createScoreLog(game, session):
-    if game['id'] < 10:
-        numStr = '0' + str(game['id'])
-    else:
-        numStr = str(game['id'])
-
-    logPath = session['path'] + '/MoveLogs/MoveScores/scoreDataGame' + numStr + '.txt'
-
-    scoreLog = open(logPath, 'w+')
-
-    scoreLog.close()
-
-
 def recordMove(game, initialMove=False):
-    if game['logPath'] is None:
-        return None
 
-    boardStr = ''
+    if game['moveLog'] is None:
+        dfColumns = []
+        
+        for i in range(16):
+            dfColumns.append(str(i))
+        
+        dfColumns.append('score')
+        dfColumns.append('move')
+        dfColumns.append('totalScore')
+        dfColumns.append('maxTileScore')
+        dfColumns.append('comboScore')
+        dfColumns.append('cornerStackScore')
 
-    for i in range(4):
-        for j in range(4):
-            if j < 3:
-                boardStr += str(game['board'][i][j]) + ', '
-            else:
-                boardStr += str(game['board'][i][j])
-        boardStr += '|'
+        game['moveLog'] = pd.DataFrame(columns=dfColumns)
+
+
+    board = []
+
+    for line in game['board']:
+        for tile in line:
+            board.append(tile)
+
+    board.append(game['score'])
+    board.append(game['move'])
 
     if initialMove:
-        move = ('INITIAL MOVE\n', None, boardStr, None)
+        for i in range(4):
+            board.append(0)
     else:
-        move = (game['totalMoves'], game['move'], boardStr, game['moveScores'])
+        for num in game['moveScores']:
+            board.append(num)
 
-    game['moveHistory'].append(move)
-    del move
-
-
-def recordGameSummary(game):
-    if game['logPath'] is None:
-        return None
-
-    # find the biggest tile
-    maxTile = 0
-    for i in range(4):
-        for j in range(4):
-            if game['board'][i][j] > maxTile:
-                maxTile = game['board'][i][j]
-
-    gameSummariesPath = game['logPath'].split('/MoveLogs')[0]
-
-    gameSumFile = open((gameSummariesPath + '/gameSummaries.txt'), 'a+')
-
-    gameSumFile.write('Game ' + str(game['id']) + '- ' + str(maxTile) + ', ' + str(game['score']) + ', ' + str(game['totalMoves']) + '\n')
-
-    gameSumFile.close()
+    game['moveLog'].loc[len(game['moveLog'].index)] = board
 
 
-def outputMoveLog(game):
-    if game['logPath'] is None:
-        return None
+def outputLogs(session):
+    gameSummaries = []
 
-    print('Saving Game ' + str(game['id']) + ' Move Log')
-
-    moveScores = []
-
-    moveLog = open(game['logPath'], 'a+')
-
-    for moves in game['moveHistory']:
-
-        if moves[0] == 'INITIAL MOVE\n':
-            moveLog.write(moves[0])
+    for game in session['games']:
+        path = session['path'] + '/MoveLogs/game' + str(game['id']) + 'Log.csv'
+        if game['moveLog'] is None:
+            print('problem outputing game ' + str(game['id']))
         else:
-            moveScores.append(moves[3])
-            moveLog.write('MOVE ' + str(moves[0]) + ': ' + str(moves[1]) + '\n')
-        moveLog.write('-' * 10 + '\n')
+            game['moveLog'].to_csv(path, index=False)
 
-        boardLines = str(moves[2]).split('|')
+        maxTile = 0
 
-        for line in boardLines:
-            if line != boardLines[len(boardLines) - 1]:
-                moveLog.write(line + '\n')
-            else:
-                moveLog.write(line)
+        for row in game['board']:
+            if max(row) > maxTile:
+                maxTile = max(row)
 
-        moveLog.write('-' * 10 + '\n')
-        moveLog.write('\n')
+        gameSummaries.append([game['id'], maxTile, game['score'], game['totalMoves']])
 
-    moveLog.close()
-    outputScoresLog(moveScores, game['logPath'])
-
-    del game['moveHistory']
-
-
-def outputScoresLog(moveScores, path):
-    totalScores = []
-    highestTile = []
-    comboScore = []
-    cornerStackScore = []
-
-    recordingPath = path.split('moveLogGame')
-
-    gameID = recordingPath[1].split('.')[0]
-    path = recordingPath[0] + 'MoveScores/scoreLog' + str(gameID) + '.csv'
-
-    for record in moveScores:
-        totalScores.append(record[0])
-        highestTile.append(record[1])
-        comboScore.append(record[2])
-        cornerStackScore.append(record[3])
-
-    outputTable = list(zip(totalScores, highestTile, comboScore, cornerStackScore))
-
-    df = pd.DataFrame(data=outputTable, columns=['Total', 'High Tile', 'Combo', 'Corner Stacking'])
-
-    df.to_csv(path, index=False)
+    df = pd.DataFrame(data=gameSummaries, columns=['Game ID', 'Max Tile', 'Score', 'Total Moves'])
+    df.to_csv(session['path'] + '/gameSummaries.csv', index=False)
 
 
 def compileStats(session):
-    gameSummaries = open((session['path'] + '/gameSummaries.txt'), 'r')
-
-    lines = gameSummaries.readlines()
-
-    gameSummaries.close()
+    summaryData = pd.read_csv(session['path'] + '/gameSummaries.csv')
 
     statFile = open(session['path'] + '/sessionStats.txt', 'a+')
 
-    maxTile = 0
+    maxTile = max(summaryData['Max Tile'])
+
+    df1 = summaryData['Game ID'].where(summaryData['Score'] == max(summaryData['Score']))
+    df2 = df1.dropna()
 
     bestGame = {
-        'id': 0,
-        'score': 0
+        'id': int(df2.iloc[0]),
+        'score': summaryData['Score'].max()
     }
+
+    df1 = summaryData['Game ID'].where(summaryData['Score'] == min(summaryData['Score']))
+    df2 = df1.dropna()
 
     worstGame = {
-        'id': 0,
-        'score': 10000
+        'id': int(df2.iloc[0]),
+        'score': summaryData['Score'].min()
     }
 
-    totalMaxTile = 0
-    totalScore = 0
-    totalMoveNumber = 0
+    numOfGames = len(summaryData.index)
 
-    num4096 = 0
-    num2048 = 0
-    num1024 = 0
-    num512 = 0
-    num256 = 0
-    num128 = 0
+    percent128 = sum(summaryData['Max Tile'] >= 128) / numOfGames
+    percent256 = sum(summaryData['Max Tile'] >= 256) / numOfGames
+    percent512 = sum(summaryData['Max Tile'] >= 512) / numOfGames
+    percent1024 = sum(summaryData['Max Tile'] >= 1024) / numOfGames
+    percent2048 = sum(summaryData['Max Tile'] >= 2048) / numOfGames
+    percent4096 = sum(summaryData['Max Tile'] >= 4096) / numOfGames
 
-    numOfGames = len(session['games'])
-
-    for l in lines[3:]:
-        statString = l.split('-')
-        stats = statString[1].split(', ')
-
-        for s in stats:
-            s = s.strip()
-
-        if int(stats[1]) < worstGame['score']:
-            worstGame['score'] = int(stats[1])
-            worstGame['id'] = statString[0][-2:]
-
-        if int(stats[1]) > bestGame['score']:
-            bestGame['score'] = int(stats[1])
-            bestGame['id'] = statString[0][-2:]
-
-        totalMaxTile += int(stats[0])
-        totalScore += int(stats[1])
-        totalMoveNumber += int(stats[2])
-
-        if int(stats[0]) >= maxTile:
-            maxTile = int(stats[0])
-
-        if int(stats[0]) >= 128:
-            num128 += 1
-        if int(stats[0]) >= 256:
-            num256 += 1
-        if int(stats[0]) >= 512:
-            num512 += 1
-        if int(stats[0]) >= 1024:
-            num1024 += 1
-        if int(stats[0]) >= 2048:
-            num2048 += 1
-        if int(stats[0]) >= 4096:
-            num4096 += 1
-
-    percent128 = num128 / numOfGames
-    percent256 = num256 / numOfGames
-    percent512 = num512 / numOfGames
-    percent1024 = num1024 / numOfGames
-    percent2048 = num2048 / numOfGames
-    percent4096 = num4096 / numOfGames
-
-    averageScore = totalScore / numOfGames
-    averageMaxTile = totalMaxTile / numOfGames
-    averageMoves = totalMoveNumber / numOfGames
+    averageScore = summaryData['Score'].sum() / numOfGames
+    averageMaxTile = summaryData['Max Tile'].sum() / numOfGames
+    averageMoves = summaryData['Total Moves'].sum() / numOfGames
     totalTime = computeTotalTime(session['startTime'], session['endTime'])
     avgTime = computeAverageTime(numOfGames, totalTime)
 
@@ -286,11 +126,28 @@ def compileStats(session):
     statFile.write('\n\nWorst Game: #' + str(worstGame['id']) + ', Score: ' + str(worstGame['score']))
     statFile.write('\nBest Game: #' + str(bestGame['id']) + ', Score: ' + str(bestGame['score']) + '\n')
 
-    print('Session Complete!')
-    print('Find stats in dir ' + str(session['path']))
+    stats = {
+        'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + 's',
+        'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's',
+        'Max Tile': maxTile,
+        'Average Score': averageScore,
+        'Average Moves': averageMoves,
+        '4096': percent4096,
+        '2048': percent2048,
+        '1024': percent1024,
+        '512': percent512,
+        '256': percent256,
+        '128': percent128,
 
-    return bestGame['id'], worstGame['id']
+        'Worst Game': worstGame['id'],
+        'Worst Score': worstGame['score'],
 
+        'Best Game': bestGame['id'],
+        'Best Score': bestGame['score']
+    }
+
+    return stats
+    
 
 def computeTotalTime(start, end):
     sec = round(end - start)
@@ -317,7 +174,7 @@ def parseMoveLog(gameNum, sessionNum):
     else:
         gameStr = str(gameNum)
 
-    path = '/Users/lucasgoddin/Documents/PycharmProjects/GameRecording/Session' + str(sessionNum) + \
+    path = '/Users/lucasgoddin/Documents/Python Projects/GameRecording/Session' + str(sessionNum) + \
            '/MoveLogs/moveLogGame' + str(gameStr) + '.txt'
 
     logFile = open(path, 'r')
