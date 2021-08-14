@@ -5,6 +5,10 @@ from operations import *
 import multiprocessing
 import os
 import time
+import json
+
+with open('config.json') as config_file:
+    config = json.load(config_file)
 
 def runGame(game):
 
@@ -26,7 +30,7 @@ def runGame(game):
 def findSessionNum():
 
     # figure out number of sessions that have already been recorded
-    for (root, dirs, files) in os.walk('/Users/lucasgoddin/Documents/Python Projects/GameRecording', topdown=True):
+    for (root, dirs, files) in os.walk(config['recording_path'], topdown=True):
         nextSession = 0
 
         for d in dirs:
@@ -64,7 +68,7 @@ def createSession(recording=True, totalGames=10):
         else:
             sessionStr = str(sessionNum)
 
-        session['path'] = '/Users/lucasgoddin/Documents/Python Projects/GameRecording/Session' + sessionStr
+        session['path'] = config['recording_path'] + '/Session' + sessionStr
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))
 
