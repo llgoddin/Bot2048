@@ -20,6 +20,7 @@ def recordMove(game, initialMove=False):
         
         dfColumns.append('score')
         dfColumns.append('move')
+        dfColumns.append('Win/Loss/Continue')
         dfColumns.append('totalScore')
         dfColumns.append('maxTileScore')
         dfColumns.append('comboScore')
@@ -29,13 +30,20 @@ def recordMove(game, initialMove=False):
 
 
     board = []
+    winLossContinue = 'c'
 
     for line in game['board']:
         for tile in line:
+            if tile >= 2048:
+                winLossContinue = 'w'
             board.append(tile)
+
+    if game['lost']:
+        winLossContinue = 'l'
 
     board.append(game['score'])
     board.append(game['move'])
+    board.append(winLossContinue)
 
     if initialMove:
         for i in range(4):
