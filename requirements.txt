@@ -1,3 +1,4 @@
 pandas
 colorama
 matplotlib
+jinja2

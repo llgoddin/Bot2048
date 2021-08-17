@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Report</title>
+    <link rel="stylesheet" href="./htmlReportData/style.css">
+</head>
+
+<body>
+    <h1 class="title">Session {{stats['ID']}} Statistics</h1>
+    <hr>
+
+    <div class="head_wrapper">
+        <h2>Number Of Games: {{stats['Games']}} </h2>
+        <h2>Number Of Threads: {{stats['Threads']}} </h2>
+
+    </div>
+
+    <div class="stats_wrapper">
+        <div class="stats_container">
+            <h2>Best Game ID: {{stats['Best Game']}} </h2>
+            <h2>Best Score: {{stats['Best Score']}} </h2>
+            <h2>Worst Game ID: {{stats['Worst Game']}} </h2>
+            <h2>Worst Score: {{stats['Worst Score']}} </h2>
+            <h2>Max Tile: {{stats['Max Tile']}} </h2> 
+         
+        </div>
+        <div class="stats_container">
+            <h2>Average Score: {{stats['Average Score']}} </h2>
+            <h2>Average Max Tile: {{stats['Average Max Tile']}} </h2> 
+            <h2>Average Number of Moves: {{stats['Average Moves']}} </h2>
+            <h2>Average Game Time: {{stats['Average Time']}} </h2>
+            <h2>Total Session Time: {{stats['Total Time']}} </h2>
+
+         
+        </div>
+        <div class="stats_container">
+            <h2>Percent Of Games To Reach Each Tile</h2>
+            <h2 class="tile_stats">4096: {{stats['4096']}} </h2> 
+            <h2 class="tile_stats">2048: {{stats['2048']}} </h2> 
+            <h2 class="tile_stats">1024: {{stats['1024']}} </h2> 
+            <h2 class="tile_stats">512: {{stats['512']}} </h2> 
+            <h2 class="tile_stats">256: {{stats['256']}} </h2> 
+            <h2 class="tile_stats">128: {{stats['128']}} </h2> 
+         
+        </div>
+    </div>
+
+    <div class="graph_wrapper">
+        <div class="graph">
+            <h1>Best Game</h1>
+            <img src="./htmlReportData/Best.png" alt="">
+        </div>
+        <div class="graph">
+            <h1>Worst Game</h1>
+            <img src="./htmlReportData/Worst.png" alt="">
+        </div>
+    </div>
+    <div class="graph_wrapper">
+        <div class="graph">
+            <h1>Quartile 3 Game</h1>
+            <img src="./htmlReportData/Q3.png" alt="">
+        </div>
+        <div class="graph">
+            <h1>Quartile 2 Game</h1>
+            <img src="./htmlReportData/Q2.png" alt="">
+        </div>
+        <div class="graph">
+            <h1>Quartile 1 Game</h1>
+            <img src="./htmlReportData/Q1.png" alt="">
+        </div>
+    </div>
+</body>
+
+</html>

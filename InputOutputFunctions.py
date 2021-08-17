@@ -5,10 +5,16 @@
 #   - Compiling Statistics
 
 from datetime import time
+from os import path
 from Graphing import *
+from jinja2 import Environment, FileSystemLoader
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
+import shutil
 
+with open('config.json') as config_file:
+    config = json.load(config_file)
 
 def recordMove(game, initialMove=False):
 
@@ -134,10 +140,14 @@ def compileStats(session):
     statFile.write('\n\nWorst Game: #' + str(worstGame['id']) + ', Score: ' + str(worstGame['score']))
     statFile.write('\nBest Game: #' + str(bestGame['id']) + ', Score: ' + str(bestGame['score']) + '\n')
 
+    id = session['path'].split('Session')[1]
     stats = {
+        'ID': id,
+
         'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + 's',
         'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's',
         'Max Tile': maxTile,
+        'Average Max Tile': averageMaxTile,
         'Average Score': averageScore,
         'Average Moves': averageMoves,
         '4096': percent4096,
@@ -176,44 +186,42 @@ def computeAverageTime(games, totalTime):
     return t
 
 
-def parseMoveLog(gameNum, sessionNum):
-    if gameNum < 10:
-        gameStr = '0' + str(gameNum)
+def saveStats(stats):
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('statTemplate.html')
+
+    output = template.render(stats=stats)
+
+    with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
+        f.write(output)
+
+    shutil.copy('./templates/htmlReportData/style.css', config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
+
+
+def checkForLog(Session=0, Game=None):
+    if path.isdir(config['recording_path'] + '/Session' + str(Session)):
+        if Game:
+            if path.isfile(config['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv'):
+                return True
+        else:
+            return True
     else:
-        gameStr = str(gameNum)
+        return False
 
-    path = '/Users/lucasgoddin/Documents/Python Projects/GameRecording/Session' + str(sessionNum) + \
-           '/MoveLogs/moveLogGame' + str(gameStr) + '.txt'
 
-    logFile = open(path, 'r')
+def loadReplay(Session=0, Game=0):
+    return pd.read_csv(config['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv')
 
-    lines = logFile.readlines()[2:]
 
-    moves = []
-    boards = []
-    currentBoard = []
+def getReplayBoard(index, data):
+    board = []
+    row = []
 
-    for i in range(len(lines)):
-        if lines[i][0] == 'I':
-            print('Found Initial Board')
-            continue
-        if lines[i][0] == 'M':
-            moves.append(lines[i][-2])
+    for i in range(16):
+        row.append(data.loc[index, str(i)])
 
-        if lines[i][0] == '-':
-            if currentBoard != []:
-                boards.append(currentBoard)
-                currentBoard = []
-
-        if lines[i][0].isnumeric():
-            line = lines[i].split(', ')
-            boardLine = []
-            for num in line:
-                boardLine.append(int(num.split('\n')[0]))
-            currentBoard.append(boardLine)
-
-    moves.append('End')
-
-    print(len(moves))
-    print(len(boards))
-    return moves, boards
+        if len(row) == 4:
+            board.append(row)
+            row = []
+    
+    return board

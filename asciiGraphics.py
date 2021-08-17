@@ -101,7 +101,7 @@ def getBoardLines(board):
     return lines
 
 
-def printBoard(board):
+def printBoard(board, replay=False):
 
     maxTile = 0
     for line in board:
@@ -109,7 +109,10 @@ def printBoard(board):
             if num > maxTile:
                 maxTile = num
 
-    x = 27 - (2 * len(str(maxTile)))
+    if replay:
+        x = 40 - (2 * len(str(maxTile)))
+    else:
+        x = 27 - (2 * len(str(maxTile)))
     
     
     if len(str(maxTile)) >= 3:
@@ -142,7 +145,9 @@ def printStats(stats):
     setPos(xOrigin + 51, yOrigin, '-' * 13)          
 
     for k, v in stats.items():
-        if k == 'Best Game':
+        if k == 'ID': 
+            setPos(xOrigin + 60, yOrigin - 6, str(k) + ': ' + str(v))
+        elif k == 'Best Game':
             setPos(xOrigin, yOrigin, str(k) + ': ' + str(v))
         elif k == 'Best Score':
             setPos(xOrigin, yOrigin + 2, str(k) + ': ' + str(v))
@@ -152,6 +157,8 @@ def printStats(stats):
             setPos(xOrigin + 25, yOrigin + 2, str(k) + ': ' + str(v))
         elif k == 'Max Tile':
             setPos(xOrigin, yOrigin + 4, str(k) + ': ' + str(v))
+        elif k == 'Average Max Tile':
+            setPos(xOrigin + 25, yOrigin + 4, str(k) + ': ' + str(v))
         elif k == 'Average Score':
             setPos(xOrigin, yOrigin + 6, str(k) + ': ' + str(v))
         elif k == 'Average Moves':
@@ -165,7 +172,7 @@ def printStats(stats):
             if len(k) == 4:
                 setPos(xOrigin + 53, yOrigin + i, str(k) + ':  ' + str(v))
             else:
-                setPos(xOrigin + 53, yOrigin + i, str(k) + ':   ' + str(v))
+                setPos(xOrigin + 53, yOrigin + i, ' ' + str(k) + ':  ' + str(v))
             
             i += 1
 

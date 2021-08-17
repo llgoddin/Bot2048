@@ -1,7 +1,7 @@
 from gameManagment import *
 from asciiGraphics import *
 from operations import *
-import time
+
 
 def promptYN(x, y, prompt):
     cmd = None
@@ -16,40 +16,41 @@ def promptYN(x, y, prompt):
             cmd = None
 
 
-
 if __name__ == '__main__':
     # flags
     mainMenuFlag = True
     gameFlag = False
-    autoFlag = False
+    sessionFlag = False
+    createFlag = False
+    replayFlag = False
 
     running = True
 
     while running:
         # ------------- Menu ---------------------
 
-        while True: 
+        while mainMenuFlag: 
 
-            loadScreen('screens/menu.txt')
+            loadScreen('screens/mainMenu.txt')
 
             setPos(44, 25)
 
             cmd = input()
 
             if cmd == 'q':
-                setPos(35, 0)
                 running = False
                 break
             elif cmd == 'p':
                 gameFlag = True
+                mainMenuFlag = False
                 break
             elif cmd == 'a':
-                autoFlag = True
+                sessionFlag = True
+                mainMenuFlag = False
                 break
             
 
         # ------------- Play Game ---------------------
-
         if gameFlag:
             game = createGame()
             # Set test board
@@ -65,20 +66,140 @@ if __name__ == '__main__':
 
             if cmd == 'q':
                 gameFlag = False
+                mainMenuFlag = True
                 break
             else:
                 game['move'] = cmd
                 move(game)
                 lost = checkGameLost(game)
 
+        
+        # ------------- Session Menu ---------------------
+        while sessionFlag:
+            loadScreen('screens/sessionMenu.txt')
 
-        # ------------- Auto Play Menu ---------------------
+            setPos(8, 15, 'C - Create New Session')
+            setPos(8, 17, 'R - Replay A Session')
+            setPos(8, 19, 'G - Graph A Game')
 
-        while autoFlag:
-            loadScreen('screens/auto.txt')
+            setPos(8, 22, 'Select: ')
+
+            cmd = input().lower()
+
+            if cmd == 'q':
+                sessionFlag = False
+                mainMenuFlag = True
+                break
+            elif cmd == 'c':
+                createFlag = True
+                break
+            elif cmd == 'r':
+                replayFlag = True
+                break
+
+        
+        # ------------- Replay Menu ---------------------
+        while replayFlag:
+            loadScreen('screens/sessionMenu.txt')
+
+            sessionID = None
+            gameID = None
+            replayData = None
+            replayActive = False
+            i = 0
+
+            while sessionID is None:
+                # I added extra space to make sure all digits are erased in case of invalid input
+                setPos(8, 15, 'Session ID:        ')
+                setPos(8, 17, '   Game ID:        ')
+                setPos(20, 15)
+
+                cmd = input().lower()
+
+                if cmd == 'q':
+                    replayFlag = False
+                    gameID = 0
+                    break
+
+                try:
+                    cmd = int(cmd)
+
+                    if checkForLog(Session=cmd):
+                        sessionID = cmd
+                    else:
+                        setPos(0, 39, 'Session Not Found')
+                except:
+                    setPos(0, 39, 'Invalid Input    ')
+            
+            while gameID is None:
+                # I added extra space to make sure all digits are erased in case of invalid input
+                setPos(8, 15, 'Session ID: ' + str(sessionID) + '       ')
+                setPos(8, 17, '   Game ID:        ')
+                setPos(20, 17)
+
+                cmd = input().lower()
+
+                if cmd == 'q':
+                    replayFlag = False
+                    break
+                
+                try:
+                    cmd = int(cmd)
+
+                    if checkForLog(Session=sessionID, Game=cmd):
+                        gameID = cmd
+                        replayActive = True
+                        replayData = loadReplay(Session=sessionID, Game=gameID)
+                    else:
+                        setPos(0, 39, 'Game Not Found')
+                except:
+                    setPos(0, 39, 'Invalid Input')
+            
+            while replayActive:
+                loadScreen('screens/play.txt')
+
+                printBoard(getReplayBoard(i, replayData), replay=True)
+
+                setPos(3, 11, '----- Game Info -----')
+                setPos(3, 13, '      Move #: ' + str(i) + '/' + str(len(replayData.index) - 1))
+                setPos(3, 14, '  Game Score: ' + str(replayData['score'][i]))
+                setPos(3, 17, '----- Agent Info -----')
+                setPos(3, 19, '   Next Move: ' + str(replayData['move'][i]))
+                setPos(3, 20, '  Move Score: ' + str(replayData['totalScore'][i]))
+                setPos(3, 21, '    Max Tile: ' + str(replayData['maxTileScore'][i]))
+                setPos(3, 22, '       Combo: ' + str(replayData['comboScore'][i]))
+                setPos(3, 23, 'Corner Stack: ' + str(replayData['cornerStackScore'][i]))
+
+                setPos(8, 30, 'Command: ')
+
+                cmd = input().lower()
+
+                if cmd == 'q':
+                    replayFlag = False
+                    break
+                elif cmd == 'd' and i < len(replayData.index) - 1:
+                    i += 1
+                elif cmd == 'a' and i >= 0:
+                    i -= 1
+                else:
+                    try:
+                        cmd = int(cmd)
+
+                        if 0 <= cmd < len(replayData.index):
+                            i = cmd
+                        else:
+                            setPos(0, 39, 'Invalid Move Number')
+                    
+                    except:
+                        setPos(0, 39, 'Invalid Input')
+
+
+        # ------------- Create Session Menu ---------------------
+        while createFlag:
+            loadScreen('screens/createSession.txt')
 
             gameCount = 0
-            threads = 0
+            threadCount = 0
 
             # Get Number of Games
             while gameCount == 0:
@@ -87,8 +208,8 @@ if __name__ == '__main__':
                 cmd = input()
 
                 if cmd == 'q':
-                    autoFlag = False
-                    threads = 1
+                    createFlag = False
+                    threadCount = 1
                     break
 
                 try:
@@ -97,14 +218,14 @@ if __name__ == '__main__':
                     break
                 except:
                     if cmd == 'q':
-                        autoFlag = False
+                        createFlag = False
                         break
                     else:
                         gameCount = 0
 
 
             # Get Number of threads
-            while threads == 0:
+            while threadCount == 0:
                 setPos(27, 17)
 
                 cmd = input()
@@ -112,21 +233,26 @@ if __name__ == '__main__':
                 try:
                     cmd = int(cmd)
                     if cmd <= 8:
-                        threads = cmd
+                        threadCount = cmd
                         break
                 except:
                     if cmd == 'q':
-                        autoFlag = False
+                        createFlag = False
                         gameCount = 0
                         break
                     else:
-                        threads = 0
+                        threadCount = 0
 
             if gameCount != 0:
                 s = createSession(totalGames=gameCount)
-                sPath, stats = runSession(s, threads=threads)
+                sPath, stats = runSession(s, threads=threadCount)
 
                 printStats(stats)
+
+                stats['Games'] = gameCount
+                stats['Threads'] = threadCount
+
+                saveStats(stats)
 
                 cmd = promptYN(8, 28, 'View Graphs?')
 
@@ -139,7 +265,7 @@ if __name__ == '__main__':
                 cmd = promptYN(8, 28, 'Run Another Session?')
 
                 if cmd == 'n':
-                    autoFlag = False
+                    createFlag = False
                     break
 
 

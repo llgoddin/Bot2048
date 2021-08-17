@@ -18,11 +18,15 @@ def runGame(game):
 
         game['move'], game['moveScores'] = myAlgorithm(game)
 
-        move(game)
-
         checkGameLost(game)
 
+        # I changed the order of this loop to record information 
+        # about the algorithm before the board is moved so
+        # in the move log csv the initial board will show scores and 
+        # a planned move instead of having the scores off by 1
         recordMove(game)
+
+        move(game)
 
     return game
 
@@ -36,8 +40,8 @@ def findSessionNum():
         for d in dirs:
             try:
 
-                if int(d[-2:]) >= nextSession:
-                    nextSession = int(d[-2:]) + 1
+                if int(d.split('Session')[1]) >= nextSession:
+                    nextSession = int(d.split('Session')[1]) + 1
 
             except ValueError as verr:
                 print('Directory ' + str(d) + ' does not end in a number!')
@@ -60,17 +64,10 @@ def createSession(recording=True, totalGames=10):
     if session['recording']:
         sessionNum = findSessionNum()
 
-        if sessionNum < 10:
-            sessionStr = '0' + str(sessionNum)
-        elif sessionNum == -1:
-            session['recording'] = False
-            return session
-        else:
-            sessionStr = str(sessionNum)
-
-        session['path'] = config['recording_path'] + '/Session' + sessionStr
+        session['path'] = config['recording_path'] + '/Session' + str(sessionNum)
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))
+        os.mkdir((session['path'] + str('/htmlReportData')))
 
         stats = open(session['path'] + '/sessionStats.txt', 'w+')
         stats.write('STATS\n')

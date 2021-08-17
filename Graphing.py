@@ -1,8 +1,13 @@
 # Lucas Goddin
 # July 6, 2020
 
+from os import mkdir, path
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
+
+with open('config.json') as config_file:
+    config = json.load(config_file)
 
 
 def findQuartileGames(sessionPath):
@@ -59,11 +64,9 @@ def graphGames(gameIDs=[], path='/Session1', names=None):
 
         graphGameScores(id, sessionID, name)
 
-    plt.show()
-
 
 def graphGameScores(gameID, sessionID, name):
-    dfGame = pd.read_csv('/Users/lucasgoddin/Documents/Python Projects/GameRecording/Session' + str(sessionID).strip() + '/MoveLogs/game' + str(gameID) + 'Log.csv')
+    dfGame = pd.read_csv(config['recording_path'] + '/Session' + str(sessionID).strip() + '/MoveLogs/game' + str(gameID) + 'Log.csv')
 
     if name is None:
         plt.figure('Game ' + str(gameID))
@@ -74,4 +77,11 @@ def graphGameScores(gameID, sessionID, name):
     dfGame['maxTileScore'].plot()
     dfGame['comboScore'].plot()
     dfGame['cornerStackScore'].plot()
+    plt.title('Agent Scores (' + 'Game ' + str(gameID) + ' - Session ' + str(sessionID) + ')')
+    plt.xlabel('Moves')
+    plt.ylabel('Move Scores')
     plt.legend(['Total Score', 'Max In Corner', 'Combo', 'Corner Stack'])
+
+    if not path.isdir(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData'):
+        mkdir(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData')
+    plt.savefig(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/' + str(name) + '.png')

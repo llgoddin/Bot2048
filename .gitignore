@@ -1,8 +1,10 @@
-/.env/*
-/testing.py
 /.DS_Store
 /.idea/*
-/Board.txt
+/.env/*
 /__pycache__/*
+/testing.py
+/Board.txt
 /screens/*Sketch.txt
 /config.json
+/templates/htmlReportData/*.png
+/templates/htmlReportData/*.css*
