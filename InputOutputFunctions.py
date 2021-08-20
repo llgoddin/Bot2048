@@ -51,7 +51,7 @@ def recordMove(game, initialMove=False):
     board.append(game['move'])
     board.append(winLossContinue)
 
-    if initialMove:
+    if initialMove or game['lost']:
         for i in range(4):
             board.append(0)
     else:
