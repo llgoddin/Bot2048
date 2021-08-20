@@ -118,6 +118,8 @@ def move(game, newTile=True):
     # combine tiles
     if 'score' in game.keys():
         game['score'] += combineTiles(game['board'], xDirec, yDirec)
+    else:
+        combineTiles(game['board'], xDirec, yDirec)
 
     # compress tiles
 
@@ -150,6 +152,13 @@ def move(game, newTile=True):
         game['totalMoves'] += 1
 
 
+def printTemp(board):
+    for row in board:
+        for i in row:
+            print(i, end= ', ')
+        print('\n', end='')
+
+
 def checkGameLost(game):
     moves = ['w', 'a', 's', 'd']
     movesLeft = 4
@@ -174,6 +183,8 @@ def checkGameLost(game):
 
     if movesLeft > 0:
         game['lost'] = False
+        return False
     else:
         game['lost'] = True
+        return True
 
