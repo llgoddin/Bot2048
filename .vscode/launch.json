@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "2048 testing",
+            "type": "python",
+            "request": "launch",
+            "program": "testing.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "2048 main",
             "type": "python",
             "request": "launch",
