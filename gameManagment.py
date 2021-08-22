@@ -12,8 +12,6 @@ with open('config.json') as config_file:
 
 def runGame(game):
 
-    recordMove(game, initialMove=True)
-
     while not game['lost']:
 
         game['move'], game['moveScores'] = myAlgorithm(game)
