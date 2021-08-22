@@ -1,6 +1,8 @@
-from gameManagment import *
 from asciiGraphics import *
+from gameManagment import *
 from operations import *
+import os
+import webbrowser
 
 
 def promptYN(x, y, prompt):
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     while running:
         # ------------- Menu ---------------------
 
-        while mainMenuFlag: 
+        while mainMenuFlag:
 
             loadScreen('screens/mainMenu.txt')
 
@@ -48,7 +50,6 @@ if __name__ == '__main__':
                 sessionFlag = True
                 mainMenuFlag = False
                 break
-            
 
         # ------------- Play Game ---------------------
         if gameFlag:
@@ -73,7 +74,6 @@ if __name__ == '__main__':
                 move(game)
                 lost = checkGameLost(game)
 
-        
         # ------------- Session Menu ---------------------
         while sessionFlag:
             loadScreen('screens/sessionMenu.txt')
@@ -97,7 +97,6 @@ if __name__ == '__main__':
                 replayFlag = True
                 break
 
-        
         # ------------- Replay Menu ---------------------
         while replayFlag:
             loadScreen('screens/sessionMenu.txt')
@@ -130,7 +129,7 @@ if __name__ == '__main__':
                         setPos(0, 39, 'Session Not Found')
                 except:
                     setPos(0, 39, 'Invalid Input    ')
-            
+
             while gameID is None:
                 # I added extra space to make sure all digits are erased in case of invalid input
                 setPos(8, 15, 'Session ID: ' + str(sessionID) + '       ')
@@ -142,7 +141,7 @@ if __name__ == '__main__':
                 if cmd == 'q':
                     replayFlag = False
                     break
-                
+
                 try:
                     cmd = int(cmd)
 
@@ -154,21 +153,26 @@ if __name__ == '__main__':
                         setPos(0, 39, 'Game Not Found')
                 except:
                     setPos(0, 39, 'Invalid Input')
-            
+
             while replayActive:
                 loadScreen('screens/play.txt')
 
                 printBoard(getReplayBoard(i, replayData), replay=True)
 
-                setPos(3, 11, '----- Game Info -----')
-                setPos(3, 13, '      Move #: ' + str(i) + '/' + str(len(replayData.index) - 1))
+                setPos(3, 11, '----- Game Info ------')
+                setPos(3, 13, '      Move #: ' + str(i) +
+                       '/' + str(len(replayData.index) - 1))
                 setPos(3, 14, '  Game Score: ' + str(replayData['score'][i]))
                 setPos(3, 17, '----- Agent Info -----')
                 setPos(3, 19, '   Next Move: ' + str(replayData['move'][i]))
-                setPos(3, 20, '  Move Score: ' + str(replayData['totalScore'][i]))
-                setPos(3, 21, '    Max Tile: ' + str(replayData['maxTileScore'][i]))
-                setPos(3, 22, '       Combo: ' + str(replayData['comboScore'][i]))
-                setPos(3, 23, 'Corner Stack: ' + str(replayData['cornerStackScore'][i]))
+                setPos(3, 20, '  Move Score: ' +
+                       str(replayData['totalScore'][i]))
+                setPos(3, 21, '    Max Tile: ' +
+                       str(replayData['maxTileScore'][i]))
+                setPos(3, 22, '       Combo: ' +
+                       str(replayData['comboScore'][i]))
+                setPos(3, 23, 'Corner Stack: ' +
+                       str(replayData['cornerStackScore'][i]))
 
                 setPos(8, 30, 'Command: ')
 
@@ -189,10 +193,9 @@ if __name__ == '__main__':
                             i = cmd
                         else:
                             setPos(0, 39, 'Invalid Move Number')
-                    
+
                     except:
                         setPos(0, 39, 'Invalid Input')
-
 
         # ------------- Create Session Menu ---------------------
         while createFlag:
@@ -222,7 +225,6 @@ if __name__ == '__main__':
                         break
                     else:
                         gameCount = 0
-
 
             # Get Number of threads
             while threadCount == 0:
@@ -254,19 +256,22 @@ if __name__ == '__main__':
 
                 saveStats(stats)
 
+                qGames = findQuartileGames(sPath)
+                graphGames(qGames, sPath, names=['Worst', 'Q1', 'Q2', 'Q3', 'Best'])
+                
                 cmd = promptYN(8, 28, 'View Graphs?')
 
                 if cmd == 'y':
-                    qGames = findQuartileGames(sPath)
-
-                    graphGames(qGames, sPath, names=['Worst', 'Q1', 'Q2', 'Q3', 'Best'])
-
+                    try:
+                        filePath = 'file:///' + s['path'] + '/stats.html'
+                        webbrowser.open_new_tab(filePath)
+                    except:
+                        setPos(0, 39, 'Failed To Open File!')
 
                 cmd = promptYN(8, 28, 'Run Another Session?')
 
                 if cmd == 'n':
                     createFlag = False
                     break
-
 
     setPos(0, 39, 'Thanks For Playing!\n')
