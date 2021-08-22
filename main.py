@@ -78,11 +78,7 @@ if __name__ == '__main__':
         while sessionFlag:
             loadScreen('screens/sessionMenu.txt')
 
-            setPos(8, 15, 'C - Create New Session')
-            setPos(8, 17, 'R - Replay A Session')
-            setPos(8, 19, 'G - Graph A Game')
-
-            setPos(8, 22, 'Select: ')
+            setPos(43, 31)
 
             cmd = input().lower()
 
@@ -99,7 +95,7 @@ if __name__ == '__main__':
 
         # ------------- Replay Menu ---------------------
         while replayFlag:
-            loadScreen('screens/sessionMenu.txt')
+            loadScreen('screens/replayMenu.txt')
 
             sessionID = None
             gameID = None
@@ -109,9 +105,9 @@ if __name__ == '__main__':
 
             while sessionID is None:
                 # I added extra space to make sure all digits are erased in case of invalid input
-                setPos(8, 15, 'Session ID:        ')
-                setPos(8, 17, '   Game ID:        ')
-                setPos(20, 15)
+                setPos(8, 16, 'Session ID:        ')
+                setPos(8, 18, '   Game ID:        ')
+                setPos(20, 16)
 
                 cmd = input().lower()
 
@@ -132,9 +128,9 @@ if __name__ == '__main__':
 
             while gameID is None:
                 # I added extra space to make sure all digits are erased in case of invalid input
-                setPos(8, 15, 'Session ID: ' + str(sessionID) + '       ')
-                setPos(8, 17, '   Game ID:        ')
-                setPos(20, 17)
+                setPos(8, 16, 'Session ID: ' + str(sessionID) + '       ')
+                setPos(8, 18, '   Game ID:        ')
+                setPos(20, 18)
 
                 cmd = input().lower()
 
