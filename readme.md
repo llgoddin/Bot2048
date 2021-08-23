@@ -10,15 +10,15 @@ I created this project to learn more about algorithms. My first goal was to crea
 
 ## User Experience
 2048 Gameplay
-<br>
+<hr>
 <img src="./docs/2048.gif" width="500" height="500" />
 
 In Game Statistics Screen
-<br>
+<hr>
 <img src="./docs/TerminalStats.png" width="500" height="500" />
 
 Saved HTML Statistics Report
-<br>
+<hr>
 <img src="./docs/HTMLStats.png" width="500" height="500" />
 
 
