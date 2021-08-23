@@ -11,15 +11,15 @@ I created this project to learn more about algorithms. My first goal was to crea
 ## User Experience
 2048 Gameplay
 <br>
-<img src="./docs/2048.gif" width="300" height="300" />
+<img src="./docs/2048.gif" width="500" height="500" />
 
 In Game Statistics Screen
 <br>
-<img src="./docs/TerminalStats.png" width="300" height="300" />
+<img src="./docs/TerminalStats.png" width="500" height="500" />
 
 Saved HTML Statistics Report
 <br>
-<img src="./docs/HTMLStats.png" width="300" height="300" />
+<img src="./docs/HTMLStats.png" width="500" height="500" />
 
 
 ## Features
