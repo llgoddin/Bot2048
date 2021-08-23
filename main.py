@@ -60,7 +60,7 @@ if __name__ == '__main__':
             loadScreen('screens/play.txt')
 
         while gameFlag:
-            setPos(2, 10, 'Score: ' + str(game['score']))
+            setPos(2, 10, '  Score: ' + str(game['score']))
             printBoard(game['board'])
 
             cmd = input('Enter Move: ')
