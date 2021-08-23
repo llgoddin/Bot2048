@@ -10,66 +10,95 @@
 </head>
 
 <body>
-    <h1 class="title">Session {{stats['ID']}} Statistics</h1>
+    <h1>Session {{stats['ID']}} Statistics</h1>
     <hr>
 
     <div class="head_wrapper">
-        <h2>Number Of Games: {{stats['Games']}} </h2>
-        <h2>Number Of Threads: {{stats['Threads']}} </h2>
+        <h3>Number Of Games: {{stats['Games']}} </h3>
+        <h3>Number Of Threads: {{stats['Threads']}} </h3>
 
     </div>
 
     <div class="stats_wrapper">
         <div class="stats_container">
-            <h2>Best Game ID: {{stats['Best Game']}} </h2>
-            <h2>Best Score: {{stats['Best Score']}} </h2>
-            <h2>Worst Game ID: {{stats['Worst Game']}} </h2>
-            <h2>Worst Score: {{stats['Worst Score']}} </h2>
-            <h2>Max Tile: {{stats['Max Tile']}} </h2> 
+            <h2>Important Stats</h2>
+            <hr>
+            <h3>Best Game ID: {{stats['Best Game']}} </h3>
+            <h3>Best Score: {{stats['Best Score']}} </h3>
+            <h3>Worst Game ID: {{stats['Worst Game']}} </h3>
+            <h3>Worst Score: {{stats['Worst Score']}} </h3>
+            <h3>Max Tile: {{stats['Max Tile']}} </h3> 
+            <h3>Total Session Time: {{stats['Total Time']}} </h3>
          
         </div>
         <div class="stats_container">
-            <h2>Average Score: {{stats['Average Score']}} </h2>
-            <h2>Average Max Tile: {{stats['Average Max Tile']}} </h2> 
-            <h2>Average Number of Moves: {{stats['Average Moves']}} </h2>
-            <h2>Average Game Time: {{stats['Average Time']}} </h2>
-            <h2>Total Session Time: {{stats['Total Time']}} </h2>
+            <h2>Averages</h2>
+            <hr>
+            <h3>Average Score: {{stats['Average Score']}} </h3>
+            <h3>Average Max Tile: {{stats['Average Max Tile']}} </h3> 
+            <h3>Average Number of Moves: {{stats['Average Moves']}} </h3>
+            <h3>Average Game Time: {{stats['Average Time']}} </h3>
 
          
         </div>
         <div class="stats_container">
-            <h2>Percent Of Games To Reach Each Tile</h2>
-            <h2 class="tile_stats">4096: {{stats['4096']}} </h2> 
-            <h2 class="tile_stats">2048: {{stats['2048']}} </h2> 
-            <h2 class="tile_stats">1024: {{stats['1024']}} </h2> 
-            <h2 class="tile_stats">512: {{stats['512']}} </h2> 
-            <h2 class="tile_stats">256: {{stats['256']}} </h2> 
-            <h2 class="tile_stats">128: {{stats['128']}} </h2> 
+            <h2>Max Tile Achieved</h2>
+            <hr>
+            <table>
+                <tr>
+                    <th>Tile</th>
+                    <th>% Of Games</th>
+                </tr>
+                <tr>
+                    <td>4096</td>
+                    <td>{{stats['4096']}}</td>
+                </tr>
+                <tr>
+                    <td>2048</td>
+                    <td>{{stats['2048']}}</td>
+                </tr>
+                <tr>
+                    <td>1024</td>
+                    <td>{{stats['1024']}}</td>
+                </tr>
+                <tr>
+                    <td>512</td>
+                    <td>{{stats['512']}}</td>
+                </tr>
+                <tr>
+                    <td>256</td>
+                    <td>{{stats['256']}}</td>
+                </tr>
+                <tr>
+                    <td>128</td>
+                    <td>{{stats['128']}}</td>
+                </tr>
+            </table>
          
         </div>
     </div>
 
+    <h1>Graphs</h1>
+    <hr>
     <div class="graph_wrapper">
         <div class="graph">
-            <h1>Best Game</h1>
+            <h2>Best Game</h2>
             <img src="./htmlReportData/Best.png" alt="">
         </div>
         <div class="graph">
-            <h1>Worst Game</h1>
+            <h2>Worst Game</h2>
             <img src="./htmlReportData/Worst.png" alt="">
         </div>
-    </div>
-    <div class="graph_wrapper">
         <div class="graph">
-            <h1>Quartile 3 Game</h1>
+            <h2>Quartile 3 Game</h2>
             <img src="./htmlReportData/Q3.png" alt="">
         </div>
         <div class="graph">
-            <h1>Quartile 2 Game</h1>
+            <h2>Quartile 2 Game</h2>
             <img src="./htmlReportData/Q2.png" alt="">
         </div>
         <div class="graph">
-            <h1>Quartile 1 Game</h1>
+            <h2>Quartile 1 Game</h2>
             <img src="./htmlReportData/Q1.png" alt="">
         </div>
     </div>
