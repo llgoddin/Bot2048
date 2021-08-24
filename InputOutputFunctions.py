@@ -4,8 +4,9 @@
 #   - Recording Games (Input and Output)
 #   - Compiling Statistics
 
+from asciiGraphics import setPos
 from datetime import time
-from os import path
+from os import path, walk
 from Graphing import *
 from jinja2 import Environment, FileSystemLoader
 import pandas as pd
@@ -144,9 +145,6 @@ def compileStats(session):
         'Best Score': bestGame['score']
     }
 
-    with open(session['path'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
-        json.dump(stats, outfile)
-
     return stats
     
 
@@ -180,6 +178,9 @@ def saveStats(stats):
 
     shutil.copy('./templates/htmlReportData/style.css', config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
 
+    with open(config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
+        json.dump(stats, outfile)
+
 
 def checkForLog(Session=0, Game=None):
     if path.isdir(config['recording_path'] + '/Session' + str(Session)):
@@ -208,3 +209,34 @@ def getReplayBoard(index, data):
             row = []
     
     return board
+
+
+def addGraph(sessionID, gameID):
+    p = config['recording_path'] + '/Session' + str(sessionID)
+    graphGames(gameIDs=[gameID], path=p, names=['Game' + str(gameID) + 'Graph'])
+
+    newGraph = {}
+    i = 38
+
+    for (root, dirs, files) in walk(config['recording_path'], topdown=True):
+        for f in files:
+            if f.startswith('Game') and f.endswith('Graph.png'):
+                name = f.split('Graph.png')[0]
+
+                name = name[:4] + ' - ' + name[4:]
+
+                newGraph[name] = str(f)
+
+    stats = None
+
+    with open(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
+        stats = json.load(file)
+
+
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('statTemplate.html')
+
+    output = template.render(stats=stats, newGraph=newGraph)
+
+    with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
+        f.write(output)
