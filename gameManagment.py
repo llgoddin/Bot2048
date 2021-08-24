@@ -67,17 +67,6 @@ def createSession(recording=True, totalGames=10):
         os.mkdir((session['path'] + str('/MoveLogs')))
         os.mkdir((session['path'] + str('/htmlReportData')))
 
-        stats = open(session['path'] + '/sessionStats.txt', 'w+')
-        stats.write('STATS\n')
-        stats.write('-' * 10 + '\n')
-        stats.close()
-
-        gameSummaries = open(session['path'] + '/gameSummaries.txt', 'w+')
-        gameSummaries.write('GAME SUMMARIES\n')
-        gameSummaries.write('Game #- Max Tile, Score, Number Of Moves\n')
-        gameSummaries.write('-' * 10 + '\n')
-        gameSummaries.close()
-
     session['startTime'] = time.time()
 
     for i in range(totalGames):

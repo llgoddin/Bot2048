@@ -1,7 +1,7 @@
+from os import name
 from asciiGraphics import *
 from gameManagment import *
 from operations import *
-import os
 import webbrowser
 
 
@@ -25,6 +25,7 @@ if __name__ == '__main__':
     sessionFlag = False
     createFlag = False
     replayFlag = False
+    graphFlag = False
 
     running = True
 
@@ -91,6 +92,9 @@ if __name__ == '__main__':
                 break
             elif cmd == 'r':
                 replayFlag = True
+                break
+            elif cmd == 'g':
+                graphFlag = True
                 break
 
         # ------------- Replay Menu ---------------------
@@ -269,5 +273,103 @@ if __name__ == '__main__':
                 if cmd == 'n':
                     createFlag = False
                     break
+
+        # ------------- Graph Menu ---------------------
+        while graphFlag:
+            loadScreen('screens/graphMenu.txt')
+            
+            sessionID = None
+            gameID = None
+
+            while sessionID is None:
+                # I added extra space to make sure all digits are erased in case of invalid input
+                setPos(8, 16, 'Session ID:        ')
+                setPos(8, 18, '   Game ID:        ')
+                setPos(20, 16)
+
+                cmd = input().lower()
+
+                if cmd == 'q':
+                    graphFlag = False
+                    gameID = 0
+                    break
+
+                try:
+                    cmd = int(cmd)
+
+                    if checkForLog(Session=cmd):
+                        sessionID = cmd
+                    else:
+                        setPos(0, 39, 'Session Not Found')
+                except:
+                    setPos(0, 39, 'Invalid Input    ')
+
+            while gameID is None:
+                # I added extra space to make sure all digits are erased in case of invalid input
+                setPos(8, 16, 'Session ID: ' + str(sessionID) + '       ')
+                setPos(8, 18, '   Game ID:        ')
+                setPos(20, 18)
+
+                cmd = input().lower()
+
+                if cmd == 'q':
+                    graphFlag = False
+                    break
+
+                try:
+                    cmd = int(cmd)
+
+                    if checkForLog(Session=sessionID, Game=cmd):
+                        gameID = cmd
+
+                        # REFACTOR ME VVVVVVVVV
+
+                        p = config['recording_path'] + '/Session' + str(sessionID)
+                        graphGames(gameIDs=[gameID], path=p, names=['Game' + str(gameID) + 'Graph'])
+
+                        addGraphs = {}
+                        i = 38
+
+                        for (root, dirs, files) in os.walk(config['recording_path'], topdown=True):
+                            for f in files:
+                                if f.startswith('Game') and f.endswith('Graph.png'):
+                                    name = f.split('Graph.png')[0]
+
+                                    name = name[:4] + ' - ' + name[4:]
+
+                                    addGraphs[name] = str(f)
+
+                                    setPos(0, 39, addGraphs)
+
+
+                        stats = None
+
+                        with open(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
+                            stats = json.load(file)
+
+
+                        env = Environment(loader=FileSystemLoader('templates'))
+                        template = env.get_template('statTemplate.html')
+
+                        output = template.render(stats=stats, addGraphs=addGraphs)
+
+                        with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
+                            f.write(output)
+                        
+                        setPos(8, 22, 'Your new graph has been rendered and added to stats.hmtl!')
+                        setPos(8, 24, 'Be sure to refresh browser to view changes')
+                        
+                        cmd = promptYN(8, 27, 'Graph Another Game?')
+
+                        if cmd == 'n':
+                            graphFlag = False
+                    else:
+                        setPos(0, 39, 'Game Not Found')
+                except Exception as e:
+                    setPos(0, 38, 'Invalid Input')
+                    setPos(0, 41, e)
+
+            
+
 
     setPos(0, 39, 'Thanks For Playing!\n')

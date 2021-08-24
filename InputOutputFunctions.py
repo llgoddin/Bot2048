@@ -86,8 +86,6 @@ def outputLogs(session):
 def compileStats(session):
     summaryData = pd.read_csv(session['path'] + '/gameSummaries.csv')
 
-    statFile = open(session['path'] + '/sessionStats.txt', 'a+')
-
     maxTile = max(summaryData['Max Tile'])
 
     df1 = summaryData['Game ID'].where(summaryData['Score'] == max(summaryData['Score']))
@@ -95,7 +93,7 @@ def compileStats(session):
 
     bestGame = {
         'id': int(df2.iloc[0]),
-        'score': summaryData['Score'].max()
+        'score': int(summaryData['Score'].max())
     }
 
     df1 = summaryData['Game ID'].where(summaryData['Score'] == min(summaryData['Score']))
@@ -103,7 +101,7 @@ def compileStats(session):
 
     worstGame = {
         'id': int(df2.iloc[0]),
-        'score': summaryData['Score'].min()
+        'score': int(summaryData['Score'].min())
     }
 
     numOfGames = len(summaryData.index)
@@ -121,26 +119,8 @@ def compileStats(session):
     totalTime = computeTotalTime(session['startTime'], session['endTime'])
     avgTime = computeAverageTime(numOfGames, totalTime)
 
-    statFile.write('\nGames in Session:         ' + str(numOfGames) + '\n')
-    statFile.write('\nMax Tile:                 ' + str(maxTile))
-    statFile.write('\nAverage Score:            ' + str(averageScore))
-    statFile.write('\nAverage Max Tile:         ' + str(averageMaxTile))
-    statFile.write('\nAverage Number of Moves:  ' + str(averageMoves))
-    statFile.write('\n\n4096 Or Higher:           ' + str(percent4096))
-    statFile.write('\n2048 Or Higher:           ' + str(percent2048))
-    statFile.write('\n1024 Or Higher:           ' + str(percent1024))
-    statFile.write('\n512 Or Higher:            ' + str(percent512))
-    statFile.write('\n256 Or Higher:            ' + str(percent256))
-    statFile.write('\n128 Or Higher:            ' + str(percent128) + '\n')
-    statFile.write(
-        '\nAverage Game Time:        ' + str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's')
-    statFile.write(
-        '\nTotal Session Time:       ' + str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + 's' + '\n')
-
-    statFile.write('\n\nWorst Game: #' + str(worstGame['id']) + ', Score: ' + str(worstGame['score']))
-    statFile.write('\nBest Game: #' + str(bestGame['id']) + ', Score: ' + str(bestGame['score']) + '\n')
-
     id = session['path'].split('Session')[1]
+    
     stats = {
         'ID': id,
 
@@ -163,6 +143,9 @@ def compileStats(session):
         'Best Game': bestGame['id'],
         'Best Score': bestGame['score']
     }
+
+    with open(session['path'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
+        json.dump(stats, outfile)
 
     return stats
     

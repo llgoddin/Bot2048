@@ -101,6 +101,18 @@
             <h2>Quartile 1 Game</h2>
             <img src="./htmlReportData/Q1.png" alt="">
         </div>
+        
+        {% if addGraphs is defined %}
+        {% for key, value in addGraphs.items() %}
+
+            <div class="graph">
+                <h2>{{ key }}</h2>
+                <img src="./htmlReportData/{{ value }}" alt="">
+            </div>
+
+        {% endfor %}
+        {% endif %}
+
     </div>
 </body>
 
