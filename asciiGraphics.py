@@ -4,6 +4,7 @@ import math
 
 SCREENS = {}
 
+
 def loadScreen(path, memory=None, clear=True):
     if clear:
         os.system('clear')
@@ -19,7 +20,6 @@ def loadScreen(path, memory=None, clear=True):
                 'lines': lines,
                 'memory': []
             }
-
 
     for l in lines:
         print(l.strip())
@@ -47,9 +47,9 @@ def getBoardLines(board):
     boxTop = ' ┌' + '─' * (3 + padding) + '┐'
     boxBottom = ' └' + '─' * (3 + padding) + '┘'
     boxSpacer = '│ ' + ' ' * (padding + 1) + ' │ '
-    
+
     boardTop = '┌' + '─' * BOARD_WIDTH + '┐'
-    boxBottomRow = '│' + boxBottom * 4 + ' │'      
+    boxBottomRow = '│' + boxBottom * 4 + ' │'
     boxTopRow = '│' + boxTop * 4 + ' │'
     boardBottom = '└' + '─' * BOARD_WIDTH + '┘'
     boardSpacer = '│ ' + boxSpacer * 4 + '│'
@@ -59,7 +59,7 @@ def getBoardLines(board):
     for line in board:
 
         lines.append(boxTopRow)
-        
+
         if padding >= 2:
             lines.append(boardSpacer)
 
@@ -81,16 +81,17 @@ def getBoardLines(board):
                 if num != 0:
                     output += '│ ' + padLeft + str(num) + padRight + ' │ '
                 else:
-                    output += '│ ' + padLeft + ' ' * len(str(num)) + padRight + ' │ '
+                    output += '│ ' + padLeft + ' ' * \
+                        len(str(num)) + padRight + ' │ '
 
             else:
-                if num != 0: 
+                if num != 0:
                     output += '│ ' + str(num) + ' │ '
                 else:
                     output += '│   │ '
         output += '│'
         lines.append(output)
-        
+
         if padding >= 2:
             lines.append(boardSpacer)
 
@@ -113,8 +114,7 @@ def printBoard(board, replay=False):
         x = 40 - (2 * len(str(maxTile)))
     else:
         x = 27 - (2 * len(str(maxTile)))
-    
-    
+
     if len(str(maxTile)) >= 3:
         y = 10
     else:
@@ -142,10 +142,10 @@ def printStats(stats):
     print("|_____|___|___|___|_|___|_|_|  |_____|_| |__,|_| |___|", end='     ')
 
     setPos(xOrigin + 51, yOrigin - 1, 'Tile Acheived')
-    setPos(xOrigin + 51, yOrigin, '-' * 13)          
+    setPos(xOrigin + 51, yOrigin, '-' * 13)
 
     for k, v in stats.items():
-        if k == 'ID': 
+        if k == 'ID':
             setPos(xOrigin + 60, yOrigin - 6, str(k) + ': ' + str(v))
         elif k == 'Best Game':
             setPos(xOrigin, yOrigin, str(k) + ': ' + str(v))
@@ -167,13 +167,14 @@ def printStats(stats):
             setPos(xOrigin + 25, yOrigin - 4, str(k) + ': ' + str(v))
         elif k == 'Average Time':
             setPos(xOrigin + 25, yOrigin - 2, str(k) + ': ' + str(v))
-        
+
         else:
             if len(k) == 4:
                 setPos(xOrigin + 53, yOrigin + i, str(k) + ':  ' + str(v))
             else:
-                setPos(xOrigin + 53, yOrigin + i, ' ' + str(k) + ':  ' + str(v))
-            
+                setPos(xOrigin + 53, yOrigin + i,
+                       ' ' + str(k) + ':  ' + str(v))
+
             i += 1
 
 
@@ -186,4 +187,3 @@ def setPosEx(mem):
     if mem:
         posStr = "\x1b[%d;%df%s" % (mem[1], mem[0], mem[2])
         print(posStr, end='')
-    

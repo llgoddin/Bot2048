@@ -27,19 +27,19 @@
             <h3>Best Score: {{stats['Best Score']}} </h3>
             <h3>Worst Game ID: {{stats['Worst Game']}} </h3>
             <h3>Worst Score: {{stats['Worst Score']}} </h3>
-            <h3>Max Tile: {{stats['Max Tile']}} </h3> 
+            <h3>Max Tile: {{stats['Max Tile']}} </h3>
             <h3>Total Session Time: {{stats['Total Time']}} </h3>
-         
+
         </div>
         <div class="stats_container">
             <h2>Averages</h2>
             <hr>
             <h3>Average Score: {{stats['Average Score']}} </h3>
-            <h3>Average Max Tile: {{stats['Average Max Tile']}} </h3> 
+            <h3>Average Max Tile: {{stats['Average Max Tile']}} </h3>
             <h3>Average Number of Moves: {{stats['Average Moves']}} </h3>
             <h3>Average Game Time: {{stats['Average Time']}} </h3>
 
-         
+
         </div>
         <div class="stats_container">
             <h2>Max Tile Achieved</h2>
@@ -74,7 +74,7 @@
                     <td>{{stats['128']}}</td>
                 </tr>
             </table>
-         
+
         </div>
     </div>
 
@@ -101,14 +101,14 @@
             <h2>Quartile 1 Game</h2>
             <img src="./htmlReportData/Q1.png" alt="">
         </div>
-        
+
         {% if newGraph is defined %}
         {% for key, value in newGraph.items() %}
 
-            <div class="graph">
-                <h2>{{ key }}</h2>
-                <img src="./htmlReportData/{{ value }}" alt="">
-            </div>
+        <div class="graph">
+            <h2>{{ key }}</h2>
+            <img src="./htmlReportData/{{ value }}" alt="">
+        </div>
 
         {% endfor %}
         {% endif %}

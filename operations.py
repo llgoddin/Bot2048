@@ -49,7 +49,7 @@ def combineTiles(board, xDirec, yDirec):
                         break
                     elif board[i][j + (iterator * distance)] != 0:
                         break
-    
+
     return scoreEarned
 
 
@@ -105,7 +105,7 @@ def move(game, newTile=True):
     elif game['move'] == 's':
         yDirec = -1
         iterator = -1
-    else: 
+    else:
         return None
 
     if iterator < 0:
@@ -155,7 +155,7 @@ def move(game, newTile=True):
 def printTemp(board):
     for row in board:
         for i in row:
-            print(i, end= ', ')
+            print(i, end=', ')
         print('\n', end='')
 
 
@@ -187,4 +187,3 @@ def checkGameLost(game):
     else:
         game['lost'] = True
         return True
-

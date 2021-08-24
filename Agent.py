@@ -56,11 +56,11 @@ def myAlgorithm(game):
             totalScore = -1
 
         # record the move score and reset temp board
-        scoresBreakDown[m] = [totalScore, highTileScore, comboScore, cornerStackScore]
+        scoresBreakDown[m] = [totalScore,
+                              highTileScore, comboScore, cornerStackScore]
         if totalScore == -1:
             scoresBreakDown[m] = totalScore
         moveScoresDict[m] = totalScore
-
 
     # search moveScoresDict for the best move and return it
     bestMove = 'w'
@@ -143,7 +143,8 @@ def comboCheck(game, verbose=False):
                         break
                     elif tempGame['board'][i + (iterator * distance)][j] == tempGame['board'][i][j] and tempGame['board'][i][j] != 0:
                         if verbose:
-                            print(str(tempGame['board'][i + (iterator * distance)][j]) + ' combines with ' + str(tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
+                            print(str(tempGame['board'][i + (iterator * distance)][j]) + ' combines with ' + str(
+                                tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
                         score += 2 * tempGame['board'][i][j]
                         tempGame['board'][i + (iterator * distance)][j] = 0
                         break
@@ -154,7 +155,8 @@ def comboCheck(game, verbose=False):
                         break
                     elif tempGame['board'][i][j + (iterator * distance)] == tempGame['board'][i][j] and tempGame['board'][i][j] != 0:
                         if verbose:
-                            print(str(tempGame['board'][i][j + (iterator * distance)]) + ' combines with ' + str(tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
+                            print(str(tempGame['board'][i][j + (iterator * distance)]) + ' combines with ' + str(
+                                tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
                         score += 2 * tempGame['board'][i][j]
                         tempGame['board'][i][j + (iterator * distance)] = 0
                         break
@@ -179,7 +181,6 @@ def mapTileSizes(game):
                     tileInfo['values'].insert(pos, game['board'][i][j])
                     tileInfo['locations'].insert(pos, [i, j])
                     break
-
 
     tileInfo['values'].remove(0)
 
@@ -250,5 +251,3 @@ def compareTileCoords(largerTile, smallerTile):
                     score = int(smallerTile['values'][i])
                     return score
     return 0
-
-

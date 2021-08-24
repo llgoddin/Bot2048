@@ -13,7 +13,6 @@ with open('config.json') as config_file:
 def findQuartileGames(sessionPath):
     df = pd.read_csv(sessionPath + '/gameSummaries.csv')
 
-
     gameInfo = df['Score'].quantile([0, 0.25, 0.5, 0.75, 1])
 
     q1MinDist = 500
@@ -66,7 +65,8 @@ def graphGames(gameIDs=[], path='/Session1', names=None):
 
 
 def graphGameScores(gameID, sessionID, name):
-    dfGame = pd.read_csv(config['recording_path'] + '/Session' + str(sessionID).strip() + '/MoveLogs/game' + str(gameID) + 'Log.csv')
+    dfGame = pd.read_csv(config['recording_path'] + '/Session' + str(
+        sessionID).strip() + '/MoveLogs/game' + str(gameID) + 'Log.csv')
 
     if name is None:
         plt.figure('Game ' + str(gameID))
@@ -77,11 +77,14 @@ def graphGameScores(gameID, sessionID, name):
     dfGame['maxTileScore'].plot()
     dfGame['comboScore'].plot()
     dfGame['cornerStackScore'].plot()
-    plt.title('Agent Scores (' + 'Game ' + str(gameID) + ' - Session ' + str(sessionID) + ')')
+    plt.title('Agent Scores (' + 'Game ' + str(gameID) +
+              ' - Session ' + str(sessionID) + ')')
     plt.xlabel('Moves')
     plt.ylabel('Move Scores')
     plt.legend(['Total Score', 'Max In Corner', 'Combo', 'Corner Stack'])
 
     if not path.isdir(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData'):
-        mkdir(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData')
-    plt.savefig(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/' + str(name) + '.png')
+        mkdir(config['recording_path'] + '/Session' +
+              str(sessionID) + '/htmlReportData')
+    plt.savefig(config['recording_path'] + '/Session' +
+                str(sessionID) + '/htmlReportData/' + str(name) + '.png')

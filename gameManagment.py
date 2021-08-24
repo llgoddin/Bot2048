@@ -10,6 +10,7 @@ import json
 with open('config.json') as config_file:
     config = json.load(config_file)
 
+
 def runGame(game):
 
     while not game['lost']:
@@ -18,9 +19,9 @@ def runGame(game):
 
         checkGameLost(game)
 
-        # I changed the order of this loop to record information 
+        # I changed the order of this loop to record information
         # about the algorithm before the board is moved so
-        # in the move log csv the initial board will show scores and 
+        # in the move log csv the initial board will show scores and
         # a planned move instead of having the scores off by 1
         recordMove(game)
 
@@ -62,7 +63,8 @@ def createSession(recording=True, totalGames=10):
     if session['recording']:
         sessionNum = findSessionNum()
 
-        session['path'] = config['recording_path'] + '/Session' + str(sessionNum)
+        session['path'] = config['recording_path'] + \
+            '/Session' + str(sessionNum)
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))
         os.mkdir((session['path'] + str('/htmlReportData')))
@@ -100,13 +102,10 @@ def endSession(session):
     session['recording'] = False
     # gather time information and compile stats
     session['endTime'] = time.time()
-    
 
     outputLogs(session)
 
     stats = compileStats(session)
-
-    
 
     return stats
 

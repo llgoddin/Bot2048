@@ -17,14 +17,15 @@ import shutil
 with open('config.json') as config_file:
     config = json.load(config_file)
 
+
 def recordMove(game, initialMove=False):
 
     if game['moveLog'] is None:
         dfColumns = []
-        
+
         for i in range(16):
             dfColumns.append(str(i))
-        
+
         dfColumns.append('score')
         dfColumns.append('move')
         dfColumns.append('Win/Loss/Continue')
@@ -34,7 +35,6 @@ def recordMove(game, initialMove=False):
         dfColumns.append('cornerStackScore')
 
         game['moveLog'] = pd.DataFrame(columns=dfColumns)
-
 
     board = []
     winLossContinue = 'c'
@@ -78,9 +78,11 @@ def outputLogs(session):
             if max(row) > maxTile:
                 maxTile = max(row)
 
-        gameSummaries.append([game['id'], maxTile, game['score'], game['totalMoves']])
+        gameSummaries.append(
+            [game['id'], maxTile, game['score'], game['totalMoves']])
 
-    df = pd.DataFrame(data=gameSummaries, columns=['Game ID', 'Max Tile', 'Score', 'Total Moves'])
+    df = pd.DataFrame(data=gameSummaries, columns=[
+                      'Game ID', 'Max Tile', 'Score', 'Total Moves'])
     df.to_csv(session['path'] + '/gameSummaries.csv', index=False)
 
 
@@ -89,7 +91,8 @@ def compileStats(session):
 
     maxTile = max(summaryData['Max Tile'])
 
-    df1 = summaryData['Game ID'].where(summaryData['Score'] == max(summaryData['Score']))
+    df1 = summaryData['Game ID'].where(
+        summaryData['Score'] == max(summaryData['Score']))
     df2 = df1.dropna()
 
     bestGame = {
@@ -97,7 +100,8 @@ def compileStats(session):
         'score': int(summaryData['Score'].max())
     }
 
-    df1 = summaryData['Game ID'].where(summaryData['Score'] == min(summaryData['Score']))
+    df1 = summaryData['Game ID'].where(
+        summaryData['Score'] == min(summaryData['Score']))
     df2 = df1.dropna()
 
     worstGame = {
@@ -121,7 +125,7 @@ def compileStats(session):
     avgTime = computeAverageTime(numOfGames, totalTime)
 
     id = session['path'].split('Session')[1]
-    
+
     stats = {
         'ID': id,
 
@@ -146,7 +150,7 @@ def compileStats(session):
     }
 
     return stats
-    
+
 
 def computeTotalTime(start, end):
     sec = round(end - start)
@@ -176,7 +180,8 @@ def saveStats(stats):
     with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
         f.write(output)
 
-    shutil.copy('./templates/htmlReportData/style.css', config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
+    shutil.copy('./templates/htmlReportData/style.css',
+                config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
 
     with open(config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
         json.dump(stats, outfile)
@@ -207,13 +212,14 @@ def getReplayBoard(index, data):
         if len(row) == 4:
             board.append(row)
             row = []
-    
+
     return board
 
 
 def addGraph(sessionID, gameID):
     p = config['recording_path'] + '/Session' + str(sessionID)
-    graphGames(gameIDs=[gameID], path=p, names=['Game' + str(gameID) + 'Graph'])
+    graphGames(gameIDs=[gameID], path=p, names=[
+               'Game' + str(gameID) + 'Graph'])
 
     newGraph = {}
     i = 38
@@ -231,7 +237,6 @@ def addGraph(sessionID, gameID):
 
     with open(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
         stats = json.load(file)
-
 
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('statTemplate.html')

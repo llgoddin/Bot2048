@@ -18,8 +18,6 @@ def promptYN(x, y, prompt):
             cmd = None
 
 
-
-
 if __name__ == '__main__':
     # flags
     mainMenuFlag = True
@@ -259,8 +257,9 @@ if __name__ == '__main__':
                 saveStats(stats)
 
                 qGames = findQuartileGames(sPath)
-                graphGames(qGames, sPath, names=['Worst', 'Q1', 'Q2', 'Q3', 'Best'])
-                
+                graphGames(qGames, sPath, names=[
+                           'Worst', 'Q1', 'Q2', 'Q3', 'Best'])
+
                 cmd = promptYN(8, 28, 'View Graphs?')
 
                 if cmd == 'y':
@@ -279,7 +278,7 @@ if __name__ == '__main__':
         # ------------- Graph Menu ---------------------
         while graphFlag:
             loadScreen('screens/graphMenu.txt')
-            
+
             sessionID = None
             gameID = None
 
@@ -325,10 +324,11 @@ if __name__ == '__main__':
                         gameID = cmd
 
                         addGraph(sessionID, gameID)
-                        
-                        setPos(8, 22, 'Your new graph has been rendered and added to stats.hmtl!')
+
+                        setPos(
+                            8, 22, 'Your new graph has been rendered and added to stats.hmtl!')
                         setPos(8, 24, 'Be sure to refresh browser to view changes')
-                        
+
                         cmd = promptYN(8, 27, 'Graph Another Game?')
 
                         if cmd == 'n':
@@ -338,8 +338,5 @@ if __name__ == '__main__':
                 except Exception as e:
                     setPos(0, 38, 'Invalid Input')
                     setPos(0, 41, e)
-
-            
-
 
     setPos(0, 39, 'Thanks For Playing!\n')
