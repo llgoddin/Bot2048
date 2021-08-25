@@ -124,6 +124,11 @@ h3 {
         font-size: $tabletText;
     }
 
+    .head_wrapper {
+        grid-template-columns: repeat(2, 1fr);
+        text-align: center;
+    }
+
     .stats_wrapper {
         height: 900px;
         
@@ -148,6 +153,11 @@ h3 {
     h3 {
         font-size: $tabletText;
         padding-left: 20px;
+    }
+
+    .head_wrapper {
+        grid-template-columns: repeat(2, 1fr);
+        text-align: center;
     }
 
     .stats_wrapper {
