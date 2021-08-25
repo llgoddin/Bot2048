@@ -6,7 +6,6 @@
 
 import json
 import shutil
-from datetime import time
 from os import path, walk
 
 import matplotlib.pyplot as plt
