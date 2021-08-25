@@ -2,7 +2,7 @@ import copy
 import operations
 
 
-def myAlgorithm(game):
+def myAlgorithm(game, replay=False):
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
     moves = ['w', 'a', 's', 'd']
@@ -73,6 +73,9 @@ def myAlgorithm(game):
 
     del tempGame
 
+    if replay:
+        return scoresBreakDown
+    
     return bestMove, scoreData
 
 

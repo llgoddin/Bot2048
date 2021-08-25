@@ -4,15 +4,17 @@
 #   - Recording Games (Input and Output)
 #   - Compiling Statistics
 
-from asciiGraphics import setPos
-from datetime import time
-from os import path, walk
-from Graphing import *
-from jinja2 import Environment, FileSystemLoader
-import pandas as pd
-import matplotlib.pyplot as plt
 import json
 import shutil
+from datetime import time
+from os import path, walk
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from jinja2 import Environment, FileSystemLoader
+
+from asciiGraphics import setPos
+from Graphing import *
 
 with open('config.json') as config_file:
     config = json.load(config_file)

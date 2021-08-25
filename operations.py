@@ -1,9 +1,10 @@
 # Lucas Goddin
 
-from Agent import *
-from InputOutputFunctions import *
 import copy
 import random
+from operator import xor
+
+from Agent import *
 
 
 def combineTiles(board, xDirec, yDirec):
@@ -150,13 +151,6 @@ def move(game, newTile=True):
     if boardCopy != game['board'] and newTile:
         genTile(game)
         game['totalMoves'] += 1
-
-
-def printTemp(board):
-    for row in board:
-        for i in row:
-            print(i, end=', ')
-        print('\n', end='')
 
 
 def checkGameLost(game):

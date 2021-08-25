@@ -1,8 +1,11 @@
+import webbrowser
 from os import name
+
+from matplotlib.pyplot import table
+
 from asciiGraphics import *
 from gameManagment import *
 from operations import *
-import webbrowser
 
 
 def promptYN(x, y, prompt):
@@ -158,24 +161,10 @@ if __name__ == '__main__':
                 loadScreen('screens/play.txt')
 
                 printBoard(getReplayBoard(i, replayData), replay=True)
-
-                setPos(3, 11, '----- Game Info ------')
-                setPos(3, 13, '      Move #: ' + str(i) +
-                       '/' + str(len(replayData.index) - 1))
-                setPos(3, 14, '  Game Score: ' + str(replayData['score'][i]))
-                setPos(3, 17, '----- Agent Info -----')
-                setPos(3, 19, '   Next Move: ' + str(replayData['move'][i]))
-                setPos(3, 20, '  Move Score: ' +
-                       str(replayData['totalScore'][i]))
-                setPos(3, 21, '    Max Tile: ' +
-                       str(replayData['maxTileScore'][i]))
-                setPos(3, 22, '       Combo: ' +
-                       str(replayData['comboScore'][i]))
-                setPos(3, 23, 'Corner Stack: ' +
-                       str(replayData['cornerStackScore'][i]))
+                printReplayData(replayData, sID=sessionID,
+                                gID=gameID, moveNum=i)
 
                 setPos(8, 30, 'Command: ')
-
                 cmd = input().lower()
 
                 if cmd == 'q':
@@ -185,6 +174,11 @@ if __name__ == '__main__':
                     i += 1
                 elif cmd == 'a' and i >= 0:
                     i -= 1
+                elif cmd == 'm':
+                    printMoveData(replayData, sID=sessionID,
+                                  gID=gameID, moveNum=i)
+
+                    input()
                 else:
                     try:
                         cmd = int(cmd)

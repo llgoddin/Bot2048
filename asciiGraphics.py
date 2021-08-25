@@ -1,6 +1,8 @@
+import math
 import os
 import sys
-import math
+
+from Agent import myAlgorithm
 
 SCREENS = {}
 
@@ -176,6 +178,120 @@ def printStats(stats):
                        ' ' + str(k) + ':  ' + str(v))
 
             i += 1
+
+
+def printReplayData(replayData, sID, gID, moveNum=0):
+    setPos(3, 10, '----- Game Info ------')
+    setPos(3, 12, '  Session ID: ' + str(sID))
+    setPos(3, 13, '     Game ID: ' + str(gID))
+    setPos(3, 14, '      Move #: ' + str(moveNum) +
+           '/' + str(len(replayData.index) - 1))
+    setPos(3, 15, '  Game Score: ' + str(replayData['score'][moveNum]))
+    setPos(3, 18, '----- Agent Info -----')
+    setPos(3, 20, '   Next Move: ' + str(replayData['move'][moveNum]))
+    setPos(3, 21, '  Move Score: ' +
+           str(replayData['totalScore'][moveNum]))
+    setPos(3, 22, '    Max Tile: ' +
+           str(replayData['maxTileScore'][moveNum]))
+    setPos(3, 23, '       Combo: ' +
+           str(replayData['comboScore'][moveNum]))
+    setPos(3, 24, 'Corner Stack: ' +
+           str(replayData['cornerStackScore'][moveNum]))
+
+
+def printMoveData(replayData, sID, gID, moveNum):
+    # i generate and print move data at run time to keep saved sessions smaller
+
+    # EX: 1000 Game session storing an extra 3 sets of 4 integers (move data)
+
+    #     1000 games * 900 moves * 12 integers * 4 bytes = 43.2 Million Bytes
+    #     43.2 Million Bytes = 43.2 MB
+
+    # I felt adding ~40 MB to each session didn't follow the lightweight theme of Terminal 2048
+
+    board = expandBoard(replayData, moveNum)
+
+    game = {
+        'id': 0,
+        'move': 'a',
+        'board': board
+    }
+
+    scoreData = myAlgorithm(game, replay=True)
+
+    # clear graphic board because it will look ugly with the table
+    for i in range(10, 29):
+        setPos(3 + 22, i, ' '*55)
+
+    # print temp board
+    setPos(42, 14, '----- Board -----')
+    printTemp(45, 15, board)
+
+    # create table
+    xOrigin = 3
+    yOrigin = 29
+
+    setPos(xOrigin, yOrigin - 3,
+           '--------------------- Move Info ---------------------')
+    setPos(xOrigin, yOrigin - 2,
+           '  Move  |  Total  |  Max Tile  |  Combo  |  Corner  |')
+    setPos(xOrigin, yOrigin - 1,
+           '--------|---------|------------|---------|----------|')
+    setPos(xOrigin, yOrigin + 0,
+           '        |         |            |         |          |')
+    setPos(xOrigin, yOrigin + 1,
+           '        |         |            |         |          |')
+    setPos(xOrigin, yOrigin + 2,
+           '        |         |            |         |          |')
+    setPos(xOrigin, yOrigin + 3,
+           '        |         |            |         |          |')
+
+    # fill table
+    i = 0
+    for k, v in scoreData.items():
+        setPos(xOrigin + 4, yOrigin + i, k)
+
+        setPos(xOrigin + 18 - len(str(v[0])), yOrigin + i, v[0])
+        setPos(xOrigin + 31 - len(str(v[1])), yOrigin + i, v[1])
+        setPos(xOrigin + 41 - len(str(v[2])), yOrigin + i, v[2])
+        setPos(xOrigin + 52 - len(str(v[3])), yOrigin + i, v[3])
+
+        i += 1
+
+    setPos(xOrigin + 55, yOrigin + 2, 'Press Enter')
+    setPos(xOrigin + 55, yOrigin + 3, 'To Continue...')
+
+
+def expandBoard(replayData, moveNum):
+    input = []
+    board = []
+    row = []
+
+    for i in range(16):
+        input.append(replayData[str(i)][moveNum])
+
+    for i in range(4):
+        row = []
+
+        for _ in range(4):
+            row.append(input.pop(0))
+
+        board.append(row)
+        del row
+
+    return board
+
+
+def printTemp(xOrigin, yOrigin, board):
+    x = xOrigin
+    y = yOrigin
+
+    for row in board:
+        for i in row:
+            setPos(x, y, str(i) + ', ')
+            x += 2 + len(str(i))
+        x = xOrigin
+        y += 1
 
 
 def setPos(x, y, text=''):
