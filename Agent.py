@@ -1,4 +1,5 @@
 import copy
+
 import operations
 
 
@@ -75,7 +76,7 @@ def myAlgorithm(game, replay=False):
 
     if replay:
         return scoresBreakDown
-    
+
     return bestMove, scoreData
 
 

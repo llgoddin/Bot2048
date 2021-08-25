@@ -1,11 +1,12 @@
 
-from Agent import *
-from InputOutputFunctions import *
-from operations import *
+import json
 import multiprocessing
 import os
 import time
-import json
+
+from Agent import *
+from InputOutputFunctions import *
+from operations import *
 
 with open('config.json') as config_file:
     config = json.load(config_file)

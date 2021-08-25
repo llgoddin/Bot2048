@@ -1,10 +1,11 @@
 # Lucas Goddin
 # July 6, 2020
 
-from os import mkdir, path
-import pandas as pd
-import matplotlib.pyplot as plt
 import json
+from os import mkdir, path
+
+import matplotlib.pyplot as plt
+import pandas as pd
 
 with open('config.json') as config_file:
     config = json.load(config_file)
