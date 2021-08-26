@@ -2,7 +2,7 @@ import math
 import os
 import sys
 
-from Agent import myAlgorithm
+from Agent import my_algorithm
 
 SCREENS = {}
 
@@ -106,18 +106,33 @@ def __expand_board(replayData, moveNum):
 
 
 def text_out(x, y, text=''):
-    """This function uses Colorama's escape sequence to move the cursor and display text"""
+    """Uses Colorama's escape sequence to move the cursor and display text"""
 
     posStr = "\x1b[%d;%df%s" % (y, x, text)
     print(posStr, end='')
 
 
 def text_out_mem(mem):
-    """This function uses Colorama's escape sequence to move the cursor and display previously saved text"""
+    """Uses Colorama's escape sequence to move the cursor and display previously saved text"""
 
     if mem:
         posStr = "\x1b[%d;%df%s" % (mem[1], mem[0], mem[2])
         print(posStr, end='')
+
+
+def prompt_yes_no(x, y, prompt):
+    """Prints a question and returns a 'y' or 'n'"""
+
+    cmd = None
+
+    while cmd is None:
+        text_out(x, y)
+        cmd = input(prompt + ' (Y/N): ')
+
+        if cmd.lower() == 'y' or cmd.lower() == 'n':
+            return cmd.lower()
+        else:
+            cmd = None
 
 
 def load_screen(path, memory=None, clear=True):
@@ -141,6 +156,8 @@ def load_screen(path, memory=None, clear=True):
     for L in lines:
         print(L.strip())
 
+    # text_out(0, 39, ' ' * 42)
+
     # I believe memory functionality is only used once or twice
     # and can be removed easily
     if memory not in SCREENS[path]['memory']:
@@ -150,7 +167,7 @@ def load_screen(path, memory=None, clear=True):
         text_out_mem(m)
 
         # added extra text out to figure out which screens use memory
-        text_out(0, 39, 'This Screen Uses The Screen Memory Feature')
+        # text_out(0, 39, 'This Screen Uses The Screen Memory Feature')
 
 
 def print_board(board, replay=False, xOrigin=None, yOrigin=None):
@@ -184,7 +201,7 @@ def print_board(board, replay=False, xOrigin=None, yOrigin=None):
 
 
 def print_stats(stats):
-    """Prints statistics about a session over screen createSession.txt"""
+    """Prints statistics about a session over screen create_session.txt"""
 
     # use x/y Origin to adjust where on the screen stats are printed
     # use i to iterate through lines of tile data
@@ -259,7 +276,7 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
 
 
 def print_move_data(replayData, sID, gID, moveNum):
-    """Prints table detailing Agent.myAlgorithm() move scoring"""
+    """Prints table detailing Agent.my_algorithm() move scoring"""
 
     # i generate and print move data at run time to keep saved sessions smaller
 
@@ -278,7 +295,7 @@ def print_move_data(replayData, sID, gID, moveNum):
         'board': board
     }
 
-    scoreData = myAlgorithm(game, replay=True)
+    scoreData = my_algorithm(game, replay=True)
 
     # clear graphic board because it will look ugly with the table
     for i in range(10, 29):

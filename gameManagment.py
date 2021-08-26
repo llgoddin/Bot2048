@@ -12,11 +12,12 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 
-def runGame(game):
+def __run_game(game):
+    """Runs a game autonomously using my_algorithm()"""
 
     while not game['lost']:
 
-        game['move'], game['moveScores'] = myAlgorithm(game)
+        game['move'], game['moveScores'] = my_algorithm(game)
 
         checkGameLost(game)
 
@@ -31,11 +32,12 @@ def runGame(game):
     return game
 
 
-def findSessionNum():
+def __find_session_num():
+    """Searches recording directory for other sessions and determines next session ID"""
 
     # figure out number of sessions that have already been recorded
     for (root, dirs, files) in os.walk(config['recording_path'], topdown=True):
-        nextSession = 0
+        nextSession = 1
 
         for d in dirs:
             try:
@@ -51,54 +53,9 @@ def findSessionNum():
         return nextSession
 
 
-def createSession(recording=True, totalGames=10):
+def __end_session(session):
+    """Creates logs and finishes session"""
 
-    session = {
-        'recording': recording,
-        'path': None,
-        'games': [],
-        'startTime': None,
-        'endTime': None
-    }
-
-    if session['recording']:
-        sessionNum = findSessionNum()
-
-        session['path'] = config['recording_path'] + \
-            '/Session' + str(sessionNum)
-        os.mkdir(session['path'])
-        os.mkdir((session['path'] + str('/MoveLogs')))
-        os.mkdir((session['path'] + str('/htmlReportData')))
-
-    session['startTime'] = time.time()
-
-    for i in range(totalGames):
-        session['games'].append(createGame(i, session))
-
-    return session
-
-
-def runSession(s, threads=8):
-    if threads > 1:
-        p = multiprocessing.Pool(processes=threads)
-
-        results = p.map_async(runGame, s['games'])
-
-        s['games'] = results.get()
-
-        p.close()
-        p.join()
-
-    else:
-        for g in s['games']:
-            runGame(g)
-
-    stats = endSession(s)
-
-    return s['path'], stats
-
-
-def endSession(session):
     # reset agent and game recording info
     session['recording'] = False
     # gather time information and compile stats
@@ -111,7 +68,8 @@ def endSession(session):
     return stats
 
 
-def createGame(gameID=0, session=None, path=None):
+def create_game(gameID=0, session=None, path=None):
+    """Creates and returns a new game dict"""
 
     game = {
         'id': gameID,
@@ -128,3 +86,53 @@ def createGame(gameID=0, session=None, path=None):
     genTile(game)
 
     return game
+
+
+def create_session(recording=True, totalGames=10):
+    """Creates and returns a new session dict"""
+
+    session = {
+        'recording': recording,
+        'path': None,
+        'games': [],
+        'startTime': None,
+        'endTime': None
+    }
+
+    if session['recording']:
+        sessionNum = __find_session_num()
+
+        session['path'] = config['recording_path'] + \
+            '/Session' + str(sessionNum)
+        os.mkdir(session['path'])
+        os.mkdir((session['path'] + str('/MoveLogs')))
+        os.mkdir((session['path'] + str('/htmlReportData')))
+
+    session['startTime'] = time.time()
+
+    for i in range(totalGames):
+        session['games'].append(create_game(i, session))
+
+    return session
+
+
+def run_session(s, threads=8):
+    """Runs a session of games"""
+
+    if threads > 1:
+        p = multiprocessing.Pool(processes=threads)
+
+        results = p.map_async(__run_game, s['games'])
+
+        s['games'] = results.get()
+
+        p.close()
+        p.join()
+
+    else:
+        for g in s['games']:
+            __run_game(g)
+
+    stats = __end_session(s)
+
+    return s['path'], stats

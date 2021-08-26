@@ -3,84 +3,9 @@ import copy
 import operations
 
 
-def myAlgorithm(game, replay=False):
-    # I'm going to try applying different weights to game states in order to choose the best move
-    # Important things are going to include keeping the largest tiles in the corner
-    moves = ['w', 'a', 's', 'd']
-    scoresBreakDown = {}
-    moveScoresDict = {}
+def __corner_check(board):
+    """Checks the corners of the board for the largest tile"""
 
-    for m in moves:
-        totalScore = 0
-        highTileScore = 0
-        comboScore = 0
-        cornerStackScore = 0
-
-        filterGame = {
-            'id': game['id'],
-            'move': game['move'],
-            'board': game['board']
-        }
-
-        tempGame = copy.deepcopy(filterGame)
-        tempGame['move'] = m
-        comboScore += comboCheck(tempGame)
-
-        operations.move(tempGame, newTile=False)
-
-        highTileScore += cornerCheck(tempGame['board'])
-
-        tempScore = 0
-        tempHighTileScore = 0
-        for nextM in moves:
-            tempGame['move'] = nextM
-
-            if tempScore < comboCheck(tempGame):
-                tempScore = comboCheck(tempGame)
-            # if highTileScore == 0:
-            #     GameOperations.move(tempGame, newTile=False)
-            #     s = cornerCheck(tempGame['board'])
-            #     if tempHighTileScore < s:
-            #         tempHighTileScore = s
-            #     del tempGame
-            #     tempGame = copy.deepcopy(filterGame)
-
-        highTileScore += tempHighTileScore
-
-        comboScore += tempScore
-
-        cornerStackScore += checkCornerStacking(tempGame)
-
-        totalScore = highTileScore + comboScore + cornerStackScore
-
-        if tempGame['board'] == filterGame['board']:
-            totalScore = -1
-
-        # record the move score and reset temp board
-        scoresBreakDown[m] = [totalScore,
-                              highTileScore, comboScore, cornerStackScore]
-        if totalScore == -1:
-            scoresBreakDown[m] = totalScore
-        moveScoresDict[m] = totalScore
-
-    # search moveScoresDict for the best move and return it
-    bestMove = 'w'
-    scoreData = []
-    for key, value in moveScoresDict.items():
-        if moveScoresDict[bestMove] < value:
-            bestMove = key
-
-    scoreData = scoresBreakDown[bestMove]
-
-    del tempGame
-
-    if replay:
-        return scoresBreakDown
-
-    return bestMove, scoreData
-
-
-def cornerCheck(board):
     # find the largest tile
     largestTile = 0
     for i in range(4):
@@ -98,7 +23,8 @@ def cornerCheck(board):
     return 0
 
 
-def comboCheck(game, verbose=False):
+def __combo_check(game, verbose=False):
+    """Checks the board for potential combinations"""
 
     filterGame = {
         'move': game['move'],
@@ -172,7 +98,9 @@ def comboCheck(game, verbose=False):
     return score
 
 
-def mapTileSizes(game):
+def __map_tile_sizes(game):
+    """Returns an ordered dictionary of tiles and locations descending by tile value"""
+
     tileInfo = {
         'values': [0],
         'locations': []
@@ -194,8 +122,10 @@ def mapTileSizes(game):
     return tileInfo
 
 
-def checkCornerStacking(game):
-    tileInfo = mapTileSizes(game)
+def __check_corner_stacking(game):
+    """Checks and scores the largest tiles being next to each other"""
+
+    tileInfo = __map_tile_sizes(game)
 
     largestTiles = {
         'values': [],
@@ -232,15 +162,17 @@ def checkCornerStacking(game):
 
     score = 0
 
-    score += compareTileCoords(largestTiles, secondTiles)
-    # added in Session 15
-    # score += compareTileCoords(largestTiles, thirdTiles)
-    score += compareTileCoords(secondTiles, thirdTiles)
+    score += __compare_tile_coords(largestTiles, secondTiles)
+
+    # test the following to see if it improves sessions
+    # score += __compare_tile_coords(largestTiles, thirdTiles)
+    score += __compare_tile_coords(secondTiles, thirdTiles)
 
     return score
 
 
-def compareTileCoords(largerTile, smallerTile):
+def __compare_tile_coords(largerTile, smallerTile):
+    """Checks if tiles are stacked next to each other"""
 
     searches = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
@@ -255,3 +187,82 @@ def compareTileCoords(largerTile, smallerTile):
                     score = int(smallerTile['values'][i])
                     return score
     return 0
+
+
+def my_algorithm(game, replay=False):
+    """Algorithm for autonomously playing 2048"""
+
+    # I'm going to try applying different weights to game states in order to choose the best move
+    # Important things are going to include keeping the largest tiles in the corner
+    moves = ['w', 'a', 's', 'd']
+    scoresBreakDown = {}
+    moveScoresDict = {}
+
+    for m in moves:
+        totalScore = 0
+        highTileScore = 0
+        comboScore = 0
+        cornerStackScore = 0
+
+        filterGame = {
+            'id': game['id'],
+            'move': game['move'],
+            'board': game['board']
+        }
+
+        tempGame = copy.deepcopy(filterGame)
+        tempGame['move'] = m
+        comboScore += __combo_check(tempGame)
+
+        operations.move(tempGame, newTile=False)
+
+        highTileScore += __corner_check(tempGame['board'])
+
+        tempScore = 0
+        tempHighTileScore = 0
+        for nextM in moves:
+            tempGame['move'] = nextM
+
+            if tempScore < __combo_check(tempGame):
+                tempScore = __combo_check(tempGame)
+            # if highTileScore == 0:
+            #     GameOperations.move(tempGame, newTile=False)
+            #     s = __corner_check(tempGame['board'])
+            #     if tempHighTileScore < s:
+            #         tempHighTileScore = s
+            #     del tempGame
+            #     tempGame = copy.deepcopy(filterGame)
+
+        highTileScore += tempHighTileScore
+
+        comboScore += tempScore
+
+        cornerStackScore += __check_corner_stacking(tempGame)
+
+        totalScore = highTileScore + comboScore + cornerStackScore
+
+        if tempGame['board'] == filterGame['board']:
+            totalScore = -1
+
+        # record the move score and reset temp board
+        scoresBreakDown[m] = [totalScore,
+                              highTileScore, comboScore, cornerStackScore]
+        if totalScore == -1:
+            scoresBreakDown[m] = totalScore
+        moveScoresDict[m] = totalScore
+
+    # search moveScoresDict for the best move and return it
+    bestMove = 'w'
+    scoreData = []
+    for key, value in moveScoresDict.items():
+        if moveScoresDict[bestMove] < value:
+            bestMove = key
+
+    scoreData = scoresBreakDown[bestMove]
+
+    del tempGame
+
+    if replay:
+        return scoresBreakDown
+
+    return bestMove, scoreData

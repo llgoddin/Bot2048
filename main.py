@@ -7,22 +7,8 @@ from asciiGraphics import *
 from gameManagment import *
 from operations import *
 
-
-def promptYN(x, y, prompt):
-    cmd = None
-
-    while cmd is None:
-        text_out(x, y)
-        cmd = input(prompt + ' (Y/N): ')
-
-        if cmd.lower() == 'y' or cmd.lower() == 'n':
-            return cmd.lower()
-        else:
-            cmd = None
-
-
 if __name__ == '__main__':
-    # flags
+    # flags to control the flow of menus
     mainMenuFlag = True
     gameFlag = False
     sessionFlag = False
@@ -57,7 +43,7 @@ if __name__ == '__main__':
 
         # ------------- Play Game ---------------------
         if gameFlag:
-            game = createGame()
+            game = create_game()
             # Set test board
             # game['board'] = [[8, 8, 8, 8], [8, 8, 8, 8], [8, 8, 8, 8], [8, 8, 8, 8]]
 
@@ -162,7 +148,7 @@ if __name__ == '__main__':
 
                 print_board(getReplayBoard(i, replayData), replay=True)
                 print_replay_data(replayData, sID=sessionID,
-                                gID=gameID, moveNum=i)
+                                  gID=gameID, moveNum=i)
 
                 text_out(8, 30, 'Command: ')
                 cmd = input().lower()
@@ -176,7 +162,7 @@ if __name__ == '__main__':
                     i -= 1
                 elif cmd == 'm':
                     print_move_data(replayData, sID=sessionID,
-                                  gID=gameID, moveNum=i)
+                                    gID=gameID, moveNum=i)
 
                     input()
                 else:
@@ -240,8 +226,8 @@ if __name__ == '__main__':
                         threadCount = 0
 
             if gameCount != 0:
-                s = createSession(totalGames=gameCount)
-                sPath, stats = runSession(s, threads=threadCount)
+                s = create_session(totalGames=gameCount)
+                sPath, stats = run_session(s, threads=threadCount)
 
                 print_stats(stats)
 
@@ -254,7 +240,7 @@ if __name__ == '__main__':
                 graphGames(qGames, sPath, names=[
                            'Worst', 'Q1', 'Q2', 'Q3', 'Best'])
 
-                cmd = promptYN(8, 28, 'View Graphs?')
+                cmd = prompt_yes_no(8, 28, 'View Graphs?')
 
                 if cmd == 'y':
                     try:
@@ -263,7 +249,7 @@ if __name__ == '__main__':
                     except:
                         text_out(0, 39, 'Failed To Open File!')
 
-                cmd = promptYN(8, 28, 'Run Another Session?')
+                cmd = prompt_yes_no(8, 28, 'Run Another Session?')
 
                 if cmd == 'n':
                     createFlag = False
@@ -321,9 +307,10 @@ if __name__ == '__main__':
 
                         text_out(
                             8, 22, 'Your new graph has been rendered and added to stats.hmtl!')
-                        text_out(8, 24, 'Be sure to refresh browser to view changes')
+                        text_out(
+                            8, 24, 'Be sure to refresh browser to view changes')
 
-                        cmd = promptYN(8, 27, 'Graph Another Game?')
+                        cmd = prompt_yes_no(8, 27, 'Graph Another Game?')
 
                         if cmd == 'n':
                             graphFlag = False
