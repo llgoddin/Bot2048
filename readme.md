@@ -66,6 +66,29 @@ Follow the instructions below to set up your virtual enviornment:
 4. Install dependencies using the included requirements file
     >$pip install -r requirements.txt  
 
+5. Compile Scss
+    
+    I use an extension for VS Code called ***Live Sass Compiler*** (v.3.0) currently. 
+    If you have VS Code:
+    * Click Extensions On Left Most Menu
+    * Search Live Sass Compiler (it has the purple eye)
+    * Install the extension and click *Watch Sass* in the bottom right corner
+    <br>
+    <br>
+
+    If you dont have VS Code You can use gem to install sass, navigate to the 
+    /htmlReportData folder and enter:
+     >$gem install sass
+     
+     Then
+
+     >$sass --watch
+
+     This should compile *'style.css.map'* and *'style.css'*
+
+6. Run Terminal 2048
+    >$python3 main.py
+
 Next create a config file, config.json. This file only needs to contain a path for recordings to be saved.
 
 Example config.json:
