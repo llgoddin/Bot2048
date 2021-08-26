@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
-from asciiGraphics import setPos
 from Graphing import *
 
 with open('config.json') as config_file:
