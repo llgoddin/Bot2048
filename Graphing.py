@@ -11,8 +11,41 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 
-def findQuartileGames(sessionPath):
-    df = pd.read_csv(sessionPath + '/gameSummaries.csv')
+def graph_game_scores(gameID, sessionID, name):
+    """Creates and saves game figures to /htmlReportData"""
+    
+    SESSION_PATH = path.join(config['recording_path'], f'Session{sessionID}')
+    HTML_REPORT_PATH = path.join(SESSION_PATH, 'htmlReportData')
+    GAME_DATA_PATH = path.join(SESSION_PATH, 'MoveLogs', f'game{gameID}Log.csv')
+
+    
+    dfGame = pd.read_csv(GAME_DATA_PATH)
+
+    if name is None:
+        plt.figure(f'Game {gameID}')
+        GRAPH_PATH = path.join(HTML_REPORT_PATH, f'Game{gameID}.png')
+    else:
+        plt.figure(f'{name} ({gameID}')
+        GRAPH_PATH = path.join(HTML_REPORT_PATH, f'{name}.png')
+
+    dfGame['totalScore'].plot()
+    dfGame['maxTileScore'].plot()
+    dfGame['comboScore'].plot()
+    dfGame['cornerStackScore'].plot()
+    plt.title(f'Agent Scores (Game {gameID} - Session {sessionID})')
+    plt.xlabel('Moves')
+    plt.ylabel('Move Scores')
+    plt.legend(['Total Score', 'Max In Corner', 'Combo', 'Corner Stack'])
+
+    if not path.isdir(HTML_REPORT_PATH):
+        mkdir(HTML_REPORT_PATH)
+    plt.savefig(GRAPH_PATH)
+
+
+def find_quartile_games(sessionPath):
+    """Returns list of five game ID's for worst q1-q3 and best games in descending order"""
+
+    df = pd.read_csv(path.join(sessionPath,'gameSummaries.csv'))
 
     gameInfo = df['Score'].quantile([0, 0.25, 0.5, 0.75, 1])
 
@@ -54,7 +87,9 @@ def findQuartileGames(sessionPath):
     return [worst_ID, q1_ID, q2_ID, q3_ID, best_ID]
 
 
-def graphGames(gameIDs=[], path='/Session1', names=None):
+def graph_games(gameIDs=[], path='/Session1', names=None):
+    """Use to graph multiple games by id"""
+
     sessionID = int(path.split('Session')[1])
 
     for id in gameIDs:
@@ -62,30 +97,4 @@ def graphGames(gameIDs=[], path='/Session1', names=None):
         if names is not None and len(names) >= 1:
             name = names.pop(0)
 
-        graphGameScores(id, sessionID, name)
-
-
-def graphGameScores(gameID, sessionID, name):
-    dfGame = pd.read_csv(config['recording_path'] + '/Session' + str(
-        sessionID).strip() + '/MoveLogs/game' + str(gameID) + 'Log.csv')
-
-    if name is None:
-        plt.figure('Game ' + str(gameID))
-    else:
-        plt.figure(str(name) + ' (' + str(gameID) + ')')
-
-    dfGame['totalScore'].plot()
-    dfGame['maxTileScore'].plot()
-    dfGame['comboScore'].plot()
-    dfGame['cornerStackScore'].plot()
-    plt.title('Agent Scores (' + 'Game ' + str(gameID) +
-              ' - Session ' + str(sessionID) + ')')
-    plt.xlabel('Moves')
-    plt.ylabel('Move Scores')
-    plt.legend(['Total Score', 'Max In Corner', 'Combo', 'Corner Stack'])
-
-    if not path.isdir(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData'):
-        mkdir(config['recording_path'] + '/Session' +
-              str(sessionID) + '/htmlReportData')
-    plt.savefig(config['recording_path'] + '/Session' +
-                str(sessionID) + '/htmlReportData/' + str(name) + '.png')
+        graph_game_scores(id, sessionID, name)

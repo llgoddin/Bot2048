@@ -218,7 +218,7 @@ def getReplayBoard(index, data):
 
 def addGraph(sessionID, gameID):
     p = config['recording_path'] + '/Session' + str(sessionID)
-    graphGames(gameIDs=[gameID], path=p, names=[
+    graph_games(gameIDs=[gameID], path=p, names=[
                'Game' + str(gameID) + 'Graph'])
 
     newGraph = {}

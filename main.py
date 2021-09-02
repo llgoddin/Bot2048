@@ -236,8 +236,8 @@ if __name__ == '__main__':
 
                 saveStats(stats)
 
-                qGames = findQuartileGames(sPath)
-                graphGames(qGames, sPath, names=[
+                qGames = find_quartile_games(sPath)
+                graph_games(qGames, sPath, names=[
                            'Worst', 'Q1', 'Q2', 'Q3', 'Best'])
 
                 cmd = prompt_yes_no(8, 28, 'View Graphs?')
