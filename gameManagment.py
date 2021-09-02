@@ -25,7 +25,7 @@ def __run_game(game):
         # about the algorithm before the board is moved so
         # in the move log csv the initial board will show scores and
         # a planned move instead of having the scores off by 1
-        recordMove(game)
+        record_move(game)
 
         move(game)
 
@@ -61,9 +61,9 @@ def __end_session(session):
     # gather time information and compile stats
     session['endTime'] = time.time()
 
-    outputLogs(session)
+    output_logs(session)
 
-    stats = compileStats(session)
+    stats = compile_stats(session)
 
     return stats
 

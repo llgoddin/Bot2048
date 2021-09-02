@@ -18,7 +18,8 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 
-def recordMove(game, initialMove=False):
+def record_move(game, initialMove=False):
+    """Records data about a move and creates a move log if one is not already there"""
 
     if game['moveLog'] is None:
         dfColumns = []
@@ -62,7 +63,9 @@ def recordMove(game, initialMove=False):
     game['moveLog'].loc[len(game['moveLog'].index)] = board
 
 
-def outputLogs(session):
+def output_logs(session):
+    """Saves all data stored using record_move to disk"""
+
     gameSummaries = []
 
     for game in session['games']:
@@ -86,7 +89,9 @@ def outputLogs(session):
     df.to_csv(session['path'] + '/gameSummaries.csv', index=False)
 
 
-def compileStats(session):
+def compile_stats(session):
+    """Compiles stats about a session of games and returns a dictionary of them"""
+
     summaryData = pd.read_csv(session['path'] + '/gameSummaries.csv')
 
     maxTile = max(summaryData['Max Tile'])
@@ -121,8 +126,8 @@ def compileStats(session):
     averageScore = summaryData['Score'].sum() / numOfGames
     averageMaxTile = summaryData['Max Tile'].sum() / numOfGames
     averageMoves = summaryData['Total Moves'].sum() / numOfGames
-    totalTime = computeTotalTime(session['startTime'], session['endTime'])
-    avgTime = computeAverageTime(numOfGames, totalTime)
+    totalTime = __compute_total_timeTime(session['startTime'], session['endTime'])
+    avgTime = __computer_average_time(numOfGames, totalTime)
 
     id = session['path'].split('Session')[1]
 
@@ -152,30 +157,36 @@ def compileStats(session):
     return stats
 
 
-def computeTotalTime(start, end):
+def __compute_total_timeTime(start, end):
+    """Computes the total time a session takes"""
+    
     sec = round(end - start)
     (mins, sec) = divmod(sec, 60)
     (hour, mins) = divmod(mins, 60)
     return hour, mins, sec
 
 
-def computeAverageTime(games, totalTime):
+def __computer_average_time(games, totalTime):
+    """Calculates the average time per game in a session"""
+
     hoursInSeconds = totalTime[0] * 60 * 60
     minsInSeconds = totalTime[1] * 60
 
     seconds = totalTime[2] + hoursInSeconds + minsInSeconds
     seconds = seconds / games
 
-    t = computeTotalTime(0, seconds)
+    t = __compute_total_timeTime(0, seconds)
 
     return t
 
 
-def saveStats(stats):
+def save_stats(stats, new_graph=None):
+    """Renders HTML jinja2 template and saves with a copy of style.css and stats.json"""
+
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('statTemplate.html')
 
-    output = template.render(stats=stats)
+    output = template.render(stats=stats, newGraph=new_graph)
 
     with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
         f.write(output)
@@ -187,7 +198,9 @@ def saveStats(stats):
         json.dump(stats, outfile)
 
 
-def checkForLog(Session=0, Game=None):
+def check_for_log(Session=0, Game=None):
+    """Checks for the log of a session or game, Returns boolean"""
+
     if path.isdir(config['recording_path'] + '/Session' + str(Session)):
         if Game:
             if path.isfile(config['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv'):
@@ -198,11 +211,15 @@ def checkForLog(Session=0, Game=None):
         return False
 
 
-def loadReplay(Session=0, Game=0):
+def load_replay(Session=0, Game=0):
+    """Loads the replay data of a game"""
+
     return pd.read_csv(config['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv')
 
 
-def getReplayBoard(index, data):
+def get_replay_board(index, data):
+    """Turns a 1x16 board loaded from replay data into a 4x4 list"""
+
     board = []
     row = []
 
@@ -216,10 +233,12 @@ def getReplayBoard(index, data):
     return board
 
 
-def addGraph(sessionID, gameID):
+def add_graph(sessionID, gameID):
+    """Creates and saves the graph to a game"""
+
     p = config['recording_path'] + '/Session' + str(sessionID)
     graph_games(gameIDs=[gameID], path=p, names=[
-               'Game' + str(gameID) + 'Graph'])
+        'Game' + str(gameID) + 'Graph'])
 
     newGraph = {}
     i = 38
@@ -238,10 +257,4 @@ def addGraph(sessionID, gameID):
     with open(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
         stats = json.load(file)
 
-    env = Environment(loader=FileSystemLoader('templates'))
-    template = env.get_template('statTemplate.html')
-
-    output = template.render(stats=stats, newGraph=newGraph)
-
-    with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
-        f.write(output)
+    save_stats(stats, newGraph)

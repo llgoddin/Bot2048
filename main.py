@@ -112,7 +112,7 @@ if __name__ == '__main__':
                 try:
                     cmd = int(cmd)
 
-                    if checkForLog(Session=cmd):
+                    if check_for_log(Session=cmd):
                         sessionID = cmd
                     else:
                         text_out(0, 39, 'Session Not Found')
@@ -134,10 +134,10 @@ if __name__ == '__main__':
                 try:
                     cmd = int(cmd)
 
-                    if checkForLog(Session=sessionID, Game=cmd):
+                    if check_for_log(Session=sessionID, Game=cmd):
                         gameID = cmd
                         replayActive = True
-                        replayData = loadReplay(Session=sessionID, Game=gameID)
+                        replayData = load_replay(Session=sessionID, Game=gameID)
                     else:
                         text_out(0, 39, 'Game Not Found')
                 except:
@@ -146,7 +146,7 @@ if __name__ == '__main__':
             while replayActive:
                 load_screen('screens/play.txt')
 
-                print_board(getReplayBoard(i, replayData), replay=True)
+                print_board(get_replay_board(i, replayData), replay=True)
                 print_replay_data(replayData, sID=sessionID,
                                   gID=gameID, moveNum=i)
 
@@ -234,7 +234,7 @@ if __name__ == '__main__':
                 stats['Games'] = gameCount
                 stats['Threads'] = threadCount
 
-                saveStats(stats)
+                save_stats(stats)
 
                 qGames = find_quartile_games(sPath)
                 graph_games(qGames, sPath, names=[
@@ -278,7 +278,7 @@ if __name__ == '__main__':
                 try:
                     cmd = int(cmd)
 
-                    if checkForLog(Session=cmd):
+                    if check_for_log(Session=cmd):
                         sessionID = cmd
                     else:
                         text_out(0, 39, 'Session Not Found')
@@ -300,10 +300,10 @@ if __name__ == '__main__':
                 try:
                     cmd = int(cmd)
 
-                    if checkForLog(Session=sessionID, Game=cmd):
+                    if check_for_log(Session=sessionID, Game=cmd):
                         gameID = cmd
 
-                        addGraph(sessionID, gameID)
+                        add_graph(sessionID, gameID)
 
                         text_out(
                             8, 22, 'Your new graph has been rendered and added to stats.hmtl!')
