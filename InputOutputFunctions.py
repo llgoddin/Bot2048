@@ -186,7 +186,10 @@ def save_stats(stats, new_graph=None):
     env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('statTemplate.html')
 
-    output = template.render(stats=stats, newGraph=new_graph)
+    if new_graph:
+        output = template.render(stats=stats, newGraph=new_graph)
+    else:
+        output = template.render(stats=stats)
 
     with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
         f.write(output)
