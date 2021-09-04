@@ -262,8 +262,19 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
     text_out(3, 14, f'      Move #: {moveNum} / {len(replayData.index) - 1}')
     text_out(3, 15, f'  Game Score: {replayData["score"][moveNum]}')
 
+    # graphically representing the moves when replaying games significantly improves the UX
+    nextMove = None
+    if replayData["move"][moveNum] == 'w':
+        nextMove = '↑'
+    elif replayData['move'][moveNum] == 'a':
+        nextMove = '←'
+    elif replayData['move'][moveNum] == 's':
+        nextMove = '↓'
+    elif replayData['move'][moveNum] == 'd':
+        nextMove = '→'
+    
     text_out(3, 18, '----- Agent Info -----')
-    text_out(3, 20, f'   Next Move: {replayData["move"][moveNum]}')
+    text_out(3, 20, f'   Next Move: {nextMove}')
     text_out(3, 21, f'  Move Score: {replayData["totalScore"][moveNum]}')
     text_out(3, 22, f'    Max Tile: {replayData["maxTileScore"][moveNum]}')
     text_out(3, 23, f'       Combo: {replayData["comboScore"][moveNum]}')
