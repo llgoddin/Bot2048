@@ -60,14 +60,14 @@ def __get_board_lines(board):
                     padRight += ' ' * (p + 1)
 
                 if num != 0:
-                    output += '│ ' + padLeft + str(num) + padRight + ' │ '
+                    output += f'│ {padLeft}{num}{padRight} │ '
                 else:
-                    output += '│ ' + padLeft + ' ' * \
-                        len(str(num)) + padRight + ' │ '
+                    spacer = ' ' * len(str(num))
+                    output += f'│ {padLeft}{spacer}{padRight} │ '
 
             else:
                 if num != 0:
-                    output += '│ ' + str(num) + ' │ '
+                    output += f'│ {num} │ '
                 else:
                     output += '│   │ '
         output += '│'
@@ -257,22 +257,17 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
     """Prints information about the replay data"""
 
     text_out(3, 10, '----- Game Info ------')
-    text_out(3, 12, '  Session ID: ' + str(sID))
-    text_out(3, 13, '     Game ID: ' + str(gID))
-    text_out(3, 14, '      Move #: ' + str(moveNum) +
-             '/' + str(len(replayData.index) - 1))
-    text_out(3, 15, '  Game Score: ' + str(replayData['score'][moveNum]))
+    text_out(3, 12, f'  Session ID: {sID}')
+    text_out(3, 13, f'     Game ID: {gID}')
+    text_out(3, 14, f'      Move #: {moveNum} / {len(replayData.index) - 1}')
+    text_out(3, 15, f'  Game Score: {replayData["score"][moveNum]}')
 
     text_out(3, 18, '----- Agent Info -----')
-    text_out(3, 20, '   Next Move: ' + str(replayData['move'][moveNum]))
-    text_out(3, 21, '  Move Score: ' +
-             str(replayData['totalScore'][moveNum]))
-    text_out(3, 22, '    Max Tile: ' +
-             str(replayData['maxTileScore'][moveNum]))
-    text_out(3, 23, '       Combo: ' +
-             str(replayData['comboScore'][moveNum]))
-    text_out(3, 24, 'Corner Stack: ' +
-             str(replayData['cornerStackScore'][moveNum]))
+    text_out(3, 20, f'   Next Move: {replayData["move"][moveNum]}')
+    text_out(3, 21, f'  Move Score: {replayData["totalScore"][moveNum]}')
+    text_out(3, 22, f'    Max Tile: {replayData["maxTileScore"][moveNum]}')
+    text_out(3, 23, f'       Combo: {replayData["comboScore"][moveNum]}')
+    text_out(3, 24, f'Corner Stack: {replayData["cornerStackScore"][moveNum]}')
 
 
 def print_move_data(replayData, sID, gID, moveNum):
