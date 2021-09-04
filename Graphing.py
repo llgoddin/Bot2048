@@ -7,18 +7,17 @@ from os import mkdir, path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-with open('config.json') as config_file:
-    config = json.load(config_file)
+from config import *
 
 
 def graph_game_scores(gameID, sessionID, name):
     """Creates and saves game figures to /htmlReportData"""
-    
+
     SESSION_PATH = path.join(config['recording_path'], f'Session{sessionID}')
     HTML_REPORT_PATH = path.join(SESSION_PATH, 'htmlReportData')
-    GAME_DATA_PATH = path.join(SESSION_PATH, 'MoveLogs', f'game{gameID}Log.csv')
+    GAME_DATA_PATH = path.join(
+        SESSION_PATH, 'MoveLogs', f'game{gameID}Log.csv')
 
-    
     dfGame = pd.read_csv(GAME_DATA_PATH)
 
     if name is None:
@@ -45,7 +44,7 @@ def graph_game_scores(gameID, sessionID, name):
 def find_quartile_games(sessionPath):
     """Returns list of five game ID's for worst q1-q3 and best games in descending order"""
 
-    df = pd.read_csv(path.join(sessionPath,'gameSummaries.csv'))
+    df = pd.read_csv(path.join(sessionPath, 'gameSummaries.csv'))
 
     gameInfo = df['Score'].quantile([0, 0.25, 0.5, 0.75, 1])
 

@@ -12,10 +12,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
+from config import *
 from Graphing import *
-
-with open('config.json') as config_file:
-    config = json.load(config_file)
 
 
 def record_move(game, initialMove=False):
@@ -126,7 +124,8 @@ def compile_stats(session):
     averageScore = summaryData['Score'].sum() / numOfGames
     averageMaxTile = summaryData['Max Tile'].sum() / numOfGames
     averageMoves = summaryData['Total Moves'].sum() / numOfGames
-    totalTime = __compute_total_timeTime(session['startTime'], session['endTime'])
+    totalTime = __compute_total_timeTime(
+        session['startTime'], session['endTime'])
     avgTime = __computer_average_time(numOfGames, totalTime)
 
     id = session['path'].split('Session')[1]
@@ -159,7 +158,7 @@ def compile_stats(session):
 
 def __compute_total_timeTime(start, end):
     """Computes the total time a session takes"""
-    
+
     sec = round(end - start)
     (mins, sec) = divmod(sec, 60)
     (hour, mins) = divmod(mins, 60)

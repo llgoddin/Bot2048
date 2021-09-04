@@ -4,6 +4,7 @@ from os import name
 from matplotlib.pyplot import table
 
 from asciiGraphics import *
+from config import *
 from gameManagment import *
 from operations import *
 
@@ -137,7 +138,8 @@ if __name__ == '__main__':
                     if check_for_log(Session=sessionID, Game=cmd):
                         gameID = cmd
                         replayActive = True
-                        replayData = load_replay(Session=sessionID, Game=gameID)
+                        replayData = load_replay(
+                            Session=sessionID, Game=gameID)
                     else:
                         text_out(0, 39, 'Game Not Found')
                 except:
@@ -238,7 +240,7 @@ if __name__ == '__main__':
 
                 qGames = find_quartile_games(sPath)
                 graph_games(qGames, sPath, names=[
-                           'Worst', 'Q1', 'Q2', 'Q3', 'Best'])
+                    'Worst', 'Q1', 'Q2', 'Q3', 'Best'])
 
                 cmd = prompt_yes_no(8, 28, 'View Graphs?')
 

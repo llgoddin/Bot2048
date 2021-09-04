@@ -5,11 +5,9 @@ import os
 import time
 
 from Agent import *
+from config import *
 from InputOutputFunctions import *
 from operations import *
-
-with open('config.json') as config_file:
-    config = json.load(config_file)
 
 
 def __run_game(game):
