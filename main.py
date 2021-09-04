@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
                 if cmd == 'y':
                     try:
-                        filePath = 'file:///' + s['path'] + '/stats.html'
+                        filePath = 'file:///' + os.path.abspath(s['path']) + '/stats.html'
                         webbrowser.open_new_tab(filePath)
                     except:
                         text_out(0, 39, 'Failed To Open File!')
