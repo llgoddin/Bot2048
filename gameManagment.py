@@ -19,7 +19,7 @@ def __run_game(game):
 
         game['move'], game['moveScores'] = my_algorithm(game)
 
-        checkGameLost(game)
+        check_game_lost(game)
 
         # I changed the order of this loop to record information
         # about the algorithm before the board is moved so
@@ -82,8 +82,8 @@ def create_game(gameID=0, session=None, path=None):
         'lost': False
     }
 
-    genTile(game)
-    genTile(game)
+    gen_tile(game)
+    gen_tile(game)
 
     return game
 

@@ -7,7 +7,9 @@ from operator import xor
 from Agent import *
 
 
-def combineTiles(board, xDirec, yDirec):
+def __combine_tiles(board, xDirec, yDirec):
+    """Combines tiles on a board and returns score earned from that turn"""
+
     scoreEarned = 0
     iterator = 0
     start = 0
@@ -54,7 +56,9 @@ def combineTiles(board, xDirec, yDirec):
     return scoreEarned
 
 
-def genTile(game):
+def gen_tile(game):
+    """Generates and places a new random tile"""
+
     newPos = (4, 4)
     r = random.random()
     if r > .9:
@@ -81,6 +85,8 @@ def genTile(game):
 
 
 def move(game, newTile=True):
+    """Moves the game board in a given direction"""
+    
     if game['move'] is None:
         return None
 
@@ -118,9 +124,9 @@ def move(game, newTile=True):
 
     # combine tiles
     if 'score' in game.keys():
-        game['score'] += combineTiles(game['board'], xDirec, yDirec)
+        game['score'] += __combine_tiles(game['board'], xDirec, yDirec)
     else:
-        combineTiles(game['board'], xDirec, yDirec)
+        __combine_tiles(game['board'], xDirec, yDirec)
 
     # compress tiles
 
@@ -149,11 +155,13 @@ def move(game, newTile=True):
 
     newPos = (4, 4)
     if boardCopy != game['board'] and newTile:
-        genTile(game)
+        gen_tile(game)
         game['totalMoves'] += 1
 
 
-def checkGameLost(game):
+def check_game_lost(game):
+    """Checks a game board for possible moves, returns True if the board can be moved"""
+
     moves = ['w', 'a', 's', 'd']
     movesLeft = 4
 

@@ -50,7 +50,7 @@ if __name__ == '__main__':
             load_screen('screens/play.txt')
 
         while gameFlag:
-            text_out(2, 10, '  Score: ' + str(game['score']))
+            text_out(2, 10, f'  Score: {game["score"]}')
             print_board(game['board'])
 
             cmd = input('Enter Move: ')
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             else:
                 game['move'] = cmd
                 move(game)
-                lost = checkGameLost(game)
+                lost = check_game_lost(game)
 
         # ------------- Session Menu ---------------------
         while sessionFlag:
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
             while gameID is None:
                 # I added extra space to make sure all digits are erased in case of invalid input
-                text_out(8, 16, 'Session ID: ' + str(sessionID) + '       ')
+                text_out(8, 16, f'Session ID: {sessionID}       ')
                 text_out(8, 18, '   Game ID:        ')
                 text_out(20, 18)
 
