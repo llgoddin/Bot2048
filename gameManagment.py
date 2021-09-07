@@ -34,7 +34,7 @@ def __find_session_num():
     """Searches recording directory for other sessions and determines next session ID"""
 
     # figure out number of sessions that have already been recorded
-    for (root, dirs, files) in os.walk(config['recording_path'], topdown=True):
+    for (root, dirs, files) in os.walk(CONFIG['recording_path'], topdown=True):
         nextSession = 1
 
         for d in dirs:
@@ -100,7 +100,7 @@ def create_session(recording=True, totalGames=10):
     if session['recording']:
         sessionNum = __find_session_num()
 
-        session['path'] = config['recording_path'] + \
+        session['path'] = CONFIG['recording_path'] + \
             '/Session' + str(sessionNum)
         os.mkdir(session['path'])
         os.mkdir((session['path'] + str('/MoveLogs')))

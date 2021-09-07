@@ -100,16 +100,16 @@ def move(game, newTile=True):
     iterator = 0
 
     # determines which direction tiles should be moving and direction the loop should iterate
-    if game['move'] == 'a':
+    if game['move'] == CONFIG['Left']:
         xDirec = 1
         iterator = 1
-    elif game['move'] == 'd':
+    elif game['move'] == CONFIG['Right']:
         xDirec = -1
         iterator = -1
-    elif game['move'] == 'w':
+    elif game['move'] == CONFIG['Up']:
         yDirec = 1
         iterator = 1
-    elif game['move'] == 's':
+    elif game['move'] == CONFIG['Down']:
         yDirec = -1
         iterator = -1
     else:
@@ -162,7 +162,7 @@ def move(game, newTile=True):
 def check_game_lost(game):
     """Checks a game board for possible moves, returns True if the board can be moved"""
 
-    moves = ['w', 'a', 's', 'd']
+    moves = [CONFIG['Up'], CONFIG['Left'], CONFIG['Down'], CONFIG['Right']]
     movesLeft = 4
 
     filterGame = {

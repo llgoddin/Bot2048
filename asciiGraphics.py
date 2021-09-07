@@ -264,13 +264,13 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
 
     # graphically representing the moves when replaying games significantly improves the UX
     nextMove = None
-    if replayData["move"][moveNum] == 'w':
+    if replayData["move"][moveNum] == CONFIG['Up']:
         nextMove = '↑'
-    elif replayData['move'][moveNum] == 'a':
+    elif replayData['move'][moveNum] == CONFIG['Left']:
         nextMove = '←'
-    elif replayData['move'][moveNum] == 's':
+    elif replayData['move'][moveNum] == CONFIG['Down']:
         nextMove = '↓'
-    elif replayData['move'][moveNum] == 'd':
+    elif replayData['move'][moveNum] == CONFIG['Right']:
         nextMove = '→'
     
     text_out(3, 18, '----- Agent Info -----')
@@ -297,7 +297,7 @@ def print_move_data(replayData, sID, gID, moveNum):
 
     game = {
         'id': 0,
-        'move': 'a',
+        'move': CONFIG['Left'],
         'board': board
     }
 

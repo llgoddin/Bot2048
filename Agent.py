@@ -1,5 +1,6 @@
 import copy
 
+from config import *
 import operations
 
 
@@ -194,7 +195,15 @@ def my_algorithm(game, replay=False):
 
     # I'm going to try applying different weights to game states in order to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
-    moves = ['w', 'a', 's', 'd']
+
+    # The agent uses 4 scores high tile, combo, corner stack and a total of the 3
+
+    # High tile: returns the value of the largest tile being in the corner
+    # Combo: weights the value of potential combinations AFTER the move
+    # Corner Stack: scores the number of large tiles stacked next to each other
+    # Total: sum of the other 3 scores
+
+    moves = [CONFIG['Up'], CONFIG['Left'], CONFIG['Down'], CONFIG['Right']]
     scoresBreakDown = {}
     moveScoresDict = {}
 
@@ -252,7 +261,7 @@ def my_algorithm(game, replay=False):
         moveScoresDict[m] = totalScore
 
     # search moveScoresDict for the best move and return it
-    bestMove = 'w'
+    bestMove = CONFIG['Up']
     scoreData = []
     for key, value in moveScoresDict.items():
         if moveScoresDict[bestMove] < value:

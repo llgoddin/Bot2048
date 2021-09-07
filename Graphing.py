@@ -13,7 +13,7 @@ from config import *
 def graph_game_scores(gameID, sessionID, name):
     """Creates and saves game figures to /htmlReportData"""
 
-    SESSION_PATH = path.join(config['recording_path'], f'Session{sessionID}')
+    SESSION_PATH = path.join(CONFIG['recording_path'], f'Session{sessionID}')
     HTML_REPORT_PATH = path.join(SESSION_PATH, 'htmlReportData')
     GAME_DATA_PATH = path.join(
         SESSION_PATH, 'MoveLogs', f'game{gameID}Log.csv')

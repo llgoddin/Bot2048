@@ -16,6 +16,29 @@ from config import *
 from Graphing import *
 
 
+def __computer_average_time(games, totalTime):
+    """Calculates the average time per game in a session"""
+
+    hoursInSeconds = totalTime[0] * 60 * 60
+    minsInSeconds = totalTime[1] * 60
+
+    seconds = totalTime[2] + hoursInSeconds + minsInSeconds
+    seconds = seconds / games
+
+    t = __compute_total_timeTime(0, seconds)
+
+    return t
+
+
+def __compute_total_timeTime(start, end):
+    """Computes the total time a session takes"""
+
+    sec = round(end - start)
+    (mins, sec) = divmod(sec, 60)
+    (hour, mins) = divmod(mins, 60)
+    return hour, mins, sec
+
+
 def record_move(game, initialMove=False):
     """Records data about a move and creates a move log if one is not already there"""
 
@@ -41,7 +64,7 @@ def record_move(game, initialMove=False):
     for line in game['board']:
         for tile in line:
             if tile >= 2048:
-                winLossContinue = 'w'
+                winLossContinue = CONFIG['Up']
             board.append(tile)
 
     if game['lost']:
@@ -133,8 +156,8 @@ def compile_stats(session):
     stats = {
         'ID': id,
 
-        'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + 's',
-        'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's',
+        'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + CONFIG['Down'],
+        'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + CONFIG['Down'],
         'Max Tile': maxTile,
         'Average Max Tile': averageMaxTile,
         'Average Score': averageScore,
@@ -156,29 +179,6 @@ def compile_stats(session):
     return stats
 
 
-def __compute_total_timeTime(start, end):
-    """Computes the total time a session takes"""
-
-    sec = round(end - start)
-    (mins, sec) = divmod(sec, 60)
-    (hour, mins) = divmod(mins, 60)
-    return hour, mins, sec
-
-
-def __computer_average_time(games, totalTime):
-    """Calculates the average time per game in a session"""
-
-    hoursInSeconds = totalTime[0] * 60 * 60
-    minsInSeconds = totalTime[1] * 60
-
-    seconds = totalTime[2] + hoursInSeconds + minsInSeconds
-    seconds = seconds / games
-
-    t = __compute_total_timeTime(0, seconds)
-
-    return t
-
-
 def save_stats(stats, new_graph=None):
     """Renders HTML jinja2 template and saves with a copy of style.css and stats.json"""
 
@@ -190,22 +190,22 @@ def save_stats(stats, new_graph=None):
     else:
         output = template.render(stats=stats)
 
-    with open(config['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
+    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/stats.html', CONFIG['Up']) as f:
         f.write(output)
 
     shutil.copy('./templates/htmlReportData/style.css',
-                config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
+                CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
 
-    with open(config['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
+    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', CONFIG['Up']) as outfile:
         json.dump(stats, outfile)
 
 
 def check_for_log(Session=0, Game=None):
     """Checks for the log of a session or game, Returns boolean"""
 
-    if path.isdir(config['recording_path'] + '/Session' + str(Session)):
+    if path.isdir(CONFIG['recording_path'] + '/Session' + str(Session)):
         if Game:
-            if path.isfile(config['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv'):
+            if path.isfile(CONFIG['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv'):
                 return True
         else:
             return True
@@ -216,7 +216,7 @@ def check_for_log(Session=0, Game=None):
 def load_replay(Session=0, Game=0):
     """Loads the replay data of a game"""
 
-    return pd.read_csv(config['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv')
+    return pd.read_csv(CONFIG['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv')
 
 
 def get_replay_board(index, data):
@@ -238,14 +238,14 @@ def get_replay_board(index, data):
 def add_graph(sessionID, gameID):
     """Creates and saves the graph to a game"""
 
-    p = config['recording_path'] + '/Session' + str(sessionID)
+    p = CONFIG['recording_path'] + '/Session' + str(sessionID)
     graph_games(gameIDs=[gameID], path=p, names=[
         'Game' + str(gameID) + 'Graph'])
 
     newGraph = {}
     i = 38
 
-    for (root, dirs, files) in walk(config['recording_path'], topdown=True):
+    for (root, dirs, files) in walk(CONFIG['recording_path'], topdown=True):
         for f in files:
             if f.startswith('Game') and f.endswith('Graph.png'):
                 name = f.split('Graph.png')[0]
@@ -256,7 +256,7 @@ def add_graph(sessionID, gameID):
 
     stats = None
 
-    with open(config['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
+    with open(CONFIG['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
         stats = json.load(file)
 
     save_stats(stats, newGraph)

@@ -158,9 +158,9 @@ if __name__ == '__main__':
                 if cmd == 'q':
                     replayFlag = False
                     break
-                elif cmd == 'd' and i < len(replayData.index) - 1:
+                elif cmd == CONFIG['Right'] and i < len(replayData.index) - 1:
                     i += 1
-                elif cmd == 'a' and i >= 0:
+                elif cmd == CONFIG['Left'] and i >= 0:
                     i -= 1
                 elif cmd == 'm':
                     print_move_data(replayData, sID=sessionID,
