@@ -8,3 +8,4 @@
 /config.json
 /templates/htmlReportData/*.png
 /templates/htmlReportData/*.css*
+/game_recordings
