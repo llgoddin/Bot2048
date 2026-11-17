@@ -42,13 +42,13 @@ def __combo_check(game, verbose=False):
     end = 0
     vert = True
 
-    if tempGame['move'] == 'l':
+    if tempGame['move'] == CONFIG['Left']:
         xDirec = -1
         vert = False
-    elif tempGame['move'] == 'r':
+    elif tempGame['move'] == CONFIG['Right']:
         xDirec = 1
         vert = False
-    elif tempGame['move'] == 'u':
+    elif tempGame['move'] == CONFIG['Up']:
         yDirec = -1
     else:
         yDirec = 1
