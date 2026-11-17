@@ -141,21 +141,15 @@ class CornerStackingTests(GameTestCase):
         board = [[512, 512, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [256, 256, 0, 0]]
         self.assertEqual(check_corner_stacking({'board': grid(board)}), 0)
 
-    @unittest.expectedFailure
     def test_the_two_largest_tiles_side_by_side_score_on_a_two_tile_board(self):
-        """A known gap, marked rather than asserted.
+        """The regression test for the grouping loop's off-by-one.
 
-        `__check_corner_stacking` groups the tiles with
-        `for i in range(len(tileInfo['locations']) - 1)`, which never visits the
+        `__check_corner_stacking` grouped the tiles with
+        `for i in range(len(tileInfo['locations']) - 1)`, which never visited the
         last tile in the descending map. A value group made up solely of that tile
-        is therefore never created, so a board holding exactly two tiles -- the
-        state every game starts in -- always scores 0 for corner stacking, even
-        with the two large tiles side by side. Logged on the project roadmap.
-
-        Marked `expectedFailure` so the suite stays green while the gap stands:
-        the day the loop bound is fixed this test passes, unittest reports an
-        unexpected success, and the marker comes off to leave a real regression
-        test behind.
+        was therefore never created, so a board holding exactly two tiles -- the
+        state every game starts in -- scored 0 for corner stacking even with the
+        two large tiles side by side. The bound now covers every tile.
         """
         board = [[512, 256, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.assertEqual(check_corner_stacking({'board': grid(board)}), 256)

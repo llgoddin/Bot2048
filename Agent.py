@@ -143,7 +143,7 @@ def __check_corner_stacking(game):
 
     stage = 0
     currentNumStartPos = 0
-    for i in range(len(tileInfo['locations']) - 1):
+    for i in range(len(tileInfo['locations'])):
         if tileInfo['values'][i] != tileInfo['values'][currentNumStartPos]:
             stage += 1
             currentNumStartPos = i
