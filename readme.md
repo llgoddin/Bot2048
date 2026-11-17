@@ -103,7 +103,6 @@ Example config.json:
 Terminal 2048 is built with
 * Pandas
 * Matplotlib
-* Colorama 
 * Jinja 2
 
 ## Credits
