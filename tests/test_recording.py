@@ -252,11 +252,13 @@ class LookupTests(GameTestCase):
     def test_a_missing_game_is_not_found(self):
         self.assertFalse(InputOutputFunctions.check_for_log(Session=3, Game=1))
 
-    @unittest.expectedFailure
     def test_a_missing_game_zero_is_not_found(self):
-        """`if Game:` is falsy for game 0, so the file check is skipped for the
-        first game of every session and a missing log is reported as found.
-        Logged on the roadmap; marked so the suite stays green until it is fixed.
+        """The regression test for the falsy-zero guard.
+
+        `check_for_log` guarded its per-game file lookup with `if Game:`, which is
+        falsy for game 0, so the check was skipped for the first game of every
+        session and a missing log was reported as found. It now tests the argument
+        against `None`, so a session can be checked for game 0 like any other.
         """
         self.assertFalse(InputOutputFunctions.check_for_log(Session=3, Game=0))
 

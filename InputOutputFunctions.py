@@ -204,7 +204,7 @@ def check_for_log(Session=0, Game=None):
     """Checks for the log of a session or game, Returns boolean"""
 
     if path.isdir(CONFIG['recording_path'] + '/Session' + str(Session)):
-        if Game:
+        if Game is not None:
             if path.isfile(CONFIG['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv'):
                 return True
         else:
