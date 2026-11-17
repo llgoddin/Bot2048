@@ -1,0 +1,38 @@
+name: tests
+
+# Every pull request, whatever it targets, plus pushes to the integration branch.
+# `master` is a promotion target rather than a place work lands, so it is not here.
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+jobs:
+  unittest:
+    # The runner is pinned, not the Python line. `ubuntu-latest` is Ubuntu 26.04,
+    # and the setup-python manifest carries no Python 3.9 build for it -- 3.9 stops
+    # at 24.04, which this job failed on first. Moving to a newer Python instead
+    # would be a different change: requirements.txt is pinned to the versions
+    # verified on 3.9.6, and testing an interpreter the project does not run on
+    # would be a guess dressed up as coverage.
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        # One entry on purpose, for the same reason. Widening the set is a
+        # one-line change once a version is verified, not a guess to be
+        # discovered red here.
+        python-version: ['3.9']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the pinned dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the test suite
+        run: python -m unittest discover -s tests -t . -v

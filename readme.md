@@ -122,6 +122,22 @@ Terminal 2048 is built with
 * Matplotlib
 * Jinja 2
 
+## Tests
+The suite is Python's standard library `unittest`. It needs nothing beyond `requirements.txt`, so there is no runner to install and nothing extra to keep in step with the pinned versions, and it runs on the interpreter the project already uses.
+
+    >$python3 -m unittest discover -s tests -t .
+
+`-t .` puts the repository root on the import path, which is what lets the tests import the project's top-level modules, so run it from the repository root — the report writer reads `./templates`. `.github/workflows/tests.yml` runs the same command on every pull request and on every push to `dev`.
+
+| Module | Covers |
+|---|---|
+| `tests/test_game_rules.py` | merging, compression and liveness — the 2048 rules themselves |
+| `tests/test_agent_scoring.py` | the agent's four criteria, and the move it picks from them |
+| `tests/test_recording.py` | the move log, the session stats and the HTML report |
+| `tests/test_session.py` | a whole session through `run_session`, replaying every recorded move |
+
+Three things to know before adding to it. The suite pins the direction keys to the shipped `w`/`a`/`s`/`d`, so a rebound `config.json` cannot fail a test that has nothing to do with configuration — the tests that are about configuration rebind explicitly. It runs against a temporary recording directory, so it never reads or writes your own `game_recordings/`. And a test may only assert behaviour it has actually observed: where the code has a known gap, the test is marked `expectedFailure` with a note rather than written to bless the gap.
+
 ## Credits
 Original 2048 game devloped by Gabriele Cirulli
 * [Official Website](https://play2048.co/)
