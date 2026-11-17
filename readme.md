@@ -8,6 +8,18 @@ Under Development
 ## Motivation
 I created this project to learn more about algorithms. My first goal was to create the game and recording system. Then I used these tools to experiment with different ways of playing using an algorithm or agent.
 
+## What This Demonstrates
+The game is the instrument; the experiment and the analysis on top of it are the point.
+
+1. **Score every decision.** Each turn the agent evaluates all four directions on four criteria - whether the largest tile is in a corner, the combinations available after the move, and how tightly the large tiles are stacked - and logs all four scores for the move it chose. See `Agent.my_algorithm`.
+2. **Run the experiment in bulk.** A session plays a chosen number of games across up to eight parallel processes, and each game's boards, moves and score components are written to a CSV under `MoveLogs/`.
+3. **Analyse the batch with pandas.** `gameSummaries.csv` holds one row per game. The score distribution is read as quartiles and five games are selected out of it - worst, the three quartiles, and best - so the games worth looking at are chosen by the data rather than by eye. See `Graphing.find_quartile_games`.
+4. **Graph the reasoning with matplotlib.** Each selected game gets a line chart of its four score components over the course of the game, which shows *why* a game went well or badly rather than only that it did.
+5. **Render the report.** Jinja 2 builds a static `stats.html` from the session stats and the charts, and further graphs can be added to an existing report without rerunning the session.
+6. **Replay any game.** Any recorded game can be stepped through move by move, with the board and the scores the agent saw at each decision.
+
+The 2048 game, the recording system and the analysis are all first-class parts of the project: the game exists so that there is something worth measuring.
+
 ## User Experience
 2048 Gameplay
 <br>
@@ -66,7 +78,8 @@ Follow the instructions below to set up your virtual enviornment:
 4. Install dependencies using the included requirements file
     >$pip install -r requirements.txt  
 
-5. Compile Scss
+5. Compile Scss - optional
+    The compiled `style.css` and `style.css.map` are committed, so this step is only needed if you change `style.scss`.
     
     I use an extension for VS Code called ***Live Sass Compiler*** (v.3.0) currently. 
     If you have VS Code:
