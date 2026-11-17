@@ -50,7 +50,7 @@ Follow the instructions below to set up your virtual enviornment:
 
 1. Create the virtual environment using python3's venv command
     >$python3 -m venv /example/path/destination/.env
-    - Make sure to include /venv at the end in order to package the environment in a single directory
+    - Make sure to include `.env` at the end in order to package the environment in a single directory
 
 2. Navigate to the directory containing /.env
     >$cd /example/path/destination
@@ -61,7 +61,7 @@ Follow the instructions below to set up your virtual enviornment:
 
     Windows:
 
-    >C:\\..\destination> .env\\bin\\activate.bat
+    >C:\\..\destination> .env\\Scripts\\activate.bat
 
 4. Install dependencies using the included requirements file
     >$pip install -r requirements.txt  
@@ -89,13 +89,17 @@ Follow the instructions below to set up your virtual enviornment:
 6. Run Terminal 2048
     >$python3 main.py
 
-Next create a config file, config.json. This file only needs to contain a path for recordings to be saved.
+Next create a config file, config.json. It holds a path for recordings to be saved and the keys used to move. If config.json is missing, the program creates one with the default values shown below.
 
 Example config.json:
 
 ```json
 {
-    "recording_path": "/Users/bobsmith/Documents/pythonProjects/2048Recording"
+    "recording_path": "/Users/bobsmith/Documents/pythonProjects/2048Recording",
+    "Up": "w",
+    "Down": "s",
+    "Left": "a",
+    "Right": "d"
 }
 ```
 
