@@ -4,7 +4,10 @@ matplotlib==3.8.0
 Jinja2==3.1.2
 
 # numpy is not imported by this project directly - it arrives through pandas and
-# matplotlib. It is pinned because pandas 2.1.1 is built against NumPy 1.x, and an
-# unpinned install on Python 3.9 can resolve NumPy 2.x, which fails at import with a
-# NumPy 1.x ABI error rather than failing at install time.
+# matplotlib. It is pinned so the verified set is reproducible, not to repair a break:
+# pandas 2.1.1's compiled extensions need the NumPy 1.x ABI, but matplotlib 3.8.0
+# already declares numpy<2, so the resolver will not cross that line on its own. The
+# pin fixes the exact patch version the verification ran on. Forcing NumPy 2.x beside
+# pandas 2.1.1 fails at import with "numpy.dtype size changed", which is the hazard the
+# 1.x line is holding off.
 numpy==1.26.1
