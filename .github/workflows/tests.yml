@@ -9,13 +9,18 @@ on:
 
 jobs:
   unittest:
-    runs-on: ubuntu-latest
+    # The runner is pinned, not the Python line. `ubuntu-latest` is Ubuntu 26.04,
+    # and the setup-python manifest carries no Python 3.9 build for it -- 3.9 stops
+    # at 24.04, which this job failed on first. Moving to a newer Python instead
+    # would be a different change: requirements.txt is pinned to the versions
+    # verified on 3.9.6, and testing an interpreter the project does not run on
+    # would be a guess dressed up as coverage.
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        # One entry on purpose: requirements.txt is pinned to the versions
-        # verified on Python 3.9.6, which is what the project's own .env runs.
-        # Widening the set is a one-line change once a version is verified, not
-        # a guess to be discovered red here.
+        # One entry on purpose, for the same reason. Widening the set is a
+        # one-line change once a version is verified, not a guess to be
+        # discovered red here.
         python-version: ['3.9']
     steps:
       - uses: actions/checkout@v4
