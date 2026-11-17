@@ -1,0 +1,33 @@
+name: tests
+
+# Every pull request, whatever it targets, plus pushes to the integration branch.
+# `master` is a promotion target rather than a place work lands, so it is not here.
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # One entry on purpose: requirements.txt is pinned to the versions
+        # verified on Python 3.9.6, which is what the project's own .env runs.
+        # Widening the set is a one-line change once a version is verified, not
+        # a guess to be discovered red here.
+        python-version: ['3.9']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the pinned dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the test suite
+        run: python -m unittest discover -s tests -t . -v
