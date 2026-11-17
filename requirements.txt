@@ -1,3 +1,10 @@
-pandas
-matplotlib
-jinja2
+# Pinned to the versions verified to install and run on Python 3.9.6.
+pandas==2.1.1
+matplotlib==3.8.0
+Jinja2==3.1.2
+
+# numpy is not imported by this project directly - it arrives through pandas and
+# matplotlib. It is pinned because pandas 2.1.1 is built against NumPy 1.x, and an
+# unpinned install on Python 3.9 can resolve NumPy 2.x, which fails at import with a
+# NumPy 1.x ABI error rather than failing at install time.
+numpy==1.26.1
