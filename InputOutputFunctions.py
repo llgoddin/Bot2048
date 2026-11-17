@@ -64,7 +64,7 @@ def record_move(game, initialMove=False):
     for line in game['board']:
         for tile in line:
             if tile >= 2048:
-                winLossContinue = CONFIG['Up']
+                winLossContinue = 'w'
             board.append(tile)
 
     if game['lost']:
@@ -156,8 +156,8 @@ def compile_stats(session):
     stats = {
         'ID': id,
 
-        'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + CONFIG['Down'],
-        'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + CONFIG['Down'],
+        'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + 's',
+        'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's',
         'Max Tile': maxTile,
         'Average Max Tile': averageMaxTile,
         'Average Score': averageScore,
@@ -190,13 +190,13 @@ def save_stats(stats, new_graph=None):
     else:
         output = template.render(stats=stats)
 
-    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/stats.html', CONFIG['Up']) as f:
+    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
         f.write(output)
 
     shutil.copy('./templates/htmlReportData/style.css',
                 CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
 
-    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', CONFIG['Up']) as outfile:
+    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
         json.dump(stats, outfile)
 
 
