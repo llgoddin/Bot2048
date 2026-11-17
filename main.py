@@ -1,7 +1,4 @@
 import webbrowser
-from os import name
-
-from matplotlib.pyplot import table
 
 from asciiGraphics import *
 from config import *
