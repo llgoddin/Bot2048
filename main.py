@@ -115,7 +115,7 @@ if __name__ == '__main__':
                         sessionID = cmd
                     else:
                         text_out(0, 39, 'Session Not Found')
-                except:
+                except ValueError:
                     text_out(0, 39, 'Invalid Input    ')
 
             while gameID is None:
@@ -140,7 +140,7 @@ if __name__ == '__main__':
                             Session=sessionID, Game=gameID)
                     else:
                         text_out(0, 39, 'Game Not Found')
-                except:
+                except ValueError:
                     text_out(0, 39, 'Invalid Input')
 
             while replayActive:
@@ -174,7 +174,7 @@ if __name__ == '__main__':
                         else:
                             text_out(0, 39, 'Invalid Move Number')
 
-                    except:
+                    except ValueError:
                         text_out(0, 39, 'Invalid Input')
 
         # ------------- Create Session Menu ---------------------
@@ -199,7 +199,7 @@ if __name__ == '__main__':
                     cmd = int(cmd)
                     gameCount = cmd
                     break
-                except:
+                except ValueError:
                     if cmd == 'q':
                         createFlag = False
                         break
@@ -217,7 +217,7 @@ if __name__ == '__main__':
                     if cmd <= 8:
                         threadCount = cmd
                         break
-                except:
+                except ValueError:
                     if cmd == 'q':
                         createFlag = False
                         gameCount = 0
@@ -246,7 +246,7 @@ if __name__ == '__main__':
                     try:
                         filePath = 'file:///' + os.path.abspath(s['path']) + '/stats.html'
                         webbrowser.open_new_tab(filePath)
-                    except:
+                    except (OSError, webbrowser.Error):
                         text_out(0, 39, 'Failed To Open File!')
 
                 cmd = prompt_yes_no(8, 28, 'Run Another Session?')
@@ -282,7 +282,7 @@ if __name__ == '__main__':
                         sessionID = cmd
                     else:
                         text_out(0, 39, 'Session Not Found')
-                except:
+                except ValueError:
                     text_out(0, 39, 'Invalid Input    ')
 
             while gameID is None:
@@ -306,7 +306,7 @@ if __name__ == '__main__':
                         add_graph(sessionID, gameID)
 
                         text_out(
-                            8, 22, 'Your new graph has been rendered and added to stats.hmtl!')
+                            8, 22, 'Your new graph has been rendered and added to stats.html!')
                         text_out(
                             8, 24, 'Be sure to refresh browser to view changes')
 
@@ -318,6 +318,6 @@ if __name__ == '__main__':
                         text_out(0, 39, 'Game Not Found')
                 except Exception as e:
                     text_out(0, 38, 'Invalid Input')
-                    text_out(0, 41, e)
+                    text_out(0, 41, str(e))
 
     text_out(0, 39, 'Thanks For Playing!\n')

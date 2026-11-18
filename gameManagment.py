@@ -1,5 +1,4 @@
 
-import json
 import multiprocessing
 import os
 import time
@@ -47,7 +46,10 @@ def __find_session_num():
                 print('Directory ' + str(d) + ' does not end in a number!')
 
         if nextSession > 99:
-            return -1
+            raise RuntimeError(
+                'Refusing to record session ' + str(nextSession) +
+                ': session numbers above 99 are not supported, and the '
+                'directory for it would be named Session-1.')
         return nextSession
 
 
