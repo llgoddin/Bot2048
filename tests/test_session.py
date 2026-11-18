@@ -25,9 +25,14 @@ import gameManagment
 import Graphing
 import InputOutputFunctions
 import operations
-
-from tests.helpers import (BOARD_COLUMNS, GameTestCase, MARKER_COLUMN, REPO_ROOT,
-                           board_from_log_row, read_move_log)
+from tests.helpers import (
+    BOARD_COLUMNS,
+    MARKER_COLUMN,
+    REPO_ROOT,
+    GameTestCase,
+    board_from_log_row,
+    read_move_log,
+)
 
 PARALLEL_SCRIPT = textwrap.dedent('''
     import json, os, sys, tempfile

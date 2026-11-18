@@ -1,7 +1,7 @@
 import copy
 
-from config import *
 import operations
+from config import *
 
 
 def __corner_check(board):

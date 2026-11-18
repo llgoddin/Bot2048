@@ -15,9 +15,14 @@ import pandas as pd
 import config
 import gameManagment
 import InputOutputFunctions
-
 from tests import SHIPPED_KEYS
-from tests.helpers import BOARD_COLUMNS, DIRECTIONS, GameTestCase, MARKER_COLUMN, game_with
+from tests.helpers import (
+    BOARD_COLUMNS,
+    DIRECTIONS,
+    MARKER_COLUMN,
+    GameTestCase,
+    game_with,
+)
 
 SCORE_COLUMNS = ['totalScore', 'maxTileScore', 'comboScore', 'cornerStackScore']
 NAMED_COLUMNS = BOARD_COLUMNS + ['score', 'move', MARKER_COLUMN] + SCORE_COLUMNS

@@ -16,9 +16,15 @@ import unittest
 import Agent
 import config
 import operations
-
-from tests.helpers import (DIRECTIONS, GameTestCase, expected_combinations, game_with,
-                           grid, private, random_boards)
+from tests.helpers import (
+    DIRECTIONS,
+    GameTestCase,
+    expected_combinations,
+    game_with,
+    grid,
+    private,
+    random_boards,
+)
 
 combo_check = private(Agent, '__combo_check')
 corner_check = private(Agent, '__corner_check')
