@@ -13,6 +13,7 @@ import unittest
 import pandas as pd
 
 import config
+import gameManagment
 import InputOutputFunctions
 
 from tests import SHIPPED_KEYS
@@ -260,7 +261,7 @@ class LookupTests(GameTestCase):
         session and a missing log was reported as found. It now tests the argument
         against `None`, so a session can be checked for game 0 like any other.
         """
-        self.assertFalse(InputOutputFunctions.check_for_log(Session=3, Game=0))
+        self.assertIs(InputOutputFunctions.check_for_log(Session=3, Game=0), False)
 
     def test_a_present_game_zero_log_is_found(self):
         """The other half of the falsy-zero guard.
@@ -279,6 +280,31 @@ class LookupTests(GameTestCase):
         board = InputOutputFunctions.get_replay_board(0, data)
         self.assertEqual(board, [[2.0, 2.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0],
                                  [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
+
+
+class SessionNumberTests(GameTestCase):
+    """The recording directory names sessions `Session<N>`, and the scheme stops at 99.
+
+    Past that, `__find_session_num` returned `-1` and the caller built the path
+    from it -- so the "next" session was created as `Session-1`, a real directory
+    holding a session nothing would ever look in again. It now refuses instead.
+    Both directions are pinned here, because a fix that simply lowered the cap
+    would pass the first test on its own.
+    """
+
+    def _sessions(self, up_to):
+        for number in range(1, up_to + 1):
+            os.makedirs(os.path.join(self.recording_dir, 'Session' + str(number)))
+
+    def test_the_hundredth_session_is_refused_rather_than_misnamed(self):
+        self._sessions(99)
+        with self.assertRaises(RuntimeError):
+            gameManagment.create_session(recording=True, totalGames=0)
+
+    def test_the_ninetyninth_session_is_still_allowed(self):
+        self._sessions(98)
+        session = gameManagment.create_session(recording=True, totalGames=0)
+        self.assertTrue(session['path'].endswith('Session99'))
 
 
 if __name__ == '__main__':
