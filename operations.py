@@ -134,7 +134,7 @@ def move(game, newTile=True):
     # I originally thought combination and compression would have to scan the array in opposite directions
     # The commented code below works for opposite directions but the new code will work for the same direction (FIXED)
 
-    for cycles in range(3):
+    for _ in range(3):
         for i in range(start, end + xDirec, iterator):
             for j in range(start, end + yDirec, iterator):
                 if game['board'][i][j] == 0:

@@ -9,6 +9,7 @@ corrupt two stored values, because the keys were standing in for literals.
 import json
 import os
 import unittest
+from typing import ClassVar
 
 import pandas as pd
 
@@ -93,9 +94,9 @@ class MoveLogShapeTests(GameTestCase):
 
 class Reached2048MarkerTests(GameTestCase):
 
-    WINNING = [[2048, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    ALMOST = [[1024, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-    ORDINARY = [[2, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    WINNING: ClassVar[list] = [[2048, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    ALMOST: ClassVar[list] = [[1024, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    ORDINARY: ClassVar[list] = [[2, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
     def marker(self, rows, **kwargs):
         return record(rows, **kwargs).iloc[0][MARKER_COLUMN]
@@ -155,7 +156,7 @@ class TimingTests(GameTestCase):
 
 class CompileStatsTests(GameTestCase):
 
-    SUMMARIES = [[0, 64, 100, 10], [1, 128, 200, 20], [2, 512, 300, 30], [3, 2048, 400, 40]]
+    SUMMARIES: ClassVar[list] = [[0, 64, 100, 10], [1, 128, 200, 20], [2, 512, 300, 30], [3, 2048, 400, 40]]
 
     def setUp(self):
         super().setUp()
@@ -188,7 +189,7 @@ class CompileStatsTests(GameTestCase):
 
 class ReportTests(GameTestCase):
 
-    SUMMARIES = [[0, 64, 100, 10], [1, 256, 900, 30], [2, 512, 1200, 40]]
+    SUMMARIES: ClassVar[list] = [[0, 64, 100, 10], [1, 256, 900, 30], [2, 512, 1200, 40]]
 
     def stats(self, session_id=5):
         session = write_session(self.recording_dir, session_id, self.SUMMARIES)

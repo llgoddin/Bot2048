@@ -91,7 +91,7 @@ def __expand_board(replayData, moveNum):
     for i in range(16):
         input.append(replayData[str(i)][moveNum])
 
-    for i in range(4):
+    for _ in range(4):
         row = []
 
         for _ in range(4):

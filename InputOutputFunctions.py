@@ -74,7 +74,7 @@ def record_move(game, initialMove=False):
     board.append(winLossContinue)
 
     if initialMove or game['lost']:
-        for i in range(4):
+        for _ in range(4):
             board.append(0)
     else:
         for num in game['moveScores']:
@@ -243,7 +243,7 @@ def add_graph(sessionID, gameID):
 
     newGraph = {}
 
-    for (root, dirs, files) in walk(CONFIG['recording_path'], topdown=True):
+    for (_root, _dirs, files) in walk(CONFIG['recording_path'], topdown=True):
         for f in files:
             if f.startswith('Game') and f.endswith('Graph.png'):
                 name = f.split('Graph.png')[0]

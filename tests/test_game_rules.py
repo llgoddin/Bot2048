@@ -7,6 +7,7 @@ covered at the same time.
 """
 import random
 import unittest
+from typing import ClassVar
 
 import config
 import operations
@@ -224,7 +225,7 @@ class NewTileTests(GameTestCase):
 
 class LivenessTests(GameTestCase):
 
-    LOCKED = [[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 2]]
+    LOCKED: ClassVar[list] = [[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 2]]
 
     def test_a_locked_board_is_lost(self):
         game = game_with(self.LOCKED, move='a')

@@ -33,7 +33,7 @@ def __find_session_num():
     """Searches recording directory for other sessions and determines next session ID"""
 
     # figure out number of sessions that have already been recorded
-    for (root, dirs, files) in os.walk(CONFIG['recording_path'], topdown=True):
+    for (_root, dirs, _files) in os.walk(CONFIG['recording_path'], topdown=True):
         nextSession = 1
 
         for d in dirs:
