@@ -2,8 +2,6 @@
 
 import copy
 import random
-from operator import xor
-
 from Agent import *
 
 
