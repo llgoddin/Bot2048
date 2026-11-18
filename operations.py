@@ -3,7 +3,7 @@
 import copy
 import random
 
-from Agent import *
+from config import CONFIG
 
 
 def __combine_tiles(board, xDirec, yDirec):
