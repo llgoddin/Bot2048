@@ -211,6 +211,7 @@ def check_for_log(Session=0, Game=None):
             return True
     else:
         return False
+    return False
 
 
 def load_replay(Session=0, Game=0):
