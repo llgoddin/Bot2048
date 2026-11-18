@@ -98,8 +98,7 @@ def output_logs(session):
         maxTile = 0
 
         for row in game['board']:
-            if max(row) > maxTile:
-                maxTile = max(row)
+            maxTile = max(maxTile, max(row))
 
         gameSummaries.append(
             [game['id'], maxTile, game['score'], game['totalMoves']])

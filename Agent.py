@@ -11,8 +11,7 @@ def __corner_check(board):
     largestTile = 0
     for i in range(4):
         for j in range(4):
-            if board[i][j] > largestTile:
-                largestTile = board[i][j]
+            largestTile = max(largestTile, board[i][j])
 
     # check corners for the largest tile
     cornerCoord = [(0, 0), (0, 3), (3, 0), (3, 3)]
@@ -53,7 +52,7 @@ def __combo_check(game, verbose=False):
     else:
         yDirec = 1
 
-    if not xDirec == 0:
+    if xDirec != 0:
         vert = False
 
     if xDirec > 0 or yDirec > 0:
@@ -232,8 +231,7 @@ def my_algorithm(game, replay=False):
         for nextM in moves:
             tempGame['move'] = nextM
 
-            if tempScore < __combo_check(tempGame):
-                tempScore = __combo_check(tempGame)
+            tempScore = max(tempScore, __combo_check(tempGame))
             # if highTileScore == 0:
             #     GameOperations.move(tempGame, newTile=False)
             #     s = __corner_check(tempGame['board'])

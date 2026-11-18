@@ -15,7 +15,7 @@ def __combine_tiles(board, xDirec, yDirec):
     end = 0
     vert = True
 
-    if not xDirec == 0:
+    if xDirec != 0:
         vert = False
 
     if xDirec > 0 or yDirec > 0:
@@ -122,7 +122,7 @@ def move(game, newTile=True):
         end = 3
 
     # combine tiles
-    if 'score' in game.keys():
+    if 'score' in game:
         game['score'] += __combine_tiles(game['board'], xDirec, yDirec)
     else:
         __combine_tiles(game['board'], xDirec, yDirec)

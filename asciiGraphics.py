@@ -14,8 +14,7 @@ def __get_board_lines(board):
     maxTile = 0
     for line in board:
         for num in line:
-            if num > maxTile:
-                maxTile = num
+            maxTile = max(maxTile, num)
 
     padding = len(str(maxTile)) - 1
 
@@ -175,8 +174,7 @@ def print_board(board, replay=False, xOrigin=None, yOrigin=None):
     maxTile = 0
     for line in board:
         for num in line:
-            if num > maxTile:
-                maxTile = num
+            maxTile = max(maxTile, num)
 
     if xOrigin:
         x = xOrigin
