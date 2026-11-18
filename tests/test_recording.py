@@ -252,13 +252,26 @@ class LookupTests(GameTestCase):
     def test_a_missing_game_is_not_found(self):
         self.assertFalse(InputOutputFunctions.check_for_log(Session=3, Game=1))
 
-    @unittest.expectedFailure
     def test_a_missing_game_zero_is_not_found(self):
-        """`if Game:` is falsy for game 0, so the file check is skipped for the
-        first game of every session and a missing log is reported as found.
-        Logged on the roadmap; marked so the suite stays green until it is fixed.
+        """The regression test for the falsy-zero guard.
+
+        `check_for_log` guarded its per-game file lookup with `if Game:`, which is
+        falsy for game 0, so the check was skipped for the first game of every
+        session and a missing log was reported as found. It now tests the argument
+        against `None`, so a session can be checked for game 0 like any other.
         """
         self.assertFalse(InputOutputFunctions.check_for_log(Session=3, Game=0))
+
+    def test_a_present_game_zero_log_is_found(self):
+        """The other half of the falsy-zero guard.
+
+        A guard that simply returned False for game 0 would satisfy the test
+        above, so the case the old code got right by accident -- a game-0 log
+        that is actually on disk -- is pinned separately.
+        """
+        record([[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]).to_csv(
+            os.path.join(self.path, 'MoveLogs', 'game0Log.csv'), index=False)
+        self.assertTrue(InputOutputFunctions.check_for_log(Session=3, Game=0))
 
     def test_a_replay_round_trips_through_the_log(self):
         data = InputOutputFunctions.load_replay(Session=3, Game=2)
