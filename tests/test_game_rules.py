@@ -40,30 +40,35 @@ def transpose(rows):
 class MergeTests(GameTestCase):
 
     def test_a_pair_merges_toward_the_wall_and_scores_the_merged_tile(self):
-        game = slid([[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
+        game = slid([[2, 2, 0, 0], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
         self.assertEqual(game['board'][0], [4, 0, 0, 0])
         self.assertEqual(game['score'], 4)
 
     def test_a_full_row_merges_into_two_tiles(self):
-        game = slid([[2, 2, 2, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
+        game = slid([[2, 2, 2, 2], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
         self.assertEqual(game['board'][0], [4, 4, 0, 0])
         self.assertEqual(game['score'], 8)
 
     def test_a_tile_merges_only_once_in_a_move(self):
         # [4,4,4,4] left is [8,8], never [16]: a tile produced by a merge cannot
         # merge again in the same move.
-        game = slid([[4, 4, 4, 4], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
+        game = slid([[4, 4, 4, 4], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
         self.assertEqual(game['board'][0], [8, 8, 0, 0])
         self.assertEqual(game['score'], 16)
 
     def test_a_pair_merges_across_a_gap(self):
-        game = slid([[2, 0, 2, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
+        game = slid([[2, 0, 2, 0], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
         self.assertEqual(game['board'][0], [4, 0, 0, 0])
         self.assertEqual(game['score'], 4)
 
     def test_the_nearest_tile_is_the_one_that_pairs(self):
         # left on [2,2,2,0] merges the two leftmost, leaving [4,2,0,0]
-        game = slid([[2, 2, 2, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
+        game = slid([[2, 2, 2, 0], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
         self.assertEqual(game['board'][0], [4, 2, 0, 0])
         self.assertEqual(game['score'], 4)
 
@@ -77,12 +82,14 @@ class CompressionTests(GameTestCase):
                               'Right')['board'][0], [0, 0, 2, 4])
 
     def test_a_full_row_that_cannot_move_is_a_no_op(self):
-        game = slid([[2, 4, 8, 16], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
+        game = slid([[2, 4, 8, 16], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Left', score=0)
         self.assertEqual(game['board'][0], [2, 4, 8, 16])
         self.assertEqual(game['score'], 0)
 
     def test_a_no_op_move_does_not_count_as_a_move(self):
-        game = game_with([[2, 4, 8, 16], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
+        game = game_with([[2, 4, 8, 16], [0, 0, 0, 0],
+                          [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
         before = [row[:] for row in game['board']]
         operations.move(game)                      # newTile defaults on
         self.assertEqual(game['board'], before)
@@ -91,18 +98,27 @@ class CompressionTests(GameTestCase):
     def test_down_does_not_wrap_the_bottom_row_to_the_top(self):
         # The compression bounds are subtler than they look: moving down iterates
         # rows 3..1 reading row i-1, so row 0 must never be written.
-        game = slid([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 0, 0, 0]], 'Down', score=0)
-        self.assertEqual(game['board'], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 0, 0, 0]])
+        game = slid([[0, 0, 0, 0], [0, 0, 0, 0],
+                     [0, 0, 0, 0], [2, 0, 0, 0]], 'Down', score=0)
+        self.assertEqual(
+            game['board'],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [2, 0, 0, 0]])
         self.assertEqual(game['score'], 0)
 
     def test_down_stacks_and_merges_at_the_bottom(self):
-        game = slid([[0, 0, 0, 0], [0, 0, 0, 0], [2, 0, 0, 0], [2, 0, 0, 0]], 'Down', score=0)
-        self.assertEqual(game['board'], [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [4, 0, 0, 0]])
+        game = slid([[0, 0, 0, 0], [0, 0, 0, 0],
+                     [2, 0, 0, 0], [2, 0, 0, 0]], 'Down', score=0)
+        self.assertEqual(
+            game['board'],
+            [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [4, 0, 0, 0]])
         self.assertEqual(game['score'], 4)
 
     def test_up_stacks_and_merges_at_the_top(self):
-        game = slid([[2, 0, 0, 0], [2, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], 'Up', score=0)
-        self.assertEqual(game['board'], [[4, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
+        game = slid([[2, 0, 0, 0], [2, 0, 0, 0],
+                     [0, 0, 0, 0], [0, 0, 0, 0]], 'Up', score=0)
+        self.assertEqual(
+            game['board'],
+            [[4, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
         self.assertEqual(game['score'], 4)
 
 
@@ -168,10 +184,12 @@ class NewTileTests(GameTestCase):
 
     def test_a_real_move_adds_exactly_one_tile_and_counts_the_move(self):
         random.seed(2)
-        game = game_with([[0, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
+        game = game_with([[0, 2, 0, 0], [0, 0, 0, 0],
+                          [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
         operations.move(game)
         self.assertEqual(game['totalMoves'], 1)
-        filled = [(r, c) for r in range(4) for c in range(4) if game['board'][r][c] != 0]
+        filled = [(r, c) for r in range(4) for c in range(4)
+                  if game['board'][r][c] != 0]
         self.assertEqual(len(filled), 2)
         row, column = game['newTile']
         self.assertIn(game['board'][row][column], (2, 4))
@@ -202,7 +220,8 @@ class NewTileTests(GameTestCase):
             with self.subTest(direction=direction):
                 slid_only = game_with(rows, move=config.CONFIG[direction])
                 operations.move(slid_only, newTile=False)
-                self.assertNotEqual(slid_only['board'], grid(rows), 'this leg is a no-op')
+                self.assertNotEqual(
+                    slid_only['board'], grid(rows), 'this leg is a no-op')
                 with_tile = game_with(rows, move=config.CONFIG[direction])
                 operations.move(with_tile, newTile=True)
                 self.assertEqual(occupied(with_tile['board']),
@@ -233,12 +252,14 @@ class LivenessTests(GameTestCase):
         self.assertTrue(game['lost'])
 
     def test_a_board_with_a_merge_left_is_not_lost(self):
-        game = game_with([[2, 2, 4, 8], [4, 8, 16, 32], [2, 4, 8, 16], [4, 8, 16, 32]], move='a')
+        game = game_with([[2, 2, 4, 8], [4, 8, 16, 32],
+                          [2, 4, 8, 16], [4, 8, 16, 32]], move='a')
         self.assertFalse(operations.check_game_lost(game))
         self.assertFalse(game['lost'])
 
     def test_a_board_with_an_empty_cell_is_not_lost(self):
-        game = game_with([[2, 4, 2, 4], [4, 2, 4, 2], [2, 4, 2, 4], [4, 2, 4, 0]], move='a')
+        game = game_with([[2, 4, 2, 4], [4, 2, 4, 2],
+                          [2, 4, 2, 4], [4, 2, 4, 0]], move='a')
         self.assertFalse(operations.check_game_lost(game))
 
     def test_liveness_does_not_depend_on_the_move_asked_about(self):
@@ -253,7 +274,8 @@ class LivenessTests(GameTestCase):
 class ScoreTests(GameTestCase):
 
     def test_score_is_optional(self):
-        game = game_with([[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
+        game = game_with([[2, 2, 0, 0], [0, 0, 0, 0],
+                          [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
         self.assertNotIn('score', game)
         operations.move(game, newTile=False)          # must not raise
         self.assertNotIn('score', game)

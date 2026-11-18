@@ -8,7 +8,7 @@ if not os.path.isfile('config.json'):
     CONFIG_data['Down'] = 's'
     CONFIG_data['Left'] = 'a'
     CONFIG_data['Right'] = 'd'
-    
+
     with open('config.json', 'w') as outfile:
         json.dump(CONFIG_data, outfile)
 

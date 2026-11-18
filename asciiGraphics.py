@@ -112,7 +112,8 @@ def text_out(x, y, text=''):
 
 
 def text_out_mem(mem):
-    """Uses Colorama's escape sequence to move the cursor and display previously saved text"""
+    """Uses Colorama's escape sequence to move the cursor and display
+    previously saved text"""
 
     if mem:
         posStr = f"\x1b[{mem[1]};{mem[0]}f{mem[2]}"
@@ -260,7 +261,8 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
     text_out(3, 14, f'      Move #: {moveNum} / {len(replayData.index) - 1}')
     text_out(3, 15, f'  Game Score: {replayData["score"][moveNum]}')
 
-    # graphically representing the moves when replaying games significantly improves the UX
+    # graphically representing the moves when replaying games significantly
+    # improves the UX
     nextMove = None
     if replayData["move"][moveNum] == CONFIG['Up']:
         nextMove = '↑'
@@ -270,7 +272,7 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
         nextMove = '↓'
     elif replayData['move'][moveNum] == CONFIG['Right']:
         nextMove = '→'
-    
+
     text_out(3, 18, '----- Agent Info -----')
     text_out(3, 20, f'   Next Move: {nextMove}')
     text_out(3, 21, f'  Move Score: {replayData["totalScore"][moveNum]}')
@@ -289,7 +291,8 @@ def print_move_data(replayData, sID, gID, moveNum):
     #     1000 games * 900 moves * 12 integers * 4 bytes = 43.2 Million Bytes
     #     43.2 Million Bytes = 43.2 MB
 
-    # I felt adding ~40 MB to each session didn't follow the lightweight theme of Terminal 2048
+    # I felt adding ~40 MB to each session didn't follow the lightweight theme
+    # of Terminal 2048
 
     board = __expand_board(replayData, moveNum)
 

@@ -41,7 +41,8 @@ def graph_game_scores(gameID, sessionID, name):
 
 
 def find_quartile_games(sessionPath):
-    """Returns list of five game ID's for worst q1-q3 and best games in descending order"""
+    """Returns list of five game ID's for worst q1-q3 and best games in
+    descending order"""
 
     df = pd.read_csv(path.join(sessionPath, 'gameSummaries.csv'))
 

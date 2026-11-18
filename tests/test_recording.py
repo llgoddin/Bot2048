@@ -31,7 +31,9 @@ NAMED_COLUMNS = BOARD_COLUMNS + ['score', 'move', MARKER_COLUMN] + SCORE_COLUMNS
 
 def record(rows, move=None, lost=False, scores=(1, 2, 3, 4), score=0):
     """One `record_move` call, returned as its move log."""
-    game = game_with(rows, move=move if move is not None else config.CONFIG['Up'], score=score)
+    game = game_with(
+        rows, move=move if move is not None else config.CONFIG['Up'],
+        score=score)
     game['moveLog'] = None
     game['moveScores'] = list(scores)
     game['lost'] = lost
@@ -44,7 +46,8 @@ def write_session(directory, session_id, summaries, seconds=120.0):
     path = os.path.join(directory, 'Session' + str(session_id))
     os.makedirs(os.path.join(path, 'MoveLogs'), exist_ok=True)
     os.makedirs(os.path.join(path, 'htmlReportData'), exist_ok=True)
-    pd.DataFrame(summaries, columns=['Game ID', 'Max Tile', 'Score', 'Total Moves']).to_csv(
+    columns = ['Game ID', 'Max Tile', 'Score', 'Total Moves']
+    pd.DataFrame(summaries, columns=columns).to_csv(
         os.path.join(path, 'gameSummaries.csv'), index=False)
     return {'path': path, 'startTime': 0.0, 'endTime': seconds,
             'recording': True, 'games': []}
@@ -55,14 +58,16 @@ class MoveLogShapeTests(GameTestCase):
     def test_the_suite_pins_the_shipped_direction_keys(self):
         # `tests/__init__.py` pins these so the ambient config.json cannot fail an
         # unrelated test; this asserts the pin is in place and matches the readme.
-        self.assertEqual({name: config.CONFIG[name] for name in DIRECTIONS}, SHIPPED_KEYS)
+        self.assertEqual(
+            {name: config.CONFIG[name] for name in DIRECTIONS}, SHIPPED_KEYS)
 
     def test_the_columns_are_the_board_the_move_and_the_four_scores(self):
         frame = record([[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
         self.assertEqual(list(frame.columns), NAMED_COLUMNS)
 
     def test_the_board_is_written_flat_in_row_order(self):
-        frame = record([[2, 4, 8, 16], [32, 64, 128, 256], [512, 1024, 2, 4], [8, 16, 0, 0]])
+        frame = record([[2, 4, 8, 16], [32, 64, 128, 256],
+                        [512, 1024, 2, 4], [8, 16, 0, 0]])
         row = frame.iloc[0]
         self.assertEqual([row[column] for column in BOARD_COLUMNS],
                          [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2, 4, 8, 16, 0, 0])
@@ -84,7 +89,8 @@ class MoveLogShapeTests(GameTestCase):
 
     def test_a_move_log_accumulates_one_row_per_decision(self):
         frame = record([[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-        game = game_with([[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
+        game = game_with([[2, 2, 0, 0], [0, 0, 0, 0],
+                          [0, 0, 0, 0], [0, 0, 0, 0]], move='a')
         game['moveLog'] = frame
         game['moveScores'] = [1, 2, 3, 4]
         game['score'] = 0
@@ -94,7 +100,8 @@ class MoveLogShapeTests(GameTestCase):
 
 class Reached2048MarkerTests(GameTestCase):
 
-    WINNING: ClassVar[list] = [[2048, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+    WINNING: ClassVar[list] = [[2048, 0, 0, 0], [0, 0, 0, 0],
+                               [0, 0, 0, 0], [0, 0, 0, 0]]
     ALMOST: ClassVar[list] = [[1024, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
     ORDINARY: ClassVar[list] = [[2, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
@@ -122,13 +129,16 @@ class Reached2048MarkerTests(GameTestCase):
     def test_the_marker_does_not_depend_on_the_move_key(self):
         for direction in ('Up', 'Down', 'Left', 'Right'):
             with self.subTest(direction=direction):
-                self.assertEqual(self.marker(self.WINNING, move=config.CONFIG[direction]), 'w')
+                self.assertEqual(
+                    self.marker(self.WINNING, move=config.CONFIG[direction]),
+                    'w')
 
 
 class TimingTests(GameTestCase):
 
     def stats_for(self, seconds):
-        session = write_session(self.recording_dir, 4, [[0, 64, 100, 10]], seconds=seconds)
+        session = write_session(
+            self.recording_dir, 4, [[0, 64, 100, 10]], seconds=seconds)
         return InputOutputFunctions.compile_stats(session)
 
     def test_the_session_timing_reads_in_hours_minutes_seconds(self):
@@ -156,7 +166,8 @@ class TimingTests(GameTestCase):
 
 class CompileStatsTests(GameTestCase):
 
-    SUMMARIES: ClassVar[list] = [[0, 64, 100, 10], [1, 128, 200, 20], [2, 512, 300, 30], [3, 2048, 400, 40]]
+    SUMMARIES: ClassVar[list] = [[0, 64, 100, 10], [1, 128, 200, 20],
+                                 [2, 512, 300, 30], [3, 2048, 400, 40]]
 
     def setUp(self):
         super().setUp()
@@ -189,7 +200,8 @@ class CompileStatsTests(GameTestCase):
 
 class ReportTests(GameTestCase):
 
-    SUMMARIES: ClassVar[list] = [[0, 64, 100, 10], [1, 256, 900, 30], [2, 512, 1200, 40]]
+    SUMMARIES: ClassVar[list] = [[0, 64, 100, 10], [1, 256, 900, 30],
+                                 [2, 512, 1200, 40]]
 
     def stats(self, session_id=5):
         session = write_session(self.recording_dir, session_id, self.SUMMARIES)
@@ -200,8 +212,10 @@ class ReportTests(GameTestCase):
         InputOutputFunctions.save_stats(stats)
         folder = os.path.join(self.recording_dir, 'Session5')
         self.assertTrue(os.path.isfile(os.path.join(folder, 'stats.html')))
-        self.assertTrue(os.path.isfile(os.path.join(folder, 'htmlReportData', 'sessionStats.json')))
-        self.assertTrue(os.path.isfile(os.path.join(folder, 'htmlReportData', 'style.css')))
+        self.assertTrue(os.path.isfile(
+            os.path.join(folder, 'htmlReportData', 'sessionStats.json')))
+        self.assertTrue(os.path.isfile(
+            os.path.join(folder, 'htmlReportData', 'style.css')))
 
     def test_it_writes_when_the_up_key_is_rebound(self):
         # The file mode used to be CONFIG['Up']: with any other key the whole
@@ -211,7 +225,8 @@ class ReportTests(GameTestCase):
         InputOutputFunctions.save_stats(stats)
         folder = os.path.join(self.recording_dir, 'Session5')
         self.assertGreater(os.path.getsize(os.path.join(folder, 'stats.html')), 0)
-        with open(os.path.join(folder, 'htmlReportData', 'sessionStats.json')) as handle:
+        stats_path = os.path.join(folder, 'htmlReportData', 'sessionStats.json')
+        with open(stats_path) as handle:
             self.assertEqual(json.load(handle)['ID'], '5')
 
     def test_the_json_round_trips_the_stats(self):
