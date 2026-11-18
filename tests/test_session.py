@@ -241,7 +241,7 @@ class ParallelSessionTests(GameTestCase):
         """
         result = subprocess.run(
             [sys.executable, '-c', PARALLEL_SCRIPT, REPO_ROOT],
-            capture_output=True, text=True,
+            capture_output=True, text=True, check=False,
             env={**os.environ, 'MPLBACKEND': 'Agg'})
         self.assertEqual(result.returncode, 0, result.stderr[-2000:])
         payload = json.loads(result.stdout.strip().splitlines()[-1])
