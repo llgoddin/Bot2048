@@ -152,7 +152,6 @@ def move(game, newTile=True):
     #                     board[i + (yDirec * searchDist)][j + (xDirec * searchDist)] = 0
     #                     break
 
-    newPos = (4, 4)
     if boardCopy != game['board'] and newTile:
         gen_tile(game)
         game['totalMoves'] += 1

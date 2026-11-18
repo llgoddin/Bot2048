@@ -1,7 +1,6 @@
 # Lucas Goddin
 # July 6, 2020
 
-import json
 from os import mkdir, path
 
 import matplotlib.pyplot as plt

@@ -17,7 +17,6 @@ from tests.helpers import (
     grid,
     random_boards,
     slid,
-    usable,
 )
 
 ROWS = [[2, 2, 0, 0], [4, 0, 4, 0], [8, 0, 0, 8], [16, 0, 0, 0]]

@@ -42,7 +42,7 @@ def __find_session_num():
                 if int(d.split('Session')[1]) >= nextSession:
                     nextSession = int(d.split('Session')[1]) + 1
 
-            except ValueError as verr:
+            except ValueError:
                 print('Directory ' + str(d) + ' does not end in a number!')
 
         if nextSession > 99:

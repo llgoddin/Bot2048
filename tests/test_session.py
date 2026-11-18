@@ -26,7 +26,6 @@ import Graphing
 import InputOutputFunctions
 import operations
 from tests.helpers import (
-    BOARD_COLUMNS,
     MARKER_COLUMN,
     REPO_ROOT,
     GameTestCase,

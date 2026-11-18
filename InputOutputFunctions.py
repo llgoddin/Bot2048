@@ -8,7 +8,6 @@ import json
 import shutil
 from os import path, walk
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
@@ -244,7 +243,6 @@ def add_graph(sessionID, gameID):
         'Game' + str(gameID) + 'Graph'])
 
     newGraph = {}
-    i = 38
 
     for (root, dirs, files) in walk(CONFIG['recording_path'], topdown=True):
         for f in files:
