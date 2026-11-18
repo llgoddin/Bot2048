@@ -85,8 +85,11 @@ def find_quartile_games(sessionPath):
     return [worst_ID, q1_ID, q2_ID, q3_ID, best_ID]
 
 
-def graph_games(gameIDs=[], path='/Session1', names=None):
+def graph_games(gameIDs=None, path='/Session1', names=None):
     """Use to graph multiple games by id"""
+
+    if gameIDs is None:
+        gameIDs = []
 
     sessionID = int(path.split('Session')[1])
 
