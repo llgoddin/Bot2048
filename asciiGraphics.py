@@ -2,6 +2,7 @@ import math
 import os
 
 from Agent import my_algorithm
+from config import CONFIG
 
 SCREENS = {}
 
