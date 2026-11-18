@@ -316,7 +316,10 @@ if __name__ == '__main__':
                             graphFlag = False
                     else:
                         text_out(0, 39, 'Game Not Found')
-                except Exception as e:
+                # Deliberate: this guards the interactive loop, so a bad keystroke
+                # cannot end the program. `Exception` does not catch
+                # KeyboardInterrupt, so Ctrl-C still exits as it should.
+                except Exception as e:  # noqa: BLE001
                     text_out(0, 38, 'Invalid Input')
                     text_out(0, 41, str(e))
 
