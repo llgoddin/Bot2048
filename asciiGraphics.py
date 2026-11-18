@@ -107,7 +107,7 @@ def __expand_board(replayData, moveNum):
 def text_out(x, y, text=''):
     """Uses Colorama's escape sequence to move the cursor and display text"""
 
-    posStr = "\x1b[%d;%df%s" % (y, x, text)
+    posStr = f"\x1b[{y};{x}f{text}"
     print(posStr, end='')
 
 
@@ -115,7 +115,7 @@ def text_out_mem(mem):
     """Uses Colorama's escape sequence to move the cursor and display previously saved text"""
 
     if mem:
-        posStr = "\x1b[%d;%df%s" % (mem[1], mem[0], mem[2])
+        posStr = f"\x1b[{mem[1]};{mem[0]}f{mem[2]}"
         print(posStr, end='')
 
 

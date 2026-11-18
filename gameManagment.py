@@ -105,8 +105,8 @@ def create_session(recording=True, totalGames=10):
         session['path'] = CONFIG['recording_path'] + \
             '/Session' + str(sessionNum)
         os.mkdir(session['path'])
-        os.mkdir((session['path'] + str('/MoveLogs')))
-        os.mkdir((session['path'] + str('/htmlReportData')))
+        os.mkdir(session['path'] + '/MoveLogs')
+        os.mkdir(session['path'] + '/htmlReportData')
 
     session['startTime'] = time.time()
 

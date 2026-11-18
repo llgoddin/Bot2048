@@ -118,7 +118,7 @@ class SessionRunTests(GameTestCase):
         return sorted(os.listdir(folder))
 
     def test_every_game_wrote_a_move_log(self):
-        self.assertEqual(self.logs(), ['game%dLog.csv' % i for i in range(self.GAMES)])
+        self.assertEqual(self.logs(), [f'game{i}Log.csv' for i in range(self.GAMES)])
 
     def test_the_games_all_finished(self):
         for game in self.session['games']:
@@ -182,7 +182,7 @@ class SessionRunTests(GameTestCase):
                                if game['board'][r][c] != following[r][c]]
                 with self.subTest(log=name, move=index):
                     self.assertEqual(len(differences), 1,
-                                     'expected exactly one new tile, got %s' % (differences,))
+                                     f'expected exactly one new tile, got {differences}')
                     row, column = differences[0]
                     self.assertEqual(game['board'][row][column], 0,
                                      'the new tile must land on an empty cell')
