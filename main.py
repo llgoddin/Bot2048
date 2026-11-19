@@ -96,7 +96,8 @@ if __name__ == '__main__':
             i = 0
 
             while sessionID is None:
-                # I added extra space to make sure all digits are erased in case of invalid input
+                # I added extra space to make sure all digits are erased in case
+                # of invalid input
                 text_out(8, 16, 'Session ID:        ')
                 text_out(8, 18, '   Game ID:        ')
                 text_out(20, 16)
@@ -119,7 +120,8 @@ if __name__ == '__main__':
                     text_out(0, 39, 'Invalid Input    ')
 
             while gameID is None:
-                # I added extra space to make sure all digits are erased in case of invalid input
+                # I added extra space to make sure all digits are erased in case
+                # of invalid input
                 text_out(8, 16, f'Session ID: {sessionID}       ')
                 text_out(8, 18, '   Game ID:        ')
                 text_out(20, 18)
@@ -244,7 +246,8 @@ if __name__ == '__main__':
 
                 if cmd == 'y':
                     try:
-                        filePath = 'file:///' + os.path.abspath(s['path']) + '/stats.html'
+                        filePath = ('file:///' + os.path.abspath(s['path'])
+                                    + '/stats.html')
                         webbrowser.open_new_tab(filePath)
                     except (OSError, webbrowser.Error):
                         text_out(0, 39, 'Failed To Open File!')
@@ -263,7 +266,8 @@ if __name__ == '__main__':
             gameID = None
 
             while sessionID is None:
-                # I added extra space to make sure all digits are erased in case of invalid input
+                # I added extra space to make sure all digits are erased in case
+                # of invalid input
                 text_out(8, 16, 'Session ID:        ')
                 text_out(8, 18, '   Game ID:        ')
                 text_out(20, 16)
@@ -286,7 +290,8 @@ if __name__ == '__main__':
                     text_out(0, 39, 'Invalid Input    ')
 
             while gameID is None:
-                # I added extra space to make sure all digits are erased in case of invalid input
+                # I added extra space to make sure all digits are erased in case
+                # of invalid input
                 text_out(8, 16, 'Session ID: ' + str(sessionID) + '       ')
                 text_out(8, 18, '   Game ID:        ')
                 text_out(20, 18)
@@ -306,7 +311,8 @@ if __name__ == '__main__':
                         add_graph(sessionID, gameID)
 
                         text_out(
-                            8, 22, 'Your new graph has been rendered and added to stats.html!')
+                            8, 22,
+                            'Your new graph has been rendered and added to stats.html!')
                         text_out(
                             8, 24, 'Be sure to refresh browser to view changes')
 
@@ -316,7 +322,10 @@ if __name__ == '__main__':
                             graphFlag = False
                     else:
                         text_out(0, 39, 'Game Not Found')
-                except Exception as e:
+                # Deliberate: this guards the interactive loop, so a bad keystroke
+                # cannot end the program. `Exception` does not catch
+                # KeyboardInterrupt, so Ctrl-C still exits as it should.
+                except Exception as e:  # noqa: BLE001
                     text_out(0, 38, 'Invalid Input')
                     text_out(0, 41, str(e))
 

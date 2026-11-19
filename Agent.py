@@ -1,7 +1,7 @@
 import copy
 
-from config import *
 import operations
+from config import *
 
 
 def __corner_check(board):
@@ -11,8 +11,7 @@ def __corner_check(board):
     largestTile = 0
     for i in range(4):
         for j in range(4):
-            if board[i][j] > largestTile:
-                largestTile = board[i][j]
+            largestTile = max(largestTile, board[i][j])
 
     # check corners for the largest tile
     cornerCoord = [(0, 0), (0, 3), (3, 0), (3, 3)]
@@ -53,7 +52,7 @@ def __combo_check(game, verbose=False):
     else:
         yDirec = 1
 
-    if not xDirec == 0:
+    if xDirec != 0:
         vert = False
 
     if xDirec > 0 or yDirec > 0:
@@ -67,27 +66,38 @@ def __combo_check(game, verbose=False):
 
     for i in range(start, end, iterator):
         for j in range(start, end, iterator):
-            # distance searches for values on the board horizontally or vertically from the targeted square
+            # distance searches for values on the board horizontally or vertically
+            # from the targeted square
             for distance in range(1, 4):
                 if vert:
-                    if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
+                    if ((i + (iterator * distance)) < 0
+                            or (i + (iterator * distance)) > 3):
                         break
-                    elif tempGame['board'][i + (iterator * distance)][j] == tempGame['board'][i][j] and tempGame['board'][i][j] != 0:
+                    elif (tempGame['board'][i + (iterator * distance)][j]
+                            == tempGame['board'][i][j]
+                            and tempGame['board'][i][j] != 0):
                         if verbose:
-                            print(str(tempGame['board'][i + (iterator * distance)][j]) + ' combines with ' + str(
-                                tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
+                            print(
+                                str(tempGame['board'][i + (iterator * distance)][j])
+                                + ' combines with ' + str(tempGame['board'][i][j])
+                                + ' when moved ' + str(tempGame['move']))
                         score += 2 * tempGame['board'][i][j]
                         tempGame['board'][i + (iterator * distance)][j] = 0
                         break
                     elif tempGame['board'][i + (iterator * distance)][j] != 0:
                         break
                 else:
-                    if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
+                    if ((j + (iterator * distance)) < 0
+                            or (j + (iterator * distance)) > 3):
                         break
-                    elif tempGame['board'][i][j + (iterator * distance)] == tempGame['board'][i][j] and tempGame['board'][i][j] != 0:
+                    elif (tempGame['board'][i][j + (iterator * distance)]
+                            == tempGame['board'][i][j]
+                            and tempGame['board'][i][j] != 0):
                         if verbose:
-                            print(str(tempGame['board'][i][j + (iterator * distance)]) + ' combines with ' + str(
-                                tempGame['board'][i][j]) + ' when moved ' + str(tempGame['move']))
+                            print(
+                                str(tempGame['board'][i][j + (iterator * distance)])
+                                + ' combines with ' + str(tempGame['board'][i][j])
+                                + ' when moved ' + str(tempGame['move']))
                         score += 2 * tempGame['board'][i][j]
                         tempGame['board'][i][j + (iterator * distance)] = 0
                         break
@@ -118,7 +128,8 @@ def __map_tile_sizes(game):
     tileInfo['values'].remove(0)
 
     # if tileInfo['values'][0] > 2047:
-    #     print('Game ' + str(game['id']) + ' has reached ' + str(tileInfo['values'][0]))
+    #     print('Game ' + str(game['id']) + ' has reached '
+    #           + str(tileInfo['values'][0]))
 
     return tileInfo
 
@@ -193,7 +204,8 @@ def __compare_tile_coords(largerTile, smallerTile):
 def my_algorithm(game, replay=False):
     """Algorithm for autonomously playing 2048"""
 
-    # I'm going to try applying different weights to game states in order to choose the best move
+    # I'm going to try applying different weights to game states in order
+    # to choose the best move
     # Important things are going to include keeping the largest tiles in the corner
 
     # The agent uses 4 scores high tile, combo, corner stack and a total of the 3
@@ -232,8 +244,7 @@ def my_algorithm(game, replay=False):
         for nextM in moves:
             tempGame['move'] = nextM
 
-            if tempScore < __combo_check(tempGame):
-                tempScore = __combo_check(tempGame)
+            tempScore = max(tempScore, __combo_check(tempGame))
             # if highTileScore == 0:
             #     GameOperations.move(tempGame, newTile=False)
             #     s = __corner_check(tempGame['board'])

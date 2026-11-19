@@ -137,7 +137,9 @@ def usable(rows):
     return any(rows[r][c] == rows[r + 1][c] for r in range(3) for c in range(4))
 
 
-def random_boards(count, seed, values=(0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096)):
+def random_boards(
+        count, seed,
+        values=(0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096)):
     """A reproducible corpus of boards, including high-tile positions."""
     rng = random.Random(seed)
     boards = []

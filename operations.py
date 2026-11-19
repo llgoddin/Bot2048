@@ -2,7 +2,8 @@
 
 import copy
 import random
-from Agent import *
+
+from config import CONFIG
 
 
 def __combine_tiles(board, xDirec, yDirec):
@@ -14,7 +15,7 @@ def __combine_tiles(board, xDirec, yDirec):
     end = 0
     vert = True
 
-    if not xDirec == 0:
+    if xDirec != 0:
         vert = False
 
     if xDirec > 0 or yDirec > 0:
@@ -28,10 +29,12 @@ def __combine_tiles(board, xDirec, yDirec):
 
     for i in range(start, end, iterator):
         for j in range(start, end, iterator):
-            # distance searches for values on the board horizontally or vertically from the targeted square
+            # distance searches for values on the board horizontally or vertically
+            # from the targeted square
             for distance in range(1, 4):
                 if vert:
-                    if (i + (iterator * distance)) < 0 or (i + (iterator * distance)) > 3:
+                    if ((i + (iterator * distance)) < 0
+                            or (i + (iterator * distance)) > 3):
                         break
                     elif board[i + (iterator * distance)][j] == board[i][j]:
                         board[i][j] *= 2
@@ -41,7 +44,8 @@ def __combine_tiles(board, xDirec, yDirec):
                     elif board[i + (iterator * distance)][j] != 0:
                         break
                 else:
-                    if (j + (iterator * distance)) < 0 or (j + (iterator * distance)) > 3:
+                    if ((j + (iterator * distance)) < 0
+                            or (j + (iterator * distance)) > 3):
                         break
                     elif board[i][j + (iterator * distance)] == board[i][j]:
                         board[i][j] *= 2
@@ -84,7 +88,7 @@ def gen_tile(game):
 
 def move(game, newTile=True):
     """Moves the game board in a given direction"""
-    
+
     if game['move'] is None:
         return None
 
@@ -97,7 +101,8 @@ def move(game, newTile=True):
     end = 0
     iterator = 0
 
-    # determines which direction tiles should be moving and direction the loop should iterate
+    # determines which direction tiles should be moving and direction the loop
+    # should iterate
     if game['move'] == CONFIG['Left']:
         xDirec = 1
         iterator = 1
@@ -121,7 +126,7 @@ def move(game, newTile=True):
         end = 3
 
     # combine tiles
-    if 'score' in game.keys():
+    if 'score' in game:
         game['score'] += __combine_tiles(game['board'], xDirec, yDirec)
     else:
         __combine_tiles(game['board'], xDirec, yDirec)
@@ -129,11 +134,14 @@ def move(game, newTile=True):
     # compress tiles
 
     # The problem with this compression code is simple, its ugly. time to try again
-    # The addition of cycles works but is extremely sloppy, im going to try to clean it up after debugging carefully
-    # I originally thought combination and compression would have to scan the array in opposite directions
-    # The commented code below works for opposite directions but the new code will work for the same direction (FIXED)
+    # The addition of cycles works but is extremely sloppy, im going to try to
+    # clean it up after debugging carefully
+    # I originally thought combination and compression would have to scan the
+    # array in opposite directions
+    # The commented code below works for opposite directions but the new code
+    # will work for the same direction (FIXED)
 
-    for cycles in range(3):
+    for _ in range(3):
         for i in range(start, end + xDirec, iterator):
             for j in range(start, end + yDirec, iterator):
                 if game['board'][i][j] == 0:
@@ -146,12 +154,14 @@ def move(game, newTile=True):
     #     for j in range(start, end + yDirec, iterator):
     #         if board[i][j] == 0:
     #             for searchDist in range(start, end - (j - xDirec)):
-    #                 if board[i + (yDirec * searchDist)][j + (xDirec * searchDist)] != 0:
-    #                     board[i][j] = board[i + (yDirec * searchDist)][j + (xDirec * searchDist)]
-    #                     board[i + (yDirec * searchDist)][j + (xDirec * searchDist)] = 0
+    #                 if board[i + (yDirec * searchDist)] \
+    #                         [j + (xDirec * searchDist)] != 0:
+    #                     board[i][j] = board[i + (yDirec * searchDist)] \
+    #                         [j + (xDirec * searchDist)]
+    #                     board[i + (yDirec * searchDist)] \
+    #                         [j + (xDirec * searchDist)] = 0
     #                     break
 
-    newPos = (4, 4)
     if boardCopy != game['board'] and newTile:
         gen_tile(game)
         game['totalMoves'] += 1

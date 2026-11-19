@@ -8,7 +8,6 @@ import json
 import shutil
 from os import path, walk
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
@@ -75,7 +74,7 @@ def record_move(game, initialMove=False):
     board.append(winLossContinue)
 
     if initialMove or game['lost']:
-        for i in range(4):
+        for _ in range(4):
             board.append(0)
     else:
         for num in game['moveScores']:
@@ -99,8 +98,7 @@ def output_logs(session):
         maxTile = 0
 
         for row in game['board']:
-            if max(row) > maxTile:
-                maxTile = max(row)
+            maxTile = max(maxTile, max(row))
 
         gameSummaries.append(
             [game['id'], maxTile, game['score'], game['totalMoves']])
@@ -156,8 +154,8 @@ def compile_stats(session):
     stats = {
         'ID': id,
 
-        'Total Time': str(totalTime[0]) + 'h ' + str(totalTime[1]) + 'm ' + str(totalTime[2]) + 's',
-        'Average Time': str(avgTime[0]) + 'h ' + str(avgTime[1]) + 'm ' + str(avgTime[2]) + 's',
+        'Total Time': f'{totalTime[0]}h {totalTime[1]}m {totalTime[2]}s',
+        'Average Time': f'{avgTime[0]}h {avgTime[1]}m {avgTime[2]}s',
         'Max Tile': maxTile,
         'Average Max Tile': averageMaxTile,
         'Average Score': averageScore,
@@ -190,22 +188,26 @@ def save_stats(stats, new_graph=None):
     else:
         output = template.render(stats=stats)
 
-    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/stats.html', 'w') as f:
+    session_dir = CONFIG['recording_path'] + '/Session' + stats['ID']
+
+    with open(session_dir + '/stats.html', 'w') as f:
         f.write(output)
 
     shutil.copy('./templates/htmlReportData/style.css',
-                CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/style.css')
+                session_dir + '/htmlReportData/style.css')
 
-    with open(CONFIG['recording_path'] + '/Session' + stats['ID'] + '/htmlReportData/sessionStats.json', 'w') as outfile:
+    with open(session_dir + '/htmlReportData/sessionStats.json', 'w') as outfile:
         json.dump(stats, outfile)
 
 
 def check_for_log(Session=0, Game=None):
     """Checks for the log of a session or game, Returns boolean"""
 
-    if path.isdir(CONFIG['recording_path'] + '/Session' + str(Session)):
+    session_dir = CONFIG['recording_path'] + '/Session' + str(Session)
+
+    if path.isdir(session_dir):
         if Game is not None:
-            if path.isfile(CONFIG['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv'):
+            if path.isfile(session_dir + '/MoveLogs/game' + str(Game) + 'Log.csv'):
                 return True
         else:
             return True
@@ -217,7 +219,9 @@ def check_for_log(Session=0, Game=None):
 def load_replay(Session=0, Game=0):
     """Loads the replay data of a game"""
 
-    return pd.read_csv(CONFIG['recording_path'] + '/Session' + str(Session) + '/MoveLogs/game' + str(Game) + 'Log.csv')
+    session_dir = CONFIG['recording_path'] + '/Session' + str(Session)
+
+    return pd.read_csv(session_dir + '/MoveLogs/game' + str(Game) + 'Log.csv')
 
 
 def get_replay_board(index, data):
@@ -244,9 +248,8 @@ def add_graph(sessionID, gameID):
         'Game' + str(gameID) + 'Graph'])
 
     newGraph = {}
-    i = 38
 
-    for (root, dirs, files) in walk(CONFIG['recording_path'], topdown=True):
+    for (_root, _dirs, files) in walk(CONFIG['recording_path'], topdown=True):
         for f in files:
             if f.startswith('Game') and f.endswith('Graph.png'):
                 name = f.split('Graph.png')[0]
@@ -257,7 +260,7 @@ def add_graph(sessionID, gameID):
 
     stats = None
 
-    with open(CONFIG['recording_path'] + '/Session' + str(sessionID) + '/htmlReportData/sessionStats.json') as file:
+    with open(p + '/htmlReportData/sessionStats.json') as file:
         stats = json.load(file)
 
     save_stats(stats, newGraph)

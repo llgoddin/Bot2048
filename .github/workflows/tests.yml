@@ -2,12 +2,34 @@ name: tests
 
 # Every pull request, whatever it targets, plus pushes to the integration branch.
 # `master` is a promotion target rather than a place work lands, so it is not here.
+#
+# Two gates run here: `lint` (ruff -- see pyproject.toml for the rule set and for
+# why ruff rather than pycodestyle) and `unittest` (the suite). Both must be green
+# before review is requested.
 on:
   push:
     branches: [dev]
   pull_request:
 
 jobs:
+  lint:
+    # Ruff is pinned so the gate cannot move under the repository on its own: a
+    # later ruff release that enables a rule would otherwise turn a green branch
+    # red with no change of ours. Bumping it is a deliberate commit.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install the pinned linter
+        run: pip install ruff==0.17.5
+
+      - name: Lint
+        run: ruff check .
+
   unittest:
     # The runner is pinned, not the Python line. `ubuntu-latest` is Ubuntu 26.04,
     # and the setup-python manifest carries no Python 3.9 build for it -- 3.9 stops

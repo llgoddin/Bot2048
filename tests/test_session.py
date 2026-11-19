@@ -25,9 +25,13 @@ import gameManagment
 import Graphing
 import InputOutputFunctions
 import operations
-
-from tests.helpers import (BOARD_COLUMNS, GameTestCase, MARKER_COLUMN, REPO_ROOT,
-                           board_from_log_row, read_move_log)
+from tests.helpers import (
+    MARKER_COLUMN,
+    REPO_ROOT,
+    GameTestCase,
+    board_from_log_row,
+    read_move_log,
+)
 
 PARALLEL_SCRIPT = textwrap.dedent('''
     import json, os, sys, tempfile
@@ -114,12 +118,13 @@ class SessionRunTests(GameTestCase):
         return sorted(os.listdir(folder))
 
     def test_every_game_wrote_a_move_log(self):
-        self.assertEqual(self.logs(), ['game%dLog.csv' % i for i in range(self.GAMES)])
+        self.assertEqual(self.logs(), [f'game{i}Log.csv' for i in range(self.GAMES)])
 
     def test_the_games_all_finished(self):
         for game in self.session['games']:
             with self.subTest(game=game['id']):
-                self.assertTrue(game['lost'], 'a run session only ends when every game is lost')
+                self.assertTrue(
+                    game['lost'], 'a run session only ends when every game is lost')
                 self.assertGreater(game['totalMoves'], 0)
 
     def test_the_game_was_not_still_in_progress(self):
@@ -147,8 +152,10 @@ class SessionRunTests(GameTestCase):
             game_id = int(name.replace('game', '').replace('Log.csv', ''))
             highest = max(tile for row in board_from_log_row(rows[-1]) for tile in row)
             with self.subTest(game=game_id):
-                self.assertEqual(int(summary.loc[summary['Game ID'] == game_id, 'Max Tile'].iloc[0]),
-                                 highest)
+                self.assertEqual(
+                    int(summary.loc[summary['Game ID'] == game_id,
+                                    'Max Tile'].iloc[0]),
+                    highest)
 
     def test_the_last_row_of_each_log_is_marked_lost(self):
         for name in self.logs():
@@ -177,8 +184,9 @@ class SessionRunTests(GameTestCase):
                 differences = [(r, c) for r in range(4) for c in range(4)
                                if game['board'][r][c] != following[r][c]]
                 with self.subTest(log=name, move=index):
-                    self.assertEqual(len(differences), 1,
-                                     'expected exactly one new tile, got %s' % (differences,))
+                    self.assertEqual(
+                        len(differences), 1,
+                        f'expected exactly one new tile, got {differences}')
                     row, column = differences[0]
                     self.assertEqual(game['board'][row][column], 0,
                                      'the new tile must land on an empty cell')
@@ -237,11 +245,13 @@ class ParallelSessionTests(GameTestCase):
         """
         result = subprocess.run(
             [sys.executable, '-c', PARALLEL_SCRIPT, REPO_ROOT],
-            capture_output=True, text=True,
+            capture_output=True, text=True, check=False,
             env={**os.environ, 'MPLBACKEND': 'Agg'})
         self.assertEqual(result.returncode, 0, result.stderr[-2000:])
         payload = json.loads(result.stdout.strip().splitlines()[-1])
-        self.assertEqual(payload['logs'], ['game0Log.csv', 'game1Log.csv', 'game2Log.csv'])
+        self.assertEqual(
+            payload['logs'],
+            ['game0Log.csv', 'game1Log.csv', 'game2Log.csv'])
         self.assertEqual(len(payload['moves']), 3)
         self.assertTrue(all(moves > 0 for moves in payload['moves']), payload['moves'])
         self.assertTrue(all(payload['lost']), payload['lost'])

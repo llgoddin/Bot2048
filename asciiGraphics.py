@@ -1,8 +1,8 @@
 import math
 import os
-import sys
 
 from Agent import my_algorithm
+from config import CONFIG
 
 SCREENS = {}
 
@@ -15,8 +15,7 @@ def __get_board_lines(board):
     maxTile = 0
     for line in board:
         for num in line:
-            if num > maxTile:
-                maxTile = num
+            maxTile = max(maxTile, num)
 
     padding = len(str(maxTile)) - 1
 
@@ -93,7 +92,7 @@ def __expand_board(replayData, moveNum):
     for i in range(16):
         input.append(replayData[str(i)][moveNum])
 
-    for i in range(4):
+    for _ in range(4):
         row = []
 
         for _ in range(4):
@@ -108,15 +107,16 @@ def __expand_board(replayData, moveNum):
 def text_out(x, y, text=''):
     """Uses Colorama's escape sequence to move the cursor and display text"""
 
-    posStr = "\x1b[%d;%df%s" % (y, x, text)
+    posStr = f"\x1b[{y};{x}f{text}"
     print(posStr, end='')
 
 
 def text_out_mem(mem):
-    """Uses Colorama's escape sequence to move the cursor and display previously saved text"""
+    """Uses Colorama's escape sequence to move the cursor and display
+    previously saved text"""
 
     if mem:
-        posStr = "\x1b[%d;%df%s" % (mem[1], mem[0], mem[2])
+        posStr = f"\x1b[{mem[1]};{mem[0]}f{mem[2]}"
         print(posStr, end='')
 
 
@@ -176,8 +176,7 @@ def print_board(board, replay=False, xOrigin=None, yOrigin=None):
     maxTile = 0
     for line in board:
         for num in line:
-            if num > maxTile:
-                maxTile = num
+            maxTile = max(maxTile, num)
 
     if xOrigin:
         x = xOrigin
@@ -262,7 +261,8 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
     text_out(3, 14, f'      Move #: {moveNum} / {len(replayData.index) - 1}')
     text_out(3, 15, f'  Game Score: {replayData["score"][moveNum]}')
 
-    # graphically representing the moves when replaying games significantly improves the UX
+    # graphically representing the moves when replaying games significantly
+    # improves the UX
     nextMove = None
     if replayData["move"][moveNum] == CONFIG['Up']:
         nextMove = '↑'
@@ -272,7 +272,7 @@ def print_replay_data(replayData, sID, gID, moveNum=0):
         nextMove = '↓'
     elif replayData['move'][moveNum] == CONFIG['Right']:
         nextMove = '→'
-    
+
     text_out(3, 18, '----- Agent Info -----')
     text_out(3, 20, f'   Next Move: {nextMove}')
     text_out(3, 21, f'  Move Score: {replayData["totalScore"][moveNum]}')
@@ -291,7 +291,8 @@ def print_move_data(replayData, sID, gID, moveNum):
     #     1000 games * 900 moves * 12 integers * 4 bytes = 43.2 Million Bytes
     #     43.2 Million Bytes = 43.2 MB
 
-    # I felt adding ~40 MB to each session didn't follow the lightweight theme of Terminal 2048
+    # I felt adding ~40 MB to each session didn't follow the lightweight theme
+    # of Terminal 2048
 
     board = __expand_board(replayData, moveNum)
 

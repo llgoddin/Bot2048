@@ -1,0 +1,54 @@
+# Ruff is the linter for this repository.
+#
+# Why ruff rather than pycodestyle: ruff implements pycodestyle's PEP 8 rules
+# (`E`/`W`) identically, so the style half is unchanged -- but it also bundles
+# pyflakes (`F`), which catches the classes that actually shipped defects here:
+# unused imports (PR #4, PR #8), a wrong return type (PR #8), and an undefined
+# name no test reached (`CONFIG` in asciiGraphics.py). pycodestyle cannot see any
+# of those. One binary and one config block, instead of pycodestyle + pyflakes +
+# isort.
+#
+# `line-length = 88` is ruff's default and the modern reading of PEP 8. The tree
+# was brought to conform to the limit rather than the limit moved to fit the tree.
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+# The developer's virtualenv lives inside the working tree.
+extend-exclude = [".env"]
+
+[tool.ruff.lint]
+# The rule set is deliberately narrow. It is the set this repository is clean
+# against today, so the CI gate is meaningful from its first run. Widening it is
+# a decision to make on its own, with the fixes to match.
+select = [
+    "E",       # pycodestyle errors (PEP 8)
+    "W",       # pycodestyle warnings
+    "F",       # pyflakes: unused imports/variables, undefined names
+    "I",       # isort: import ordering
+    "B",       # flake8-bugbear: mutable default args, unused loop variables
+    "UP",      # pyupgrade
+    "BLE",     # flake8-blind-except
+    "SIM201",  # flake8-simplify: `not x == y` -> `x != y`
+    "SIM118",  # flake8-simplify: `key in dict.keys()` -> `key in dict`
+    "PLR1730", # an `if` that is really a `max`/`min`
+    "PLW1510", # subprocess.run without an explicit `check`
+    "RUF012",  # mutable class attribute needs a ClassVar annotation
+]
+ignore = [
+    # The module layout is built on `from X import *`, so F403/F405 fire across
+    # nearly every file. Rewriting the import graph is a separate and riskier
+    # change than a lint pass; it is out of scope here, not forgotten.
+    "F403",
+    "F405",
+    # tests/helpers.py must prepend the repo root to sys.path before it can
+    # import the project, so its later imports cannot sit at the top of the file.
+    "E402",
+]
+
+# Deliberately not enabled, so a future reader does not re-litigate them:
+#  * PLR2004 (magic values) -- `2048`, `4` and `2` are the domain, not noise.
+#  * PLR0911/0912/0913/0915 (complexity) -- thresholds that ask for refactors.
+#  * RET5xx (return restructure), PERF4xx (comprehension rewrites), SIM108
+#    (ternary preference) -- style opinions, not defects, each a wider diff
+#    than the finding is worth.

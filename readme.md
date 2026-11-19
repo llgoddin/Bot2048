@@ -138,6 +138,14 @@ The suite is Python's standard library `unittest`. It needs nothing beyond `requ
 
 Three things to know before adding to it. The suite pins the direction keys to the shipped `w`/`a`/`s`/`d`, so a rebound `config.json` cannot fail a test that has nothing to do with configuration — the tests that are about configuration rebind explicitly. It runs against a temporary recording directory, so it never reads or writes your own `game_recordings/`. And a test may only assert behaviour it has actually observed: where the code has a known gap, mark the test `expectedFailure` with a note rather than writing it to bless the gap, then remove the marker once the gap is fixed. The suite carries no such marker today — both of the gaps it once pinned are closed.
 
+## Linting
+The tree is clean under `ruff`. The rule set lives in `pyproject.toml`, along with the reason `ruff` was chosen over `pycodestyle`: it implements the same PEP 8 `E`/`W` checks, and it also carries pyflakes, which is what catches an unused import, an unused variable or an undefined name.
+
+    >$pip install ruff==0.17.5
+    >$ruff check .
+
+`.github/workflows/tests.yml` runs that command as its own job on every pull request, so a finding fails the build. The version is pinned there deliberately: a later release that enables a rule would otherwise turn a green branch red with no change of ours.
+
 ## Credits
 Original 2048 game devloped by Gabriele Cirulli
 * [Official Website](https://play2048.co/)

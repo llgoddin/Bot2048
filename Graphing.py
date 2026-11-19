@@ -1,7 +1,6 @@
 # Lucas Goddin
 # July 6, 2020
 
-import json
 from os import mkdir, path
 
 import matplotlib.pyplot as plt
@@ -42,7 +41,8 @@ def graph_game_scores(gameID, sessionID, name):
 
 
 def find_quartile_games(sessionPath):
-    """Returns list of five game ID's for worst q1-q3 and best games in descending order"""
+    """Returns list of five game ID's for worst q1-q3 and best games in
+    descending order"""
 
     df = pd.read_csv(path.join(sessionPath, 'gameSummaries.csv'))
 
@@ -86,8 +86,11 @@ def find_quartile_games(sessionPath):
     return [worst_ID, q1_ID, q2_ID, q3_ID, best_ID]
 
 
-def graph_games(gameIDs=[], path='/Session1', names=None):
+def graph_games(gameIDs=None, path='/Session1', names=None):
     """Use to graph multiple games by id"""
+
+    if gameIDs is None:
+        gameIDs = []
 
     sessionID = int(path.split('Session')[1])
 
