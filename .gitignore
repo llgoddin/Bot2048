@@ -8,3 +8,4 @@
 /config.json
 /templates/htmlReportData/*.png
 /game_recordings
+/.ruff_cache/
